@@ -6,6 +6,11 @@
     <string name="nav_header_subtitle">mipapadakis@uth.gr</string>
     <string name="nav_header_desc">Navigation header</string>
     <string name="action_settings">Settings</string>
+    <string name="width">Width</string>
+    <string name="height">Height</string>
+    <string name="unit_inches">inches</string>
+    <string name="unit_millimeters">mm</string>
+    <string name="unit_pixels">pixels</string>
 
     <string name="menu_create">New canvas</string>
     <string name="menu_gallery">My Gallery</string>
@@ -14,5 +19,24 @@
     <string name="menu_rate">Rate App</string>
     <string name="add">Add</string>
     <string name="about_details">Insert app description here</string>
+    <string name="create_canvas_image_content_description">CreateCanvasFragment image</string>
+    <string name="create_canvas_description">Choose Canvas Size</string>
+    <string name="create_canvas_import_title">Import Picture</string>
+    <string name="create_canvas_import_details">Import a picture from your device as your canvas.</string>
+    <string name="create_canvas_custom_pixel_title">Custom (pixels)</string>
+    <string name="create_canvas_custom_title">Custom Size</string>
+    <string name="create_canvas_custom_dpi_in_pixels">(in pixels: %s/%s)</string>
+    <string name="create_canvas_sd_title">SD Size</string>
+    <string name="create_canvas_sd_details">540x984</string>
+    <string name="create_canvas_hd_title">HD Size</string>
+    <string name="create_canvas_hd_details">1080x1968</string>
+    <string name="create_canvas_default_1_1_title">1:1</string>
+    <string name="create_canvas_default_1_1_details">768x768</string>
+    <string name="create_canvas_default_3_4_title">3:4</string>
+    <string name="create_canvas_default_3_4_details">768x1024</string>
+    <string name="create_canvas_default_9_16_title">9:16</string>
+    <string name="create_canvas_default_9_16_details">720x1280</string>
+    <string name="create_canvas_A4_title">A4 Size</string>
+    <string name="create_canvas_A4_details">1240x1754 (150dpi)</string>
 
 </resources>

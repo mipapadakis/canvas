@@ -13,9 +13,9 @@
 
     <fragment
         android:id="@+id/nav_canvas"
-        android:name="com.mipapadakis.canvas.ui.canvas.CanvasFragment"
+        android:name="com.mipapadakis.canvas.ui.canvas.CreateCanvasFragment"
         android:label="@string/menu_create"
-        tools:layout="@layout/fragment_canvas" />
+        tools:layout="@layout/fragment_create_canvas" />
 
     <fragment
         android:id="@+id/nav_about"

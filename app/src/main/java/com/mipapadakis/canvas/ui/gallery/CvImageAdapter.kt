@@ -33,31 +33,14 @@ class CvImageAdapter(liveDataToObserve: LiveData<List<CvImage>>, lifecycleOwner:
         val cvImage: CvImage = imageList[position]
         holder.image.setImageBitmap(cvImage.bitmap)
         holder.titleTV.text = cvImage.title
-        holder.button1.text = "Button 1"
-        holder.button2.text = "Button 2"
+        holder.button1.text = "Button 1" //TODO
+        holder.button2.text = "Button 2" //TODO
     }
 
     override fun getItemCount() = imageList.size
-
-//    fun onItemMove(fromPosition: Int?, toPosition: Int?): Boolean {
-//        fromPosition?.let {
-//            toPosition?.let {
-//                if (fromPosition < toPosition) {
-//                    for (i in fromPosition until toPosition)
-//                        Collections.swap(imageList, i, i + 1)
-//                } else {
-//                    for (i in fromPosition downTo toPosition+1)
-//                        Collections.swap(imageList, i, i - 1)
-//                }
-//                notifyItemMoved(fromPosition, toPosition)
-//                return true
-//            }
-//        }
-//        return false
-//    }
 }
 
-class ItemViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView)/*, ItemTouchHelperViewHolder*/ {
+class ItemViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView){
     private var outerCardView: CardView
     var image: ImageView
     var titleTV: TextView
@@ -72,18 +55,4 @@ class ItemViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView)/*, Item
         button1 = itemView.findViewById(R.id.button_1)
         button2 = itemView.findViewById(R.id.button_2)
     }
-
-//    override fun onItemSelected() {
-//        outerCardView.alpha = 0.5F
-//    }
-//
-//    override fun onItemDropped() {
-//        outerCardView.alpha = 1.0F
-//        //TODO Update list numbers after item drop?
-//    }
 }
-
-//interface ItemTouchHelperViewHolder {
-//    fun onItemSelected()
-//    fun onItemDropped()
-//}

@@ -1,9 +1,14 @@
 package com.mipapadakis.canvas
 
+import android.graphics.Rect
+import android.os.Build
 import android.os.Bundle
 import android.os.CountDownTimer
+import android.util.TypedValue
 import android.view.Menu
 import android.view.View
+import android.view.ViewGroup
+import android.view.ViewTreeObserver.OnGlobalLayoutListener
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GravityCompat
@@ -16,12 +21,13 @@ import androidx.navigation.ui.setupWithNavController
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.navigation.NavigationView
 
+
 private const val ON_BACK_WAIT_TIME_SHORT = 2000L // FYI: Toast.LENGTH_SHORT = 2000ms
 //private const val ON_BACK_WAIT_TIME_LONG = 3500L // Toast.LENGTH_LONG = 3500ms
 private const val BACK_NOT_PRESSED = 200
 private const val BACK_PRESSED_ONCE = 201
 
-class MainActivity : AppCompatActivity(), InterfaceMainActivity {
+class MainActivity : AppCompatActivity(), InterfaceMainActivity{
     private lateinit var drawerLayout: DrawerLayout
     private lateinit var appBarConfiguration: AppBarConfiguration
     private var backIsPressed = BACK_NOT_PRESSED
@@ -40,7 +46,8 @@ class MainActivity : AppCompatActivity(), InterfaceMainActivity {
         // Passing each menu ID as a set of Ids because each
         // menu should be considered as top level destinations.
         appBarConfiguration = AppBarConfiguration(
-                setOf(R.id.nav_gallery, R.id.nav_canvas, R.id.nav_about), drawerLayout)
+            setOf(R.id.nav_gallery, R.id.nav_canvas, R.id.nav_about), drawerLayout
+        )
         setupActionBarWithNavController(navController, appBarConfiguration)
         navView.setupWithNavController(navController)
 
