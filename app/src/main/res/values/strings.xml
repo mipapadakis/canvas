@@ -38,5 +38,6 @@
     <string name="create_canvas_default_9_16_details">720x1280</string>
     <string name="create_canvas_A4_title">A4 Size</string>
     <string name="create_canvas_A4_details">1240x1754 (150dpi)</string>
+    <string name="error">Error</string>
 
 </resources>

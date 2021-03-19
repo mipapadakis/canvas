@@ -445,11 +445,11 @@
                                     android:id="@+id/custom_pixel_input_width"
                                     android:layout_width="60dp"
                                     android:layout_height="wrap_content"
-                                    android:layout_gravity=""
                                     android:gravity="end"
                                     android:text="1000"
                                     android:maxLength="4"
                                     android:hint="@string/width"
+                                    android:imeOptions="actionDone"
                                     android:inputType="numberDecimal"
                                     android:importantForAutofill="no"
                                     tools:ignore="HardcodedText" />
@@ -491,6 +491,7 @@
                                     android:text="1000"
                                     android:maxLength="4"
                                     android:hint="@string/height"
+                                    android:imeOptions="actionDone"
                                     android:inputType="numberDecimal"
                                     android:importantForAutofill="no"
                                     tools:ignore="HardcodedText" />
@@ -517,7 +518,7 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:orientation="vertical"
-                            android:visibility="gone"                                              >
+                            android:visibility="visible"                                              >
                             <LinearLayout
                                 android:id="@+id/custom_dpi_width_layout"
                                 android:layout_width="match_parent"
@@ -527,7 +528,7 @@
                                 android:orientation="horizontal">
                                 <TextView
                                     android:layout_width="30dp"
-                                    android:layout_height="wrap_content"
+                                    android:layout_height="match_parent"
                                     android:orientation="vertical"
                                     android:gravity="center"
                                     android:text="W: "
@@ -537,20 +538,19 @@
                                     android:id="@+id/custom_dpi_input_width"
                                     android:layout_width="80dp"
                                     android:layout_height="wrap_content"
-                                    android:layout_gravity=""
                                     android:gravity="end"
                                     android:text="1000.00"
-                                    android:maxLength="6"
+                                    android:maxLength="7"
                                     android:hint="@string/width"
+                                    android:imeOptions="actionDone"
                                     android:inputType="numberDecimal"
                                     android:importantForAutofill="no"
                                     tools:ignore="HardcodedText" />
                                 <TextView
                                     android:id="@+id/custom_dpi_width_unit"
                                     android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:orientation="vertical"
-                                    android:gravity="start"
+                                    android:layout_height="match_parent"
+                                    android:gravity="start|center"
                                     android:text="@string/unit_inches"
                                     android:textAppearance="@style/TextAppearance.AppCompat.Body2"/>
                             </LinearLayout>
@@ -563,29 +563,29 @@
                                 android:layout_gravity="start">
                                 <TextView
                                     android:layout_width="30dp"
-                                    android:layout_height="wrap_content"
+                                    android:layout_height="match_parent"
                                     android:orientation="vertical"
                                     android:gravity="center"
                                     android:text="H: "
                                     android:textAppearance="@style/TextAppearance.AppCompat.Body2"
                                     tools:ignore="HardcodedText" />
                                 <EditText
-                                    android:id="@+id/custom_dpi_height_input"
+                                    android:id="@+id/custom_dpi_input_height"
                                     android:layout_width="80dp"
                                     android:layout_height="wrap_content"
                                     android:gravity="end"
                                     android:text="1000.00"
-                                    android:maxLength="6"
+                                    android:maxLength="7"
                                     android:hint="@string/height"
+                                    android:imeOptions="actionDone"
                                     android:inputType="numberDecimal"
                                     android:importantForAutofill="no"
                                     tools:ignore="HardcodedText" />
                                 <TextView
                                     android:id="@+id/custom_dpi_height_unit"
                                     android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:orientation="vertical"
-                                    android:gravity="center"
+                                    android:layout_height="match_parent"
+                                    android:gravity="start|center"
                                     android:text="@string/unit_inches"
                                     android:textAppearance="@style/TextAppearance.AppCompat.Body2"/>
                             </LinearLayout>
@@ -598,7 +598,7 @@
                                 android:gravity="start">
                                 <TextView
                                     android:layout_width="30dp"
-                                    android:layout_height="wrap_content"
+                                    android:layout_height="match_parent"
                                     android:gravity="center"
                                     android:text="DPI: "
                                     android:textAppearance="@style/TextAppearance.AppCompat.Body2"
@@ -614,6 +614,7 @@
                                     android:importantForAutofill="no"
                                     tools:ignore="HardcodedText" />
                                 <TextView
+                                    android:id="@+id/custom_dpi_in_pixels"
                                     android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
                                     android:paddingHorizontal="6dp"
@@ -662,6 +663,12 @@
                     </LinearLayout>
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
+            <FrameLayout
+                android:id="@+id/scroll_to_bottom_layout"
+                android:layout_width="match_parent"
+                android:layout_height="2dp"
+                android:focusable="true"
+                android:focusableInTouchMode="true"/>
         </LinearLayout>
     </ScrollView>
 </LinearLayout>
