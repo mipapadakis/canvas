@@ -12,8 +12,12 @@ class CanvasViewModel : ViewModel() {
     val UNIT_INCH = 2
     val UNCOMMITTED = 100
     val COMMITTED = 200
-    var lastDpiUnitUsed = UNIT_PIXEL
+    var lastDpiUnitUsed = UNIT_MM
     var change = COMMITTED
+    var unitPixels = arrayListOf(1000,1000)
+    var unitMillimeters = arrayListOf(1.0, 1.0)
+    var unitInches = arrayListOf(1/25.4, 1/25.4)
+    var dpi = 350
 
     private val _text = MutableLiveData<String>().apply {
         value = "This is canvas Fragment"
@@ -26,24 +30,24 @@ class CanvasViewModel : ViewModel() {
     private val _customUnit = MutableLiveData<Int>().apply { value = UNIT_PIXEL }
     val customUnit: LiveData<Int> = _customUnit
     fun setCustomUnit(unit: Int){  _customUnit.value = unit }
-
-    private val _pixelWidth = MutableLiveData<Int>().apply { value = 1000 }
-    val pixelWidth: LiveData<Int> = _pixelWidth
-    fun setPixelWidth(width: Int){ _pixelWidth.value = width }
-
-    private val _pixelHeight = MutableLiveData<Int>().apply { value = 1000 }
-    val pixelHeight: LiveData<Int> = _pixelHeight
-    fun setPixelHeight(height: Int){ _pixelHeight.value = height }
-
-    private val _dpiWidth = MutableLiveData<Double>().apply {  value = 1.00 }
-    val dpiWidth: LiveData<Double> = _dpiWidth
-    fun setDpiWidth(width: Double){ _dpiWidth.value = width }
-
-    private val _dpiHeight = MutableLiveData<Double>().apply { value = 1.00 }
-    val dpiHeight: LiveData<Double> = _dpiHeight
-    fun setDpiHeight(height: Double){ _dpiHeight.value = height }
-
-    private val _dpi = MutableLiveData<Int>().apply { value = 350 }
-    val dpi: LiveData<Int> = _dpi
-    fun setDpi(dpi: Int){ _dpi.value = dpi }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

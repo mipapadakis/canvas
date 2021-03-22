@@ -445,7 +445,7 @@
                                     android:id="@+id/custom_pixel_input_width"
                                     android:layout_width="60dp"
                                     android:layout_height="wrap_content"
-                                    android:gravity="end"
+                                    android:gravity="center"
                                     android:text="1000"
                                     android:maxLength="4"
                                     android:hint="@string/width"
@@ -487,7 +487,7 @@
                                     android:id="@+id/custom_pixel_input_height"
                                     android:layout_width="60dp"
                                     android:layout_height="wrap_content"
-                                    android:gravity="end"
+                                    android:gravity="center"
                                     android:text="1000"
                                     android:maxLength="4"
                                     android:hint="@string/height"
@@ -536,11 +536,11 @@
                                     tools:ignore="HardcodedText" />
                                 <EditText
                                     android:id="@+id/custom_dpi_input_width"
-                                    android:layout_width="80dp"
+                                    android:layout_width="75dp"
                                     android:layout_height="wrap_content"
-                                    android:gravity="end"
-                                    android:text="1000.00"
-                                    android:maxLength="7"
+                                    android:gravity="center"
+                                    android:text="1.00"
+                                    android:maxLength="6"
                                     android:hint="@string/width"
                                     android:imeOptions="actionDone"
                                     android:inputType="numberDecimal"
@@ -551,7 +551,7 @@
                                     android:layout_width="wrap_content"
                                     android:layout_height="match_parent"
                                     android:gravity="start|center"
-                                    android:text="@string/unit_inches"
+                                    android:text="@string/unit_millimeters"
                                     android:textAppearance="@style/TextAppearance.AppCompat.Body2"/>
                             </LinearLayout>
                             <LinearLayout
@@ -571,11 +571,11 @@
                                     tools:ignore="HardcodedText" />
                                 <EditText
                                     android:id="@+id/custom_dpi_input_height"
-                                    android:layout_width="80dp"
+                                    android:layout_width="75dp"
                                     android:layout_height="wrap_content"
-                                    android:gravity="end"
-                                    android:text="1000.00"
-                                    android:maxLength="7"
+                                    android:gravity="center"
+                                    android:text="1.00"
+                                    android:maxLength="6"
                                     android:hint="@string/height"
                                     android:imeOptions="actionDone"
                                     android:inputType="numberDecimal"
@@ -586,7 +586,7 @@
                                     android:layout_width="wrap_content"
                                     android:layout_height="match_parent"
                                     android:gravity="start|center"
-                                    android:text="@string/unit_inches"
+                                    android:text="@string/unit_millimeters"
                                     android:textAppearance="@style/TextAppearance.AppCompat.Body2"/>
                             </LinearLayout>
 
@@ -605,9 +605,9 @@
                                     tools:ignore="HardcodedText" />
                                 <EditText
                                     android:id="@+id/custom_dpi_input"
-                                    android:layout_width="80dp"
+                                    android:layout_width="75dp"
                                     android:layout_height="wrap_content"
-                                    android:gravity="end"
+                                    android:gravity="center"
                                     android:text="350"
                                     android:hint="@string/height"
                                     android:inputType="numberDecimal"

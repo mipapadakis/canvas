@@ -20,6 +20,7 @@ import com.google.android.material.card.MaterialCardView
 import com.google.android.material.slider.Slider
 import com.mipapadakis.canvas.InterfaceMainActivity
 import com.mipapadakis.canvas.R
+import kotlin.math.abs
 
 
 enum class CanvasSize(val width: Int, val height: Int) {
@@ -122,10 +123,12 @@ class CreateCanvasFragment : Fragment() {
 
         root.findViewById<MaterialCardView>(R.id.custom_card).setOnClickListener {
             if(canvasViewModel.customUnit.value == canvasViewModel.UNIT_PIXEL) {
-                showToast("${canvasViewModel.pixelWidth.value}, ${canvasViewModel.pixelHeight.value}")
+                showToast("${canvasViewModel.unitPixels[WIDTH]}, ${canvasViewModel.unitPixels[HEIGHT]}")
             }
+            else if(dpiInputIsValidInPixels())
+                showToast(inchToPixels(canvasViewModel.unitInches[WIDTH], canvasViewModel.unitInches[HEIGHT], canvasViewModel.dpi).toString())
             else
-                showToast("${canvasViewModel.dpiWidth.value}, ${canvasViewModel.dpiHeight.value}")
+                showToast("Wrong Input!\n Pixel dimensions must be between 1 and 4096.")
         }
     }
 
@@ -140,12 +143,14 @@ class CreateCanvasFragment : Fragment() {
     private fun setMmUnit(root: View){
         val deactivatedButtonColor = ContextCompat.getColor(requireContext(), R.color.gray_1)
         //If dpiWidth and dpiHeight values were previously inches, convert them to mm
-        if(canvasViewModel.lastDpiUnitUsed == canvasViewModel.UNIT_INCH){
-            canvasViewModel.setDpiWidth(inchToMm(canvasViewModel.dpiWidth.value!!))
-            canvasViewModel.setDpiHeight(inchToMm(canvasViewModel.dpiHeight.value!!))
-            root.findViewById<TextView>(R.id.custom_dpi_width_unit).text = resources.getString(R.string.unit_millimeters)
-            root.findViewById<TextView>(R.id.custom_dpi_height_unit).text = resources.getString(R.string.unit_millimeters)
-        }
+        beginChange()
+        root.findViewById<EditText>(R.id.custom_dpi_input_width).setText(
+                canvasViewModel.unitMillimeters[WIDTH].toString())
+        root.findViewById<EditText>(R.id.custom_dpi_input_height).setText(
+                canvasViewModel.unitMillimeters[HEIGHT].toString())
+        commitChange()
+        root.findViewById<TextView>(R.id.custom_dpi_width_unit).text = resources.getString(R.string.unit_millimeters)
+        root.findViewById<TextView>(R.id.custom_dpi_height_unit).text = resources.getString(R.string.unit_millimeters)
         pixelBtn.setBackgroundColor(deactivatedButtonColor)
         mmBtn.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.yellow_2))
         inchBtn.setBackgroundColor(deactivatedButtonColor)
@@ -157,12 +162,14 @@ class CreateCanvasFragment : Fragment() {
     private fun setInchUnit(root: View){
         val deactivatedButtonColor = ContextCompat.getColor(requireContext(), R.color.gray_1)
         //If dpiWidth and dpiHeight values were previously millimeters, convert them to inches
-        if(canvasViewModel.lastDpiUnitUsed == canvasViewModel.UNIT_MM){
-            canvasViewModel.setDpiWidth(mmToInch(canvasViewModel.dpiWidth.value!!))
-            canvasViewModel.setDpiHeight(mmToInch(canvasViewModel.dpiHeight.value!!))
-            root.findViewById<TextView>(R.id.custom_dpi_width_unit).text = resources.getString(R.string.unit_inches)
-            root.findViewById<TextView>(R.id.custom_dpi_height_unit).text = resources.getString(R.string.unit_inches)
-        }
+        beginChange()
+        root.findViewById<EditText>(R.id.custom_dpi_input_width).setText(
+                canvasViewModel.unitInches[WIDTH].toString())
+        root.findViewById<EditText>(R.id.custom_dpi_input_height).setText(
+                canvasViewModel.unitInches[HEIGHT].toString())
+        commitChange()
+        root.findViewById<TextView>(R.id.custom_dpi_width_unit).text = resources.getString(R.string.unit_inches)
+        root.findViewById<TextView>(R.id.custom_dpi_height_unit).text = resources.getString(R.string.unit_inches)
         pixelBtn.setBackgroundColor(deactivatedButtonColor)
         mmBtn.setBackgroundColor(deactivatedButtonColor)
         inchBtn.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.yellow_2))
@@ -179,67 +186,42 @@ class CreateCanvasFragment : Fragment() {
         val widthSlider = root.findViewById<Slider>(R.id.custom_pixel_slider_width)
         val heightSlider = root.findViewById<Slider>(R.id.custom_pixel_slider_height)
 
-        canvasViewModel.pixelWidth.observe(viewLifecycleOwner, {
+        widthSlider.addOnChangeListener { _, value, _ ->
             if(!isUnderChange()) {
-                widthEditText.setText(it.toString())
+                widthEditText.setText(value.toInt().toString())
                 moveCursorToEndOfEditText(widthEditText)
             }
-            widthSlider.value = it.toFloat()
-        })
-        canvasViewModel.pixelHeight.observe(viewLifecycleOwner, {
-            if(!isUnderChange()) {
-                heightEditText.setText(it.toString())
-                moveCursorToEndOfEditText(heightEditText)
-            }
-            heightSlider.value = it.toFloat()
-        })
-
-        widthSlider.addOnChangeListener { _, value, _ ->
-            //if(!widthEditText.hasFocus())
-            canvasViewModel.setPixelWidth(value.toInt())
         }
         heightSlider.addOnChangeListener { _, value, _ ->
-            //if(!heightEditText.hasFocus())
-            canvasViewModel.setPixelHeight(value.toInt())
+            if(!isUnderChange()) {
+                heightEditText.setText(value.toInt().toString())
+                moveCursorToEndOfEditText(heightEditText)
+            }
         }
 
         widthEditText.addTextChangedListener {
-            var wrongInput = false
-            var input=0
-            if(it == null || it.isEmpty() || !it.toString().isDigitsOnly() || it.toString().toInt()<=0){
-                input = if(!it.toString().isDigitsOnly()) canvasViewModel.pixelWidth.value ?: 1
+            val input = if(it == null || it.isEmpty() || !it.toString().isDigitsOnly() || it.toString().toInt()<=0){
+                if(!it.toString().isDigitsOnly()) canvasViewModel.unitPixels[WIDTH]
                 else 1
-                //widthEditText.setText("1")
-                //moveCursorToEndOfEditText(widthEditText)
-            }
-            else if(it.toString().toInt() > 4096){
-                input=4096
-                wrongInput=true
-            }
-            else input = it.toString().toInt()
-            if(input != canvasViewModel.pixelWidth.value){
-                if(!wrongInput) beginChange()
-                canvasViewModel.setPixelWidth(input)
-                commitChange()
-            }
+            } else if(it.toString().toInt() > 4096){
+                4096
+            } else it.toString().toInt()
+            canvasViewModel.unitPixels[WIDTH] = input
+            beginChange()
+            widthSlider.value = input.toFloat()
+            commitChange()
         }
         heightEditText.addTextChangedListener {
-            var wrongInput = false
-            var input=0
-            if(it == null || it.isEmpty() || !it.toString().isDigitsOnly()  || it.toString().toInt()<=0) {
-                input = if(!it.toString().isDigitsOnly()) canvasViewModel.pixelHeight.value ?: 1
+            val input = if(it == null || it.isEmpty() || !it.toString().isDigitsOnly() || it.toString().toInt()<=0){
+                if(!it.toString().isDigitsOnly()) canvasViewModel.unitPixels[HEIGHT]
                 else 1
-            }
-            else if(it.toString().toInt() > 4096){
-                input=4096
-                wrongInput=true
-            }
-            else input = it.toString().toInt()
-            if(input != canvasViewModel.pixelHeight.value){
-                if(!wrongInput) beginChange()
-                canvasViewModel.setPixelHeight(input)
-                commitChange()
-            }
+            } else if(it.toString().toInt() > 4096){
+                4096
+            } else it.toString().toInt()
+            canvasViewModel.unitPixels[HEIGHT] = input
+            beginChange()
+            heightSlider.value = input.toFloat()
+            commitChange()
         }
     }
 
@@ -249,104 +231,97 @@ class CreateCanvasFragment : Fragment() {
         val dpiEditText = root.findViewById<EditText>(R.id.custom_dpi_input)
         val inPixelTextView = root.findViewById<TextView>(R.id.custom_dpi_in_pixels)
 
-        canvasViewModel.dpiWidth.observe(viewLifecycleOwner, {
-            val inPixels = if(canvasViewModel.customUnit.value == canvasViewModel.UNIT_MM){
-                mmToPixels(canvasViewModel.dpiWidth.value!!,
-                    canvasViewModel.dpiHeight.value!!, canvasViewModel.dpi.value!!)
-            } else{
-                inchToPixels(canvasViewModel.dpiWidth.value!!,
-                    canvasViewModel.dpiHeight.value!!, canvasViewModel.dpi.value!!)
+        widthEditText.addTextChangedListener{
+            if(canvasViewModel.customUnit.value==canvasViewModel.UNIT_INCH){
+                val input = if(it == null || it.isEmpty() || !isDouble(it.toString())){
+                    if(!isDouble(it.toString())) canvasViewModel.unitInches[WIDTH]
+                    else 0.0
+                } else it.toString().toDouble()
+                canvasViewModel.unitInches[WIDTH] = input
+                if(!isUnderChange()) canvasViewModel.unitMillimeters[WIDTH] = inchToMm(input)
             }
-            //Update inPixelTextView:
-            if(inPixels!=null) {
-                inPixelTextView.text = String.format(
-                    resources.getString(R.string.create_canvas_custom_dpi_in_pixels),
-                    inPixels[WIDTH].toString(),
-                    inPixels[HEIGHT].toString())
-            }else {
-                inPixelTextView.text = getString(R.string.error)
+            else{
+                val input = if(it == null || it.isEmpty() || !isDouble(it.toString())){
+                    if(!isDouble(it.toString())) canvasViewModel.unitMillimeters[WIDTH]
+                    else 0.0
+                } else it.toString().toDouble()
+                canvasViewModel.unitMillimeters[WIDTH] = input
+                if(!isUnderChange()) canvasViewModel.unitInches[WIDTH] = mmToInch(input)
             }
-            beginChange()
-            widthEditText.setText(it.toString())
-            commitChange()
-        })
-        canvasViewModel.dpiHeight.observe(viewLifecycleOwner, {
-            val inPixels = if(canvasViewModel.customUnit.value == canvasViewModel.UNIT_MM){
-                mmToPixels(canvasViewModel.dpiWidth.value!!,
-                    canvasViewModel.dpiHeight.value!!, canvasViewModel.dpi.value!!)
-            } else{
-                inchToPixels(canvasViewModel.dpiWidth.value!!,
-                    canvasViewModel.dpiHeight.value!!, canvasViewModel.dpi.value!!)
-            }
-            //Update inPixelTextView:
-            if(inPixels!=null) {
-                inPixelTextView.text = String.format(
-                    resources.getString(R.string.create_canvas_custom_dpi_in_pixels),
-                    inPixels[WIDTH].toString(),
-                    inPixels[HEIGHT].toString())
-            }else {
-                inPixelTextView.text = getString(R.string.error)
-            }
-            beginChange()
-            heightEditText.setText(it.toString())
-            commitChange()
-        })
-        canvasViewModel.dpi.observe(viewLifecycleOwner, {
-            val inPixels = if(canvasViewModel.customUnit.value == canvasViewModel.UNIT_MM){
-                mmToPixels(canvasViewModel.dpiWidth.value!!,
-                    canvasViewModel.dpiHeight.value!!, canvasViewModel.dpi.value!!)
-            } else{
-                inchToPixels(canvasViewModel.dpiWidth.value!!,
-                    canvasViewModel.dpiHeight.value!!, canvasViewModel.dpi.value!!)
-            }
-            //Update inPixelTextView:
-            if(inPixels!=null) {
-                inPixelTextView.text = String.format(
-                    resources.getString(R.string.create_canvas_custom_dpi_in_pixels),
-                    inPixels[WIDTH].toString(),
-                    inPixels[HEIGHT].toString())
-            }else {
-                inPixelTextView.text = getString(R.string.error)
-            }
-            beginChange()
-            dpiEditText.setText(it.toString())
-            commitChange()
-        })
-
-        widthEditText.addTextChangedListener {
-            if(!isUnderChange()) {
-                canvasViewModel.setDpiWidth(it.toString().toDouble())
-//                if(it == null || it.isEmpty() || it.toString().toInt() <= 0)
-//                    canvasViewModel.setPixelWidth(1)
-//                else if (it.toString().toInt() > 4096) canvasViewModel.setPixelWidth(4096)
-//                else canvasViewModel.setPixelWidth(it.toString().toInt())
-            }
+            updateInPixelsTextView(inPixelTextView)
         }
         heightEditText.addTextChangedListener {
-            if(!isUnderChange()) {
-                canvasViewModel.setDpiHeight(it.toString().toDouble())
+            if(canvasViewModel.customUnit.value==canvasViewModel.UNIT_INCH){
+                val input = if(it == null || it.isEmpty() || !isDouble(it.toString())){
+                    if(!isDouble(it.toString())) canvasViewModel.unitInches[HEIGHT]
+                    else 0.0
+                } else it.toString().toDouble()
+                canvasViewModel.unitInches[HEIGHT] = input
+                if(!isUnderChange()) canvasViewModel.unitMillimeters[HEIGHT] = inchToMm(input)
             }
+            else{
+                val input = if(it == null || it.isEmpty() || !isDouble(it.toString())){
+                    if(!isDouble(it.toString())) canvasViewModel.unitMillimeters[HEIGHT]
+                    else 0.0
+                } else it.toString().toDouble()
+                canvasViewModel.unitMillimeters[HEIGHT] = input
+                if(!isUnderChange()) canvasViewModel.unitInches[HEIGHT] = mmToInch(input)
+//                if(abs(canvasViewModel.unitInches[WIDTH] - mmToInch(input)) >=0.009)
+//                    canvasViewModel.unitMillimeters[HEIGHT] = inchToMm(input)
+            }
+            updateInPixelsTextView(inPixelTextView)
         }
         dpiEditText.addTextChangedListener {
-            if(!isUnderChange()) {
-                canvasViewModel.setDpi(it.toString().toInt())
-            }
+            val input = if(it == null || it.isEmpty() || !it.toString().isDigitsOnly()){
+                if(!it.toString().isDigitsOnly()) canvasViewModel.dpi
+                else 0
+            } else it.toString().toInt()
+            canvasViewModel.dpi = input
+            updateInPixelsTextView(inPixelTextView)
         }
     }
 
     //Returns null if pixels outside (0,4096]
     private fun inchToPixels(width: Double, height: Double, dpi: Int): ArrayList<Int>?{
-        val pixels: ArrayList<Int> = arrayListOf((width*dpi).toInt(), (height*dpi).toInt())
+        val pixels: ArrayList<Int> = arrayListOf((width * dpi).toInt(), (height * dpi).toInt())
         if(pixels[WIDTH]<=0 || pixels[WIDTH]>4096 || pixels[HEIGHT]<=0 || pixels[HEIGHT]>4096)
             return null
         return pixels
     }
     //Returns null if pixels outside (0,4096]
-    private fun mmToPixels(width: Double, height: Double, dpi: Int): ArrayList<Int>?{
-        return inchToPixels(mmToInch(width), mmToInch(height), dpi)
-    }
+    private fun mmToPixels(width: Double, height: Double, dpi: Int)
+    = inchToPixels(mmToInch(width), mmToInch(height), dpi)
     private fun mmToInch(mm: Double): Double = mm/25.4
     private fun inchToMm(inch: Double): Double = inch*25.4
+    private fun isDouble(str: String) = (str.isDigitsOnly() || str.contains("."))
+    private fun dpiInputIsValidInPixels(): Boolean{
+        val inPixels = if(canvasViewModel.customUnit.value == canvasViewModel.UNIT_MM){
+            mmToPixels(canvasViewModel.unitMillimeters[WIDTH],
+                    canvasViewModel.unitMillimeters[HEIGHT], canvasViewModel.dpi)
+        } else{
+            inchToPixels(canvasViewModel.unitInches[WIDTH],
+                    canvasViewModel.unitInches[HEIGHT], canvasViewModel.dpi)
+        }
+        return inPixels != null
+    }
+    private fun updateInPixelsTextView(inPixelTextView: TextView){
+        val inPixels = if(canvasViewModel.customUnit.value == canvasViewModel.UNIT_MM){
+            mmToPixels(canvasViewModel.unitMillimeters[WIDTH],
+                    canvasViewModel.unitMillimeters[HEIGHT], canvasViewModel.dpi)
+        } else{
+            inchToPixels(canvasViewModel.unitInches[WIDTH],
+                    canvasViewModel.unitInches[HEIGHT], canvasViewModel.dpi)
+        }
+        //Update inPixelTextView:
+        if(inPixels!=null) {
+            inPixelTextView.text = String.format(
+                    resources.getString(R.string.create_canvas_custom_dpi_in_pixels),
+                    inPixels[WIDTH].toString(),
+                    inPixels[HEIGHT].toString())
+        }else {
+            inPixelTextView.text = getString(R.string.error)
+        }
+    }
 
     //By https://stackoverflow.com/users/4233197/hiren-patel
     private fun setKeyboardVisibilityListener(root: View) {
@@ -405,3 +380,6 @@ class CreateCanvasFragment : Fragment() {
         interfaceMainActivity.showToast(text)
     }
 }
+
+//TODO: Import picture and place it in list item's image
+//TODO: canvas shape => draw the shapes on each list item
