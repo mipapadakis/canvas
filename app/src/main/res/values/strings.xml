@@ -23,6 +23,7 @@
     <string name="create_canvas_description">Choose Canvas Size</string>
     <string name="create_canvas_import_title">Import Picture</string>
     <string name="create_canvas_import_details">Import a picture from your device as your canvas.</string>
+    <string name="create_canvas_import_details_2">Click on the image if you want to pick another one.</string>
     <string name="create_canvas_custom_pixel_title">Custom (pixels)</string>
     <string name="create_canvas_custom_title">Custom Size</string>
     <string name="create_canvas_custom_dpi_in_pixels">(in pixels: %s/%s)</string>

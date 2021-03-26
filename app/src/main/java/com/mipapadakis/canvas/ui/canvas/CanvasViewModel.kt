@@ -19,12 +19,12 @@ class CanvasViewModel : ViewModel() {
     var unitInches = arrayListOf(1/25.4, 1/25.4)
     var dpi = 350
 
-    private val _text = MutableLiveData<String>().apply {
-        value = "This is canvas Fragment"
+    private val _importImagePreview = MutableLiveData<String>().apply {
+        value = ""
     }
-    val text: LiveData<String> = _text
-    fun setText(text: String){
-        _text.value = text
+    val importImagePreview: LiveData<String> = _importImagePreview
+    fun setImportImagePreview(uri: String){
+        _importImagePreview.value = uri
     }
 
     private val _customUnit = MutableLiveData<Int>().apply { value = UNIT_PIXEL }

@@ -1,8 +1,13 @@
 package com.mipapadakis.canvas.ui.canvas
 
+import android.Manifest
 import android.annotation.SuppressLint
+import android.app.Activity
 import android.content.Context
-import android.graphics.Rect
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.graphics.*
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.util.TypedValue
@@ -12,29 +17,22 @@ import android.view.ViewGroup
 import android.view.ViewTreeObserver
 import android.widget.*
 import androidx.core.content.ContextCompat
+import androidx.core.content.ContextCompat.checkSelfPermission
 import androidx.core.text.isDigitsOnly
 import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import com.google.android.material.card.MaterialCardView
 import com.google.android.material.slider.Slider
+import com.mipapadakis.canvas.CanvasActivity
 import com.mipapadakis.canvas.InterfaceMainActivity
 import com.mipapadakis.canvas.R
-import kotlin.math.abs
 
 
-enum class CanvasSize(val width: Int, val height: Int) {
-    IMPORT(0, 0),
-    SD_SIZE(540, 984),
-    HD_SIZE(1080, 1968),
-    DEFAULT_1_1(768, 768),
-    DEFAULT_3_4(768, 1024),
-    DEFAULT_9_16(720, 1280),
-    A4(1240, 1754),
-    CUSTOM(1000, 1000)
-}
 private const val WIDTH = 0
 private const val HEIGHT = 1
+private const val CODE_IMAGE_PICK = 1000
+private const val CODE_PERMISSION = 1001
 
 
 class CreateCanvasFragment : Fragment() {
@@ -46,7 +44,19 @@ class CreateCanvasFragment : Fragment() {
     private lateinit var pixelBtn: Button
     private lateinit var mmBtn: Button
     private lateinit var inchBtn: Button
+    private var importedImagePreview: ImageView? = null
 
+    companion object {
+        const val IMPORT_IMAGE_INTENT_KEY = "image_uri"
+        enum class CanvasDefaultSize(val width: Int, val height: Int) {
+            SD_SIZE(540, 984),
+            HD_SIZE(1080, 1968),
+            DEFAULT_1_1(768, 768),
+            DEFAULT_3_4(768, 1024),
+            DEFAULT_9_16(720, 1280),
+            A4(1240, 1754),
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -66,32 +76,66 @@ class CreateCanvasFragment : Fragment() {
     ): View? {
         canvasViewModel = ViewModelProvider(this).get(CanvasViewModel::class.java)
         val root = inflater.inflate(R.layout.fragment_create_canvas, container, false)
+        importedImagePreview = root.findViewById(R.id.import_image_view)
 
-
-
+//        Observable example:
 //        val textView: TextView = root.findViewById(R.id.text_canvas)
 //        canvasViewModel.text.observe(viewLifecycleOwner, {
-//            textView.text = it
-//        })
+//            textView.text = it })
         initializeList(root)
         return root
     }
 
     private fun initializeList(root: View) { //}: ArrayList<Int>{
+        val importDetails = root.findViewById<TextView>(R.id.import_details)
+        importDetails.text = resources.getString(R.string.create_canvas_import_details)
+
         root.findViewById<MaterialCardView>(R.id.import_card).setOnClickListener {
-            showToast("TODO: Import picture from device")}
+            if(importedImagePreview==null) importedImagePreview = root.findViewById(R.id.import_image_view)
+            if(canvasViewModel.importImagePreview.value?.isEmpty() == true) pickImageFromGallery()
+            else if(canvasViewModel.importImagePreview.value!=null) {
+                val intent = Intent(context, CanvasActivity::class.java)
+                intent.putExtra(IMPORT_IMAGE_INTENT_KEY, canvasViewModel.importImagePreview.value)
+                startActivity(intent)
+            }
+        }
+        canvasViewModel.importImagePreview.observe(viewLifecycleOwner, {
+            if (it.isEmpty()) {
+                importedImagePreview?.setImageDrawable(ContextCompat.getDrawable(requireContext(), R.drawable.baseline_collections_black_24))
+                importDetails.text = resources.getString(R.string.create_canvas_import_details)
+            } else {
+                importedImagePreview?.setImageURI(Uri.parse(it))
+                importDetails.text = resources.getString(R.string.create_canvas_import_details_2)
+            }
+        })
+        importedImagePreview?.setOnClickListener {
+            if(canvasViewModel.importImagePreview.value?.isNotEmpty() == true){
+                canvasViewModel.setImportImagePreview("")
+                pickImageFromGallery()
+            }
+        }
+
         root.findViewById<MaterialCardView>(R.id.sd_card).setOnClickListener {
-            showToast("${CanvasSize.SD_SIZE.width}, ${CanvasSize.SD_SIZE.height}") }
+            showToast("${CanvasDefaultSize.SD_SIZE.width}, ${CanvasDefaultSize.SD_SIZE.height}") }
         root.findViewById<MaterialCardView>(R.id.hd_card).setOnClickListener {
-            showToast("${CanvasSize.HD_SIZE.width}, ${CanvasSize.HD_SIZE.height}") }
+            showToast("${CanvasDefaultSize.HD_SIZE.width}, ${CanvasDefaultSize.HD_SIZE.height}") }
         root.findViewById<MaterialCardView>(R.id.default_1_1_card).setOnClickListener {
-            showToast("${CanvasSize.DEFAULT_1_1.width}, ${CanvasSize.DEFAULT_1_1.height}") }
+            showToast("${CanvasDefaultSize.DEFAULT_1_1.width}, ${CanvasDefaultSize.DEFAULT_1_1.height}") }
         root.findViewById<MaterialCardView>(R.id.default_3_4_card).setOnClickListener {
-            showToast("${CanvasSize.DEFAULT_3_4.width}, ${CanvasSize.DEFAULT_3_4.height}") }
+            showToast("${CanvasDefaultSize.DEFAULT_3_4.width}, ${CanvasDefaultSize.DEFAULT_3_4.height}") }
         root.findViewById<MaterialCardView>(R.id.default_9_16_card).setOnClickListener {
-            showToast("${CanvasSize.DEFAULT_9_16.width}, ${CanvasSize.DEFAULT_9_16.height}") }
+            showToast("${CanvasDefaultSize.DEFAULT_9_16.width}, ${CanvasDefaultSize.DEFAULT_9_16.height}") }
         root.findViewById<MaterialCardView>(R.id.A4_card).setOnClickListener {
-            showToast("${CanvasSize.A4.width}, ${CanvasSize.A4.height}") }
+            showToast("${CanvasDefaultSize.A4.width}, ${CanvasDefaultSize.A4.height}") }
+        root.findViewById<MaterialCardView>(R.id.custom_card).setOnClickListener {
+            when {
+                canvasViewModel.customUnit.value == canvasViewModel.UNIT_PIXEL ->
+                    showToast("${canvasViewModel.unitPixels[WIDTH]}, ${canvasViewModel.unitPixels[HEIGHT]}")
+                dpiInputIsValidInPixels() ->
+                    showToast(inchToPixels(canvasViewModel.unitInches[WIDTH], canvasViewModel.unitInches[HEIGHT], canvasViewModel.dpi).toString())
+                else -> showToast("Wrong Input!\n Pixel dimensions must be between 1 and 4096.")
+            }
+        }
 
         ///////////////////////////////////////Custom Size//////////////////////////////////////////
         scrollToBottomLayout = root.findViewById(R.id.scroll_to_bottom_layout)
@@ -120,16 +164,23 @@ class CreateCanvasFragment : Fragment() {
         setPixelLayoutListeners(root)
         setDpiLayoutListeners(root)
         setKeyboardVisibilityListener(root)
+    }
 
-        root.findViewById<MaterialCardView>(R.id.custom_card).setOnClickListener {
-            if(canvasViewModel.customUnit.value == canvasViewModel.UNIT_PIXEL) {
-                showToast("${canvasViewModel.unitPixels[WIDTH]}, ${canvasViewModel.unitPixels[HEIGHT]}")
+    private fun pickImageFromGallery(){
+        //check runtime permission
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
+            if ( checkSelfPermission(requireContext(), Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_DENIED){
+                val permissions = arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE)
+                //show popup to request runtime permission
+                requestPermissions(permissions, CODE_PERMISSION)
+                return
             }
-            else if(dpiInputIsValidInPixels())
-                showToast(inchToPixels(canvasViewModel.unitInches[WIDTH], canvasViewModel.unitInches[HEIGHT], canvasViewModel.dpi).toString())
-            else
-                showToast("Wrong Input!\n Pixel dimensions must be between 1 and 4096.")
+            //else: permission already granted
         }
+        //else: system OS is < Marshmallow
+        val intent = Intent(Intent.ACTION_PICK) //Intent to pick image
+        intent.type = "image/*"
+        startActivityForResult(intent, CODE_IMAGE_PICK)
     }
 
     private fun setPixelUnit(){
@@ -379,7 +430,33 @@ class CreateCanvasFragment : Fragment() {
     private fun showToast(text: String){
         interfaceMainActivity.showToast(text)
     }
+
+    //handle requested permission result
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+        when(requestCode){
+            CODE_PERMISSION -> {
+                if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    //permission from popup granted
+                    val intent = Intent(Intent.ACTION_PICK)
+                    intent.type = "image/*"
+                    startActivityForResult(intent, CODE_IMAGE_PICK)
+                } else {
+                    //permission from popup denied
+                    showToast("Permission denied")
+                }
+            }
+        }
+    }
+
+    //handle result of picked image
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        if (resultCode == Activity.RESULT_OK && requestCode == CODE_IMAGE_PICK){
+            val uri = data?.data
+            importedImagePreview?.setImageURI(uri)
+            canvasViewModel.setImportImagePreview(uri.toString())
+        }
+        else canvasViewModel.setImportImagePreview("")
+    }
 }
 
-//TODO: Import picture and place it in list item's image
 //TODO: canvas shape => draw the shapes on each list item
