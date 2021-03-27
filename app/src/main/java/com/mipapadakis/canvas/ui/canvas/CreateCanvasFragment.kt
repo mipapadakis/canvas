@@ -90,6 +90,13 @@ class CreateCanvasFragment : Fragment() {
         val importDetails = root.findViewById<TextView>(R.id.import_details)
         importDetails.text = resources.getString(R.string.create_canvas_import_details)
 
+        drawRectangle(root.findViewById(R.id.sd_image_view), CanvasDefaultSize.SD_SIZE.width, CanvasDefaultSize.SD_SIZE.height)
+        drawRectangle(root.findViewById(R.id.hd_image_view), CanvasDefaultSize.HD_SIZE.width, CanvasDefaultSize.HD_SIZE.height)
+        drawRectangle(root.findViewById(R.id.default_1_1_image_view), CanvasDefaultSize.DEFAULT_1_1.width, CanvasDefaultSize.DEFAULT_1_1.height)
+        drawRectangle(root.findViewById(R.id.default_3_4_image_view), CanvasDefaultSize.DEFAULT_3_4.width, CanvasDefaultSize.DEFAULT_3_4.height)
+        drawRectangle(root.findViewById(R.id.default_9_16_image_view), CanvasDefaultSize.DEFAULT_9_16.width, CanvasDefaultSize.DEFAULT_9_16.height)
+        drawRectangle(root.findViewById(R.id.A4_image_view), CanvasDefaultSize.A4.width, CanvasDefaultSize.A4.height)
+
         root.findViewById<MaterialCardView>(R.id.import_card).setOnClickListener {
             if(importedImagePreview==null) importedImagePreview = root.findViewById(R.id.import_image_view)
             if(canvasViewModel.importImagePreview.value?.isEmpty() == true) pickImageFromGallery()
@@ -116,7 +123,7 @@ class CreateCanvasFragment : Fragment() {
         }
 
         root.findViewById<MaterialCardView>(R.id.sd_card).setOnClickListener {
-            showToast("${CanvasDefaultSize.SD_SIZE.width}, ${CanvasDefaultSize.SD_SIZE.height}") }
+            showToast("${CanvasDefaultSize.SD_SIZE.width}, ${CanvasDefaultSize.SD_SIZE.height}")}
         root.findViewById<MaterialCardView>(R.id.hd_card).setOnClickListener {
             showToast("${CanvasDefaultSize.HD_SIZE.width}, ${CanvasDefaultSize.HD_SIZE.height}") }
         root.findViewById<MaterialCardView>(R.id.default_1_1_card).setOnClickListener {
@@ -144,6 +151,7 @@ class CreateCanvasFragment : Fragment() {
         pixelBtn = root.findViewById(R.id.custom_pixel_button)
         mmBtn = root.findViewById(R.id.custom_mm_button)
         inchBtn = root.findViewById(R.id.custom_inch_button)
+        updateCustomSizeImageView(root.findViewById(R.id.custom_image_view))
 
         //Following views must not trigger the card listener when clicked => override clickListener:
         pixelLayout.setOnClickListener {}
@@ -240,12 +248,14 @@ class CreateCanvasFragment : Fragment() {
         widthSlider.addOnChangeListener { _, value, _ ->
             if(!isUnderChange()) {
                 widthEditText.setText(value.toInt().toString())
+                updateCustomSizeImageView(root.findViewById(R.id.custom_image_view))
                 moveCursorToEndOfEditText(widthEditText)
             }
         }
         heightSlider.addOnChangeListener { _, value, _ ->
             if(!isUnderChange()) {
                 heightEditText.setText(value.toInt().toString())
+                updateCustomSizeImageView(root.findViewById(R.id.custom_image_view))
                 moveCursorToEndOfEditText(heightEditText)
             }
         }
@@ -261,6 +271,7 @@ class CreateCanvasFragment : Fragment() {
             beginChange()
             widthSlider.value = input.toFloat()
             commitChange()
+            updateCustomSizeImageView(root.findViewById(R.id.custom_image_view))
         }
         heightEditText.addTextChangedListener {
             val input = if(it == null || it.isEmpty() || !it.toString().isDigitsOnly() || it.toString().toInt()<=0){
@@ -273,6 +284,7 @@ class CreateCanvasFragment : Fragment() {
             beginChange()
             heightSlider.value = input.toFloat()
             commitChange()
+            updateCustomSizeImageView(root.findViewById(R.id.custom_image_view))
         }
     }
 
@@ -300,6 +312,7 @@ class CreateCanvasFragment : Fragment() {
                 if(!isUnderChange()) canvasViewModel.unitInches[WIDTH] = mmToInch(input)
             }
             updateInPixelsTextView(inPixelTextView)
+            updateCustomSizeImageView(root.findViewById(R.id.custom_image_view))
         }
         heightEditText.addTextChangedListener {
             if(canvasViewModel.customUnit.value==canvasViewModel.UNIT_INCH){
@@ -321,6 +334,7 @@ class CreateCanvasFragment : Fragment() {
 //                    canvasViewModel.unitMillimeters[HEIGHT] = inchToMm(input)
             }
             updateInPixelsTextView(inPixelTextView)
+            updateCustomSizeImageView(root.findViewById(R.id.custom_image_view))
         }
         dpiEditText.addTextChangedListener {
             val input = if(it == null || it.isEmpty() || !it.toString().isDigitsOnly()){
@@ -329,6 +343,7 @@ class CreateCanvasFragment : Fragment() {
             } else it.toString().toInt()
             canvasViewModel.dpi = input
             updateInPixelsTextView(inPixelTextView)
+            updateCustomSizeImageView(root.findViewById(R.id.custom_image_view))
         }
     }
 
@@ -374,6 +389,26 @@ class CreateCanvasFragment : Fragment() {
         }
     }
 
+    private fun updateCustomSizeImageView(customImageView: ImageView){
+        when (canvasViewModel.customUnit.value) {
+            canvasViewModel.UNIT_PIXEL -> drawRectangle(customImageView, canvasViewModel.unitPixels[WIDTH], canvasViewModel.unitPixels[HEIGHT])
+            canvasViewModel.UNIT_INCH -> {
+                val inPixels = inchToPixels(canvasViewModel.unitInches[WIDTH],
+                        canvasViewModel.unitInches[HEIGHT],
+                        canvasViewModel.dpi)
+                        ?: arrayListOf(0,0)
+                drawRectangle(customImageView, inPixels[WIDTH], inPixels[HEIGHT])
+            }
+            else -> {
+                val inPixels = mmToPixels(canvasViewModel.unitMillimeters[WIDTH],
+                        canvasViewModel.unitMillimeters[HEIGHT],
+                        canvasViewModel.dpi)
+                        ?: arrayListOf(0,0)
+                drawRectangle(customImageView, inPixels[WIDTH], inPixels[HEIGHT])
+            }
+        }
+    }
+
     //By https://stackoverflow.com/users/4233197/hiren-patel
     private fun setKeyboardVisibilityListener(root: View) {
         val parentView = (activity?.findViewById<View>(android.R.id.content)
@@ -408,6 +443,30 @@ class CreateCanvasFragment : Fragment() {
                 }
             }
         })
+    }
+
+    private fun drawRectangle(imageView: ImageView, width: Int, height: Int){
+        val bitmap = Bitmap.createBitmap(72, 72, Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(bitmap)
+        canvas.drawColor(Color.TRANSPARENT)
+        val paint = Paint()
+        paint.style = Paint.Style.STROKE
+        paint.strokeWidth = 1.5F
+        paint.color = Color.BLACK
+        paint.isAntiAlias = true
+        val centerOfCanvas = Point(canvas.width / 2, canvas.height / 2)
+        val scaledWidth = (width * canvas.width / 4096)
+        val scaledHeight = (height * canvas.height / 4096)
+        if(width>0 && height>0) {
+            val left = centerOfCanvas.x - scaledWidth / 2
+            val top = centerOfCanvas.y - scaledHeight / 2
+            val right = centerOfCanvas.x + scaledWidth / 2
+            val bottom = centerOfCanvas.y + scaledHeight / 2
+            val rectangle = Rect(left + 1, top + 1, right - 1, bottom - 1)
+            canvas.drawRect(rectangle, paint)
+        }
+        else canvas.drawRect(Rect(0,0,0,0), paint)
+        imageView.setImageBitmap(bitmap)
     }
 
     private fun moveCursorToEndOfEditText(editText: EditText){
@@ -459,4 +518,3 @@ class CreateCanvasFragment : Fragment() {
     }
 }
 
-//TODO: canvas shape => draw the shapes on each list item
