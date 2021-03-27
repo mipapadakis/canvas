@@ -21,24 +21,24 @@
     <string name="about_details">Insert app description here</string>
     <string name="create_canvas_image_content_description">CreateCanvasFragment image</string>
     <string name="create_canvas_description">Choose Canvas Size</string>
-    <string name="create_canvas_import_title">Import Picture</string>
+    <string name="create_canvas_import_title">Choose Picture</string>
     <string name="create_canvas_import_details">Import a picture from your device as your canvas.</string>
     <string name="create_canvas_import_details_2">Click on the image if you want to pick another one.</string>
     <string name="create_canvas_custom_pixel_title">Custom (pixels)</string>
-    <string name="create_canvas_custom_title">Custom Size</string>
-    <string name="create_canvas_custom_dpi_in_pixels">(in pixels: %s/%s)</string>
+    <string name="create_canvas_custom_title">Custom</string>
+    <string name="create_canvas_custom_dpi_in_pixels">In pixels: %s×%s</string>
     <string name="create_canvas_sd_title">SD Size</string>
-    <string name="create_canvas_sd_details">540x984</string>
+    <string name="create_canvas_sd_details">540×984</string>
     <string name="create_canvas_hd_title">HD Size</string>
-    <string name="create_canvas_hd_details">1080x1968</string>
+    <string name="create_canvas_hd_details">1080×1968</string>
     <string name="create_canvas_default_1_1_title">1:1</string>
-    <string name="create_canvas_default_1_1_details">768x768</string>
+    <string name="create_canvas_default_1_1_details">768×768</string>
     <string name="create_canvas_default_3_4_title">3:4</string>
-    <string name="create_canvas_default_3_4_details">768x1024</string>
+    <string name="create_canvas_default_3_4_details">768×1024</string>
     <string name="create_canvas_default_9_16_title">9:16</string>
-    <string name="create_canvas_default_9_16_details">720x1280</string>
-    <string name="create_canvas_A4_title">A4 Size</string>
-    <string name="create_canvas_A4_details">1240x1754 (150dpi)</string>
+    <string name="create_canvas_default_9_16_details">720×1280</string>
+    <string name="create_canvas_A4_title">A4</string>
+    <string name="create_canvas_A4_details">1240×1754 (150dpi)</string>
     <string name="error">Error</string>
 
 </resources>

@@ -90,12 +90,12 @@ class CreateCanvasFragment : Fragment() {
         val importDetails = root.findViewById<TextView>(R.id.import_details)
         importDetails.text = resources.getString(R.string.create_canvas_import_details)
 
-        drawRectangle(root.findViewById(R.id.sd_image_view), CanvasDefaultSize.SD_SIZE.width, CanvasDefaultSize.SD_SIZE.height)
-        drawRectangle(root.findViewById(R.id.hd_image_view), CanvasDefaultSize.HD_SIZE.width, CanvasDefaultSize.HD_SIZE.height)
-        drawRectangle(root.findViewById(R.id.default_1_1_image_view), CanvasDefaultSize.DEFAULT_1_1.width, CanvasDefaultSize.DEFAULT_1_1.height)
-        drawRectangle(root.findViewById(R.id.default_3_4_image_view), CanvasDefaultSize.DEFAULT_3_4.width, CanvasDefaultSize.DEFAULT_3_4.height)
-        drawRectangle(root.findViewById(R.id.default_9_16_image_view), CanvasDefaultSize.DEFAULT_9_16.width, CanvasDefaultSize.DEFAULT_9_16.height)
-        drawRectangle(root.findViewById(R.id.A4_image_view), CanvasDefaultSize.A4.width, CanvasDefaultSize.A4.height)
+        drawRectangle(root.findViewById(R.id.sd_image_view), CanvasDefaultSize.SD_SIZE.width, CanvasDefaultSize.SD_SIZE.height, true)
+        drawRectangle(root.findViewById(R.id.hd_image_view), CanvasDefaultSize.HD_SIZE.width, CanvasDefaultSize.HD_SIZE.height, true)
+        drawRectangle(root.findViewById(R.id.default_1_1_image_view), CanvasDefaultSize.DEFAULT_1_1.width, CanvasDefaultSize.DEFAULT_1_1.height, true)
+        drawRectangle(root.findViewById(R.id.default_3_4_image_view), CanvasDefaultSize.DEFAULT_3_4.width, CanvasDefaultSize.DEFAULT_3_4.height, true)
+        drawRectangle(root.findViewById(R.id.default_9_16_image_view), CanvasDefaultSize.DEFAULT_9_16.width, CanvasDefaultSize.DEFAULT_9_16.height, true)
+        drawRectangle(root.findViewById(R.id.A4_image_view), CanvasDefaultSize.A4.width, CanvasDefaultSize.A4.height, true)
 
         root.findViewById<MaterialCardView>(R.id.import_card).setOnClickListener {
             if(importedImagePreview==null) importedImagePreview = root.findViewById(R.id.import_image_view)
@@ -166,7 +166,9 @@ class CreateCanvasFragment : Fragment() {
             }
         })
 
-        pixelBtn.setOnClickListener { canvasViewModel.setCustomUnit(canvasViewModel.UNIT_PIXEL)}
+        pixelBtn.setOnClickListener {
+            canvasViewModel.setCustomUnit(canvasViewModel.UNIT_PIXEL)
+            updateCustomSizeImageView(root.findViewById(R.id.custom_image_view))}
         mmBtn.setOnClickListener { canvasViewModel.setCustomUnit(canvasViewModel.UNIT_MM)}
         inchBtn.setOnClickListener { canvasViewModel.setCustomUnit(canvasViewModel.UNIT_INCH)}
         setPixelLayoutListeners(root)
@@ -216,6 +218,7 @@ class CreateCanvasFragment : Fragment() {
         pixelLayout.visibility = View.GONE
         dpiLayout.visibility = View.VISIBLE
         canvasViewModel.lastDpiUnitUsed = canvasViewModel.UNIT_MM
+        updateCustomSizeImageView(root.findViewById(R.id.custom_image_view))
         scrollToBottom()
     }
     private fun setInchUnit(root: View){
@@ -235,6 +238,7 @@ class CreateCanvasFragment : Fragment() {
         pixelLayout.visibility = View.GONE
         dpiLayout.visibility = View.VISIBLE
         canvasViewModel.lastDpiUnitUsed = canvasViewModel.UNIT_INCH
+        updateCustomSizeImageView(root.findViewById(R.id.custom_image_view))
         scrollToBottom()
     }
 
@@ -391,20 +395,21 @@ class CreateCanvasFragment : Fragment() {
 
     private fun updateCustomSizeImageView(customImageView: ImageView){
         when (canvasViewModel.customUnit.value) {
-            canvasViewModel.UNIT_PIXEL -> drawRectangle(customImageView, canvasViewModel.unitPixels[WIDTH], canvasViewModel.unitPixels[HEIGHT])
+            canvasViewModel.UNIT_PIXEL ->
+                drawRectangle(customImageView, canvasViewModel.unitPixels[WIDTH], canvasViewModel.unitPixels[HEIGHT], false)
             canvasViewModel.UNIT_INCH -> {
                 val inPixels = inchToPixels(canvasViewModel.unitInches[WIDTH],
                         canvasViewModel.unitInches[HEIGHT],
                         canvasViewModel.dpi)
                         ?: arrayListOf(0,0)
-                drawRectangle(customImageView, inPixels[WIDTH], inPixels[HEIGHT])
+                drawRectangle(customImageView, inPixels[WIDTH], inPixels[HEIGHT], false)
             }
             else -> {
                 val inPixels = mmToPixels(canvasViewModel.unitMillimeters[WIDTH],
                         canvasViewModel.unitMillimeters[HEIGHT],
                         canvasViewModel.dpi)
                         ?: arrayListOf(0,0)
-                drawRectangle(customImageView, inPixels[WIDTH], inPixels[HEIGHT])
+                drawRectangle(customImageView, inPixels[WIDTH], inPixels[HEIGHT], false)
             }
         }
     }
@@ -445,7 +450,7 @@ class CreateCanvasFragment : Fragment() {
         })
     }
 
-    private fun drawRectangle(imageView: ImageView, width: Int, height: Int){
+    private fun drawRectangle(imageView: ImageView, width: Int, height: Int, matchBounds: Boolean){
         val bitmap = Bitmap.createBitmap(72, 72, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(bitmap)
         canvas.drawColor(Color.TRANSPARENT)
@@ -454,15 +459,38 @@ class CreateCanvasFragment : Fragment() {
         paint.strokeWidth = 1.5F
         paint.color = Color.BLACK
         paint.isAntiAlias = true
-        val centerOfCanvas = Point(canvas.width / 2, canvas.height / 2)
-        val scaledWidth = (width * canvas.width / 4096)
-        val scaledHeight = (height * canvas.height / 4096)
         if(width>0 && height>0) {
-            val left = centerOfCanvas.x - scaledWidth / 2
-            val top = centerOfCanvas.y - scaledHeight / 2
-            val right = centerOfCanvas.x + scaledWidth / 2
-            val bottom = centerOfCanvas.y + scaledHeight / 2
-            val rectangle = Rect(left + 1, top + 1, right - 1, bottom - 1)
+            val scaledWidth = (width * canvas.width / 4096)
+            val scaledHeight = (height * canvas.height / 4096)
+            val centerOfCanvas = Point(canvas.width / 2, canvas.height / 2)
+            val left: Int
+            val top: Int
+            val right: Int
+            val bottom: Int
+
+            if(matchBounds){ //Stretch the rectangle to match the bounds.
+                val stretchedWidth: Int
+                val stretchedHeight: Int
+                if(width>=height){
+                    stretchedWidth = canvas.width
+                    stretchedHeight = scaledHeight*(stretchedWidth/scaledWidth)
+                }
+                else{
+                    stretchedHeight = canvas.height
+                    stretchedWidth = scaledWidth*(stretchedHeight/scaledHeight)
+                }
+                left = centerOfCanvas.x - stretchedWidth / 2 + 1
+                top = centerOfCanvas.y - stretchedHeight / 2 + 1
+                right = centerOfCanvas.x + stretchedWidth / 2 - 1
+                bottom = centerOfCanvas.y + stretchedHeight / 2 - 1
+            }
+            else{ //Don't stretch the rectangle: maintain relativity.
+                left = centerOfCanvas.x - scaledWidth / 2 + 1
+                top = centerOfCanvas.y - scaledHeight / 2 + 1
+                right = centerOfCanvas.x + scaledWidth / 2 - 1
+                bottom = centerOfCanvas.y + scaledHeight / 2 - 1
+            }
+            val rectangle = Rect(left, top, right, bottom)
             canvas.drawRect(rectangle, paint)
         }
         else canvas.drawRect(Rect(0,0,0,0), paint)
@@ -518,3 +546,4 @@ class CreateCanvasFragment : Fragment() {
     }
 }
 
+//TODO bug: When i set dpi 100 and inch width & height to 40.96: when I switch to mm, pixels are different

@@ -604,25 +604,27 @@
                                     tools:ignore="HardcodedText" />
                                 <EditText
                                     android:id="@+id/custom_dpi_input"
-                                    android:layout_width="75dp"
+                                    android:layout_width="55dp"
                                     android:layout_height="wrap_content"
                                     android:gravity="center"
                                     android:text="350"
+                                    android:maxLength="4"
                                     android:hint="@string/height"
                                     android:inputType="numberDecimal"
                                     android:importantForAutofill="no"
                                     tools:ignore="HardcodedText" />
+
                                 <TextView
                                     android:id="@+id/custom_dpi_in_pixels"
                                     android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
+                                    android:layout_gravity="center_vertical"
+                                    android:alpha="0.8"
+                                    android:gravity="end"
                                     android:paddingHorizontal="6dp"
                                     android:text="@string/create_canvas_custom_dpi_in_pixels"
-                                    android:textStyle="italic"
-                                    android:layout_gravity="center_vertical"
-                                    android:gravity="end"
-                                    android:alpha="0.8"
-                                    android:textAppearance="?attr/textAppearanceSubtitle1"/>
+                                    android:textAppearance="?attr/textAppearanceSubtitle1"
+                                    android:textStyle="italic" />
                             </LinearLayout>
                         </LinearLayout>
 
