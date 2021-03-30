@@ -19,13 +19,9 @@ class CanvasViewModel : ViewModel() {
     var unitInches = arrayListOf(1/25.4, 1/25.4)
     var dpi = 350
 
-    private val _importImagePreview = MutableLiveData<String>().apply {
-        value = ""
-    }
+    private val _importImagePreview = MutableLiveData<String>().apply { value = "" }
     val importImagePreview: LiveData<String> = _importImagePreview
-    fun setImportImagePreview(uri: String){
-        _importImagePreview.value = uri
-    }
+    fun setImportImagePreview(uri: String){ _importImagePreview.value = uri }
 
     private val _customUnit = MutableLiveData<Int>().apply { value = UNIT_PIXEL }
     val customUnit: LiveData<Int> = _customUnit

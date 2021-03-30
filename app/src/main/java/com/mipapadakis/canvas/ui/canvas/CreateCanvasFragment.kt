@@ -29,15 +29,13 @@ import com.mipapadakis.canvas.InterfaceMainActivity
 import com.mipapadakis.canvas.R
 
 
-private const val WIDTH = 0
-private const val HEIGHT = 1
 private const val CODE_IMAGE_PICK = 1000
 private const val CODE_PERMISSION = 1001
 
 
 class CreateCanvasFragment : Fragment() {
     private lateinit var canvasViewModel: CanvasViewModel
-    private lateinit var interfaceMainActivity: InterfaceMainActivity
+    private lateinit var interfaceOfMainActivity: InterfaceMainActivity
     private lateinit var scrollToBottomLayout: FrameLayout
     private lateinit var pixelLayout: LinearLayout
     private lateinit var dpiLayout: LinearLayout
@@ -48,6 +46,10 @@ class CreateCanvasFragment : Fragment() {
 
     companion object {
         const val IMPORT_IMAGE_INTENT_KEY = "image_uri"
+        const val DIMENSION_WIDTH_INTENT_KEY = "width_in_pixels"
+        const val DIMENSION_HEIGHT_INTENT_KEY = "eight_in_pixels"
+        const val WIDTH = 0
+        const val HEIGHT = 1
         enum class CanvasDefaultSize(val width: Int, val height: Int) {
             SD_SIZE(540, 984),
             HD_SIZE(1080, 1968),
@@ -60,7 +62,7 @@ class CreateCanvasFragment : Fragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        interfaceMainActivity.hideFab() //TODO: Doesn't work after a lifecycle event!
+        interfaceOfMainActivity.hideFab() //TODO: Doesn't work after a lifecycle event!
 //        interfaceMainActivity.showFab()
 //        interfaceMainActivity.setFabListener {
 //            val str = "Random Number: " + (Math.random()*100).toInt()
@@ -123,23 +125,25 @@ class CreateCanvasFragment : Fragment() {
         }
 
         root.findViewById<MaterialCardView>(R.id.sd_card).setOnClickListener {
-            showToast("${CanvasDefaultSize.SD_SIZE.width}, ${CanvasDefaultSize.SD_SIZE.height}")}
+            startCanvasIntent(CanvasDefaultSize.SD_SIZE.width, CanvasDefaultSize.SD_SIZE.height)}
         root.findViewById<MaterialCardView>(R.id.hd_card).setOnClickListener {
-            showToast("${CanvasDefaultSize.HD_SIZE.width}, ${CanvasDefaultSize.HD_SIZE.height}") }
+            startCanvasIntent(CanvasDefaultSize.HD_SIZE.width, CanvasDefaultSize.HD_SIZE.height)}
         root.findViewById<MaterialCardView>(R.id.default_1_1_card).setOnClickListener {
-            showToast("${CanvasDefaultSize.DEFAULT_1_1.width}, ${CanvasDefaultSize.DEFAULT_1_1.height}") }
+            startCanvasIntent(CanvasDefaultSize.DEFAULT_1_1.width, CanvasDefaultSize.DEFAULT_1_1.height) }
         root.findViewById<MaterialCardView>(R.id.default_3_4_card).setOnClickListener {
-            showToast("${CanvasDefaultSize.DEFAULT_3_4.width}, ${CanvasDefaultSize.DEFAULT_3_4.height}") }
+            startCanvasIntent(CanvasDefaultSize.DEFAULT_3_4.width, CanvasDefaultSize.DEFAULT_3_4.height) }
         root.findViewById<MaterialCardView>(R.id.default_9_16_card).setOnClickListener {
-            showToast("${CanvasDefaultSize.DEFAULT_9_16.width}, ${CanvasDefaultSize.DEFAULT_9_16.height}") }
+            startCanvasIntent(CanvasDefaultSize.DEFAULT_9_16.width, CanvasDefaultSize.DEFAULT_9_16.height) }
         root.findViewById<MaterialCardView>(R.id.A4_card).setOnClickListener {
-            showToast("${CanvasDefaultSize.A4.width}, ${CanvasDefaultSize.A4.height}") }
+            startCanvasIntent(CanvasDefaultSize.A4.width, CanvasDefaultSize.A4.height) }
         root.findViewById<MaterialCardView>(R.id.custom_card).setOnClickListener {
             when {
                 canvasViewModel.customUnit.value == canvasViewModel.UNIT_PIXEL ->
-                    showToast("${canvasViewModel.unitPixels[WIDTH]}, ${canvasViewModel.unitPixels[HEIGHT]}")
-                dpiInputIsValidInPixels() ->
-                    showToast(inchToPixels(canvasViewModel.unitInches[WIDTH], canvasViewModel.unitInches[HEIGHT], canvasViewModel.dpi).toString())
+                    startCanvasIntent(canvasViewModel.unitPixels[WIDTH], canvasViewModel.unitPixels[HEIGHT])
+                dpiInputIsValidInPixels() -> {
+                    val inPixels = inchToPixels(canvasViewModel.unitInches[WIDTH], canvasViewModel.unitInches[HEIGHT], canvasViewModel.dpi)!!
+                    startCanvasIntent(inPixels[WIDTH], inPixels[HEIGHT])
+                }
                 else -> showToast("Wrong Input!\n Pixel dimensions must be between 1 and 4096.")
             }
         }
@@ -174,6 +178,13 @@ class CreateCanvasFragment : Fragment() {
         setPixelLayoutListeners(root)
         setDpiLayoutListeners(root)
         setKeyboardVisibilityListener(root)
+    }
+
+    private fun startCanvasIntent(width: Int, height: Int){
+        val intent = Intent(context, CanvasActivity::class.java)
+        intent.putExtra(DIMENSION_WIDTH_INTENT_KEY, width)
+        intent.putExtra(DIMENSION_HEIGHT_INTENT_KEY, height)
+        startActivity(intent)
     }
 
     private fun pickImageFromGallery(){
@@ -511,11 +522,11 @@ class CreateCanvasFragment : Fragment() {
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
-        interfaceMainActivity = activity as InterfaceMainActivity
+        interfaceOfMainActivity = activity as InterfaceMainActivity
     }
 
     private fun showToast(text: String){
-        interfaceMainActivity.showToast(text)
+        interfaceOfMainActivity.showToast(text)
     }
 
     //handle requested permission result
