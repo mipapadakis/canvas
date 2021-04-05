@@ -9,12 +9,13 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.Canvas">
-        <activity android:name=".CanvasActivity"></activity>
+        <activity
+            android:name=".CanvasActivity"
+            android:screenOrientation="sensor"/>
         <activity
             android:name=".MainActivity"
             android:label="@string/app_name"
-            android:screenOrientation="sensor"
-            android:theme="@style/Theme.Canvas.NoActionBar">
+            android:screenOrientation="sensor">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

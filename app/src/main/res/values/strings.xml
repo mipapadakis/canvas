@@ -18,7 +18,6 @@
     <string name="menu_feedback">Feedback</string>
     <string name="menu_rate">Rate App</string>
     <string name="add">Add</string>
-    <string name="about_details">Insert app description here</string>
     <string name="create_canvas_image_content_description">CreateCanvasFragment image</string>
     <string name="create_canvas_description">Choose Canvas Size</string>
     <string name="create_canvas_import_title">Choose Picture</string>
@@ -40,5 +39,10 @@
     <string name="create_canvas_A4_title">A4</string>
     <string name="create_canvas_A4_details">1240×1754 (150dpi)</string>
     <string name="error">Error</string>
+    <string name="about_details">Insert app description here.
+    Tutorial:
+        • Two-finger double click resizes canvas to fit the screen.
+        • Triple-finger single click resets canvas to original size.
+    </string>
 
 </resources>

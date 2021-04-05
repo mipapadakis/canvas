@@ -16,11 +16,6 @@ class AboutFragment : Fragment() {
     private lateinit var aboutViewModel: AboutViewModel
     private lateinit var interfaceMainActivity: InterfaceMainActivity
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        interfaceMainActivity.hideFab()
-    }
-
     override fun onCreateView(
             inflater: LayoutInflater,
             container: ViewGroup?,
@@ -38,5 +33,9 @@ class AboutFragment : Fragment() {
     override fun onAttach(context: Context) {
         super.onAttach(context)
         interfaceMainActivity = activity as InterfaceMainActivity
+    }
+
+    private fun showToast(text: String){
+        interfaceMainActivity.showToast(text)
     }
 }

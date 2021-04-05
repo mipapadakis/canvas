@@ -2,6 +2,7 @@ package com.mipapadakis.canvas.ui.canvas
 
 import android.content.Context
 import android.content.res.Resources
+import android.graphics.Point
 import android.util.TypedValue
 
 
@@ -14,6 +15,12 @@ class DeviceDimensions {
         fun getHeight(context: Context): Int{
             val displayMetrics = context.resources.displayMetrics
             return displayMetrics.heightPixels
+        }
+        fun getCenter(context: Context): Point {
+            val point = Point()
+            point.x = getWidth(context)/2
+            point.y = getHeight(context)/2
+            return point
         }
         fun dpToPixels(context: Context, dp: Float): Float{
             val r: Resources = context.resources

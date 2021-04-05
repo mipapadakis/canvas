@@ -1,14 +1,10 @@
 package com.mipapadakis.canvas
 
-import android.graphics.Rect
 import android.os.Build
 import android.os.Bundle
 import android.os.CountDownTimer
-import android.util.TypedValue
 import android.view.Menu
 import android.view.View
-import android.view.ViewGroup
-import android.view.ViewTreeObserver.OnGlobalLayoutListener
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GravityCompat
@@ -31,7 +27,6 @@ class MainActivity : AppCompatActivity(), InterfaceMainActivity{
     private lateinit var drawerLayout: DrawerLayout
     private lateinit var appBarConfiguration: AppBarConfiguration
     private var backIsPressed = BACK_NOT_PRESSED
-    private var fab: FloatingActionButton? = null
     private lateinit var toast: Toast
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -39,21 +34,16 @@ class MainActivity : AppCompatActivity(), InterfaceMainActivity{
         setContentView(R.layout.activity_main)
         setSupportActionBar(findViewById(R.id.toolbar))
         toast = Toast(this)
-        fab = findViewById(R.id.fab)
         drawerLayout = findViewById(R.id.drawer_layout)
         val navView: NavigationView = findViewById(R.id.nav_view)
         val navController = findNavController(R.id.nav_host_fragment)
         // Passing each menu ID as a set of Ids because each
         // menu should be considered as top level destinations.
         appBarConfiguration = AppBarConfiguration(
-            setOf(R.id.nav_gallery, R.id.nav_canvas, R.id.nav_about), drawerLayout
+                setOf(R.id.nav_gallery, R.id.nav_canvas, R.id.nav_about), drawerLayout
         )
         setupActionBarWithNavController(navController, appBarConfiguration)
         navView.setupWithNavController(navController)
-
-        fab?.setOnClickListener { //view ->
-            Toast.makeText(this, "This is gallery fragment!", Toast.LENGTH_SHORT).show()
-        }
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -66,6 +56,7 @@ class MainActivity : AppCompatActivity(), InterfaceMainActivity{
         val navController = findNavController(R.id.nav_host_fragment)
         return navController.navigateUp(appBarConfiguration) || super.onSupportNavigateUp()
     }
+
 
     override fun onBackPressed() {
         if (drawerLayout.isDrawerOpen(GravityCompat.START))
@@ -81,10 +72,12 @@ class MainActivity : AppCompatActivity(), InterfaceMainActivity{
                 timer.start()
             }
             else{
-                if (backIsPressed == BACK_PRESSED_ONCE) {
-                    toast.cancel()
-                }
-                super.onBackPressed()
+                if (backIsPressed == BACK_PRESSED_ONCE)  toast.cancel()
+//                val navController = findNavController(R.id.nav_host_fragment)
+//                navController.popBackStack()
+//                super.onBackPressed()
+                if(Build.VERSION.SDK_INT >=Build.VERSION_CODES.LOLLIPOP) finishAndRemoveTask()
+                else this.finishAffinity()
             }
         }
     }
@@ -96,23 +89,8 @@ class MainActivity : AppCompatActivity(), InterfaceMainActivity{
         toast = Toast.makeText(this, text, toast.duration)
         toast.show()
     }
-
-    override fun hideFab() {
-        fab?.visibility = View.GONE
-    }
-
-    override fun showFab() {
-        fab?.visibility = View.VISIBLE
-    }
-
-    override fun setFabListener(listener: View.OnClickListener) {
-        fab?.setOnClickListener(listener)
-    }
 }
 
 interface InterfaceMainActivity{
-    fun hideFab(){}
-    fun showFab(){}
-    fun setFabListener(listener: View.OnClickListener){}
     fun showToast(text: String)
 }

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.Canvas" parent="Theme.MaterialComponents.Light.NoActionBar">
+        <!-- Primary brand color. -->
+        <item name="colorPrimary">@color/gray_1</item>
+        <item name="colorPrimaryVariant">@color/gray_2</item>
+        <item name="colorOnPrimary">@color/black</item>
+        <!-- Secondary brand color. -->
+        <item name="colorSecondary">@color/yellow_1</item>
+        <item name="colorSecondaryVariant">@color/yellow_2</item>
+        <item name="colorOnSecondary">@color/black</item>
+
+        <!-- Customize your theme here. -->
+        <item name="android:forceDarkAllowed">false</item>
+    </style>
+</resources>

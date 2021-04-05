@@ -14,6 +14,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.DefaultItemAnimator
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.mipapadakis.canvas.InterfaceMainActivity
 import com.mipapadakis.canvas.R
 import com.mipapadakis.canvas.model.CvImage
@@ -23,20 +24,19 @@ import com.mipapadakis.canvas.model.shape.CvShape
 class GalleryFragment : Fragment() {
     private lateinit var galleryViewModel: GalleryViewModel
     private lateinit var interfaceMainActivity: InterfaceMainActivity
+    private lateinit var fab: FloatingActionButton
     lateinit var recyclerView: RecyclerView
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        interfaceMainActivity.showFab()
-        interfaceMainActivity.setFabListener {
-            showToast("Fab pressed at gallery fragment!")
-            //Toast.makeText(context, "Hello from Gallery fragment", Toast.LENGTH_SHORT).show()/////
-        }
-    }
+//    override fun onCreate(savedInstanceState: Bundle?) {
+//        super.onCreate(savedInstanceState)
+//    }
 
     override fun onCreateView( inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle? ): View? {
         galleryViewModel = ViewModelProvider(this).get(GalleryViewModel::class.java)
         val root = inflater.inflate(R.layout.fragment_gallery, container, false)
+        fab = root.findViewById(R.id.fab)
+        //TODO onFabClick: switch navigate view to "New Canvas"
+        fab.setOnClickListener { showToast("Fab pressed at gallery fragment!") }
 
         val imageList = arrayListOf(
             createCvImage("image 1", R.drawable.baseline_star_outline_black_48),
@@ -45,7 +45,6 @@ class GalleryFragment : Fragment() {
             createCvImage("image 4", R.drawable.baseline_color_lens_black_48),
             createCvImage("image 5", R.drawable.baseline_create_black_48))
         galleryViewModel.setImages(imageList)
-
 
         val mLayoutManager: RecyclerView.LayoutManager = LinearLayoutManager(context)
         recyclerView = root.findViewById(R.id.recycler_view)
@@ -67,18 +66,10 @@ class GalleryFragment : Fragment() {
                     }
                 })
         )
-
-        //TODO: Recycler view click listener
-
-//        val textView: TextView = root.findViewById(R.id.text_gallery)
-//        galleryViewModel.text.observe( viewLifecycleOwner, {
-//            textView.text = it
-//        })
-
         return root
     }
 
-    fun createCvImage(title:String, drawableId: Int): CvImage{
+    private fun createCvImage(title:String, drawableId: Int): CvImage{
         return CvImage(Bitmap.createBitmap(BitmapFactory.decodeResource(context?.resources,drawableId)),
             title, listOf(CvLayer(null)), listOf(CvShape(null)))
     }

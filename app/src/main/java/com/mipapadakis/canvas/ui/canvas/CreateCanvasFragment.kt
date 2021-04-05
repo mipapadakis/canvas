@@ -60,17 +60,6 @@ class CreateCanvasFragment : Fragment() {
         }
     }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        interfaceOfMainActivity.hideFab() //TODO: Doesn't work after a lifecycle event!
-//        interfaceMainActivity.showFab()
-//        interfaceMainActivity.setFabListener {
-//            val str = "Random Number: " + (Math.random()*100).toInt()
-//            showToast("Fab pressed at Canvas fragment!")
-//            canvasViewModel.setText(str)
-//        }
-    }
-
     override fun onCreateView(
             inflater: LayoutInflater,
             container: ViewGroup?,
@@ -386,22 +375,23 @@ class CreateCanvasFragment : Fragment() {
         return inPixels != null
     }
     private fun updateInPixelsTextView(inPixelTextView: TextView){
-        val inPixels = if(canvasViewModel.customUnit.value == canvasViewModel.UNIT_MM){
-            mmToPixels(canvasViewModel.unitMillimeters[WIDTH],
-                    canvasViewModel.unitMillimeters[HEIGHT], canvasViewModel.dpi)
-        } else{
-            inchToPixels(canvasViewModel.unitInches[WIDTH],
-                    canvasViewModel.unitInches[HEIGHT], canvasViewModel.dpi)
-        }
+        val mmToPixels = mmToPixels(canvasViewModel.unitMillimeters[WIDTH],
+                canvasViewModel.unitMillimeters[HEIGHT], canvasViewModel.dpi)
+        val inchToPixels = inchToPixels(canvasViewModel.unitInches[WIDTH],
+                canvasViewModel.unitInches[HEIGHT], canvasViewModel.dpi)
+
+        // Note: Due to rounding errors, sometimes mmToPixels will be different from inchToPixels.
+        // In that case, prioritize inchToPixels over mmToPixels (because dpi uses inches).
+        val inPixels = if(canvasViewModel.customUnit.value == canvasViewModel.UNIT_INCH
+                || (mmToPixels!=inchToPixels)) inchToPixels else mmToPixels
+
         //Update inPixelTextView:
         if(inPixels!=null) {
             inPixelTextView.text = String.format(
                     resources.getString(R.string.create_canvas_custom_dpi_in_pixels),
                     inPixels[WIDTH].toString(),
                     inPixels[HEIGHT].toString())
-        }else {
-            inPixelTextView.text = getString(R.string.error)
-        }
+        } else inPixelTextView.text = getString(R.string.error)
     }
 
     private fun updateCustomSizeImageView(customImageView: ImageView){
@@ -556,5 +546,3 @@ class CreateCanvasFragment : Fragment() {
         else canvasViewModel.setImportImagePreview("")
     }
 }
-
-//TODO bug: When i set dpi 100 and inch width & height to 40.96: when I switch to mm, pixels are different

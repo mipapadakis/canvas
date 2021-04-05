@@ -23,4 +23,10 @@ class GalleryViewModel : ViewModel() {
     fun setImages(list: List<CvImage>){
         _images.value = list
     }
+
+    fun addImage(image: CvImage){ //TODO check if it works
+        val newList = _images.value?.toMutableList()
+        newList?.add(image)
+        _images.value = newList?.toList()
+    }
 }

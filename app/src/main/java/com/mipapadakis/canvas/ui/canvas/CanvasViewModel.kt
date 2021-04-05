@@ -1,5 +1,6 @@
 package com.mipapadakis.canvas.ui.canvas
 
+import android.app.WallpaperInfo
 import android.renderscript.Element.DataType
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -15,8 +16,8 @@ class CanvasViewModel : ViewModel() {
     var lastDpiUnitUsed = UNIT_MM
     var change = COMMITTED
     var unitPixels = arrayListOf(1000,1000)
-    var unitMillimeters = arrayListOf(1.0, 1.0)
-    var unitInches = arrayListOf(1/25.4, 1/25.4)
+    var unitMillimeters = arrayListOf(250.0, 250.0)
+    var unitInches = arrayListOf(unitMillimeters[0]/25.4, unitMillimeters[1]/25.4)
     var dpi = 350
 
     private val _importImagePreview = MutableLiveData<String>().apply { value = "" }
