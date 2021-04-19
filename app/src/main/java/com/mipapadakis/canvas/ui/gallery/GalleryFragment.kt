@@ -5,21 +5,24 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.os.Bundle
 import android.view.LayoutInflater
-import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentTransaction
 import androidx.lifecycle.ViewModelProvider
+import androidx.navigation.findNavController
 import androidx.recyclerview.widget.DefaultItemAnimator
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.floatingactionbutton.FloatingActionButton
+import com.google.android.material.navigation.NavigationView
 import com.mipapadakis.canvas.InterfaceMainActivity
 import com.mipapadakis.canvas.R
 import com.mipapadakis.canvas.model.CvImage
 import com.mipapadakis.canvas.model.layer.CvLayer
 import com.mipapadakis.canvas.model.shape.CvShape
+import com.mipapadakis.canvas.ui.canvas.CreateCanvasFragment
+
 
 class GalleryFragment : Fragment() {
     private lateinit var galleryViewModel: GalleryViewModel
@@ -31,19 +34,22 @@ class GalleryFragment : Fragment() {
 //        super.onCreate(savedInstanceState)
 //    }
 
-    override fun onCreateView( inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle? ): View? {
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         galleryViewModel = ViewModelProvider(this).get(GalleryViewModel::class.java)
         val root = inflater.inflate(R.layout.fragment_gallery, container, false)
         fab = root.findViewById(R.id.fab)
-        //TODO onFabClick: switch navigate view to "New Canvas"
-        fab.setOnClickListener { showToast("Fab pressed at gallery fragment!") }
+
+        fab.setOnClickListener {
+            val navController = activity?.findNavController(R.id.nav_host_fragment)
+            navController?.navigate(R.id.nav_canvas)
+        }
 
         val imageList = arrayListOf(
-            createCvImage("image 1", R.drawable.baseline_star_outline_black_48),
-            createCvImage("image 2", R.drawable.baseline_brush_black_48),
-            createCvImage("image 3", R.drawable.baseline_collections_black_48),
-            createCvImage("image 4", R.drawable.baseline_color_lens_black_48),
-            createCvImage("image 5", R.drawable.baseline_create_black_48))
+                createCvImage("image 1", R.drawable.baseline_star_outline_black_48),
+                createCvImage("image 2", R.drawable.baseline_brush_black_48),
+                createCvImage("image 3", R.drawable.baseline_collections_black_48),
+                createCvImage("image 4", R.drawable.baseline_color_lens_black_48),
+                createCvImage("image 5", R.drawable.baseline_create_black_48))
         galleryViewModel.setImages(imageList)
 
         val mLayoutManager: RecyclerView.LayoutManager = LinearLayoutManager(context)
@@ -69,9 +75,9 @@ class GalleryFragment : Fragment() {
         return root
     }
 
-    private fun createCvImage(title:String, drawableId: Int): CvImage{
-        return CvImage(Bitmap.createBitmap(BitmapFactory.decodeResource(context?.resources,drawableId)),
-            title, listOf(CvLayer(null)), listOf(CvShape(null)))
+    private fun createCvImage(title: String, drawableId: Int): CvImage{
+        return CvImage(Bitmap.createBitmap(BitmapFactory.decodeResource(context?.resources, drawableId)),
+                title, listOf(CvLayer(null)), listOf(CvShape(null)))
     }
 
     override fun onAttach(context: Context) {

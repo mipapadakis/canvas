@@ -2,6 +2,7 @@ package com.mipapadakis.canvas.ui.canvas
 
 import android.annotation.SuppressLint
 import android.os.CountDownTimer
+import android.util.Log
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewConfiguration
@@ -14,7 +15,7 @@ private const val POINTER_3 = 2
 /** This OnTouchListener class handles the user's touches and calls the corresponding methods of
  * @param touchListener (which implements a MultiTouchListener interface).
  * */
-class CanvasTouchListener(private val touchListener: MultiTouchListener): View.OnTouchListener {
+class MyTouchListener(private val touchListener: MultiTouchListener): View.OnTouchListener {
     companion object {
         val DOUBLE_TAP_TIMEOUT = ViewConfiguration.getDoubleTapTimeout().toLong() + 100
         val LONG_PRESS_TIMEOUT = ViewConfiguration.getLongPressTimeout().toLong() + 100
@@ -136,23 +137,43 @@ class CanvasTouchListener(private val touchListener: MultiTouchListener): View.O
     }
 
     interface MultiTouchListener{
-        fun on1PointerTap(event: MotionEvent)
-        fun on2PointerTap(event: MotionEvent)
-        fun on3PointerTap(event: MotionEvent)
-        fun on1PointerDoubleTap(event: MotionEvent)
-        fun on2PointerDoubleTap(event: MotionEvent)
-        fun on3PointerDoubleTap(event: MotionEvent)
-        fun on1PointerLongPress(event: MotionEvent)
-        fun on2PointerLongPress(event: MotionEvent)
-        fun on3PointerLongPress(event: MotionEvent)
-        fun on1PointerDown(event: MotionEvent)
-        fun on2PointerDown(event: MotionEvent)
-        fun on3PointerDown(event: MotionEvent)
-        fun on1PointerUp(event: MotionEvent)
-        fun on2PointerUp(event: MotionEvent)
-        fun on3PointerUp(event: MotionEvent)
-        fun onPointerMove(event: MotionEvent)
-        fun onCancelTouch()
+        fun on1PointerTap(event: MotionEvent){
+            Log.i("CanvasTouchListener", "on1PointerTap")
+        }
+        fun on2PointerTap(event: MotionEvent){
+            Log.i("CanvasTouchListener", "on2PointerTap")
+        }
+        fun on3PointerTap(event: MotionEvent){
+            Log.i("CanvasTouchListener", "on3PointerTap")
+        }
+        fun on1PointerDoubleTap(event: MotionEvent){
+            Log.i("CanvasTouchListener", "on1PointerDoubleTap")
+        }
+        fun on2PointerDoubleTap(event: MotionEvent){
+            Log.i("CanvasTouchListener", "on2PointerDoubleTap")
+        }
+        fun on3PointerDoubleTap(event: MotionEvent){
+            Log.i("CanvasTouchListener", "on3PointerDoubleTap")
+        }
+        fun on1PointerLongPress(event: MotionEvent){
+            Log.i("CanvasTouchListener", "on1PointerLongPress")
+        }
+        fun on2PointerLongPress(event: MotionEvent){
+            Log.i("CanvasTouchListener", "on2PointerLongPress")
+        }
+        fun on3PointerLongPress(event: MotionEvent){
+            Log.i("CanvasTouchListener", "on3PointerLongPress")
+        }
+        fun on1PointerDown(event: MotionEvent){}
+        fun on2PointerDown(event: MotionEvent){}
+        fun on3PointerDown(event: MotionEvent){}
+        fun on1PointerUp(event: MotionEvent){}
+        fun on2PointerUp(event: MotionEvent){}
+        fun on3PointerUp(event: MotionEvent){}
+        fun onPointerMove(event: MotionEvent){}
+        fun onCancelTouch(){
+            Log.i("CanvasTouchListener", "on2PointerDoubleTap")
+        }
     }
 }
 
