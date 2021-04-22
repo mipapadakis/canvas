@@ -64,29 +64,29 @@ class CanvasImageView(context: Context?) : AppCompatImageView(context!!), MyTouc
 
     //First called in CanvasActivity.onAttachedToWindow()
     fun onAttachedToWindowInitializer(width: Int, height: Int){
-        //TODO: make a method out of this?
-        val bitmap = drawable.toBitmap()
-        val myRectPaint = Paint()
-        myRectPaint.setARGB (255, 0, 0, 0)
-        val x1 = 100F
-        val y1 = 100F
-        val x2 = 500F
-        val y2 = 500F
-
-        //Create a new image bitmap and attach a brand new canvas to it
-        val tempBitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
-        val tempCanvas = Canvas(tempBitmap)
-
-        //Draw the image bitmap into the canvas
-        tempCanvas.drawBitmap(bitmap, 0F, 0F, myRectPaint)
-
-        //Draw everything else you want into the canvas, in this example a rectangle with rounded edges
-        tempCanvas.drawRoundRect(RectF(x1, y1, x2, y2), 20F, 20F, myRectPaint)
-
-        //Attach the canvas to the ImageView
-        setImageDrawable(BitmapDrawable(resources, tempBitmap))
-
-        //setPositionToCenter()
+//        //TODO: make a method out of this?
+//        val bitmap = drawable.toBitmap()
+//        val myRectPaint = Paint()
+//        myRectPaint.setARGB (255, 0, 0, 0)
+//        val x1 = 100F
+//        val y1 = 100F
+//        val x2 = 500F
+//        val y2 = 500F
+//
+//        //Create a new image bitmap and attach a brand new canvas to it
+//        val tempBitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+//        val tempCanvas = Canvas(tempBitmap)
+//
+//        //Draw the image bitmap into the canvas
+//        tempCanvas.drawBitmap(bitmap, 0F, 0F, myRectPaint)
+//
+//        //Draw everything else you want into the canvas, in this example a rectangle with rounded edges
+//        tempCanvas.drawRoundRect(RectF(x1, y1, x2, y2), 20F, 20F, myRectPaint)
+//
+//        //Attach the canvas to the ImageView
+//        setImageDrawable(BitmapDrawable(resources, tempBitmap))
+//
+//        //setPositionToCenter()
     }
 
     private fun setPositionToCenter(){

@@ -8,10 +8,86 @@
     android:background="?attr/colorSecondaryVariant"
     tools:context=".CanvasActivity">
 
-    <!--
-    <com.mipapadakis.canvas.ui.canvas.CanvasImageView
-        android:id="@+id/canvas_image"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
-    -->
+    <androidx.cardview.widget.CardView
+        android:id="@+id/toolbar_outer_card"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:cardCornerRadius="8dp"
+        app:cardElevation="6dp"
+        app:cardPreventCornerOverlap="true"
+        app:cardUseCompatPadding="true"
+        app:cardBackgroundColor="@color/black"
+        android:layout_centerHorizontal="true">
+
+        <androidx.cardview.widget.CardView
+            android:id="@+id/toolbar_inner_card"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:cardCornerRadius="4dp"
+            app:cardPreventCornerOverlap="true"
+            app:cardUseCompatPadding="true"
+            app:cardBackgroundColor="@color/white">
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@color/green"
+                android:orientation="horizontal">
+
+                <LinearLayout
+                    android:id="@+id/toolbar_buttons"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingHorizontal="2dp"
+                    android:orientation="horizontal"
+                    android:background="@color/green"
+                    android:visibility="visible">
+
+                    <ImageButton
+                        android:id="@+id/toolbar_button_undo"
+                        android:layout_width="@dimen/toolbar_button_size"
+                        android:layout_height="@dimen/toolbar_button_size"
+                        android:src="@drawable/baseline_undo_black_36"
+                        android:contentDescription="@string/toolbar_button" />
+
+                    <ImageButton
+                        android:id="@+id/toolbar_button_redo"
+                        android:layout_width="@dimen/toolbar_button_size"
+                        android:layout_height="@dimen/toolbar_button_size"
+                        android:src="@drawable/baseline_redo_black_36"
+                        android:contentDescription="@string/toolbar_button" />
+
+                    <ImageButton
+                        android:id="@+id/toolbar_button_palette"
+                        android:layout_width="@dimen/toolbar_button_size"
+                        android:layout_height="@dimen/toolbar_button_size"
+                        android:src="@drawable/baseline_color_lens_black_36"
+                        android:contentDescription="@string/toolbar_button" />
+
+                    <ImageButton
+                        android:id="@+id/toolbar_button_tool"
+                        android:layout_width="@dimen/toolbar_button_size"
+                        android:layout_height="@dimen/toolbar_button_size"
+                        android:src="@drawable/baseline_brush_black_36"
+                        android:contentDescription="@string/toolbar_button" />
+
+                    <ImageButton
+                        android:id="@+id/toolbar_button_tool_options"
+                        android:layout_width="@dimen/toolbar_button_size"
+                        android:layout_height="@dimen/toolbar_button_size"
+                        android:src="@drawable/baseline_settings_black_36"
+                        android:contentDescription="@string/toolbar_button" />
+                </LinearLayout>
+
+                <ImageView
+                    android:id="@+id/toolbar_visibility"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:paddingHorizontal="5dp"
+                    android:src="@drawable/baseline_visibility_off_black_36"
+                    android:contentDescription="@string/toolbar_button" />
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+    </androidx.cardview.widget.CardView>
 </RelativeLayout>

@@ -44,5 +44,6 @@
         • Two-finger double click resizes canvas to fit the screen.
         • Triple-finger single click resets canvas to original size.
     </string>
+    <string name="toolbar_button">toolbar button</string>
 
 </resources>

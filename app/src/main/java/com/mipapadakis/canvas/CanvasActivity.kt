@@ -6,13 +6,14 @@ import android.graphics.BitmapFactory
 import android.graphics.Canvas
 import android.graphics.Color
 import android.net.Uri
+import android.opengl.Visibility
 import android.os.Bundle
 import android.util.Log
 import android.view.MotionEvent
 import android.view.animation.LinearInterpolator
-import android.widget.RelativeLayout
-import android.widget.Toast
+import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
+import com.google.android.material.card.MaterialCardView
 import com.mipapadakis.canvas.ui.canvas.CanvasImageView
 import com.mipapadakis.canvas.ui.canvas.CreateCanvasFragment
 import com.mipapadakis.canvas.ui.canvas.DeviceDimensions
@@ -33,6 +34,15 @@ class CanvasActivity : AppCompatActivity() {
     private var canvasWidth = 540
     private var canvasHeight = 984
     private lateinit var toast: Toast
+    //private lateinit var toolbarOuterCardView: MaterialCardView
+    private lateinit var toolbarInnerCardView: MaterialCardView
+    private lateinit var toolbarVisibilityImageView: ImageView
+    private lateinit var toolbarButtonLayout: LinearLayout
+    private lateinit var toolbarUndoBtn: ImageButton
+    private lateinit var toolbarRedoBtn: ImageButton
+    private lateinit var toolbarPaletteBtn: ImageButton
+    private lateinit var toolbarToolBtn: ImageButton
+    private lateinit var toolbarOptionsBtn: ImageButton
 
     @SuppressLint("ClickableViewAccessibility")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -43,6 +53,17 @@ class CanvasActivity : AppCompatActivity() {
         devicePixelHeight = DeviceDimensions.getHeight(this)
         layoutCanvas = findViewById(R.id.canvas_layout)
         canvasIV = CanvasImageView(applicationContext)
+
+        //TODO
+        //toolbarOuterCardView = findViewById(R.id.toolbar_outer_card)
+        toolbarInnerCardView = findViewById(R.id.toolbar_inner_card) //TODO: Its background color is the same as the brush color.
+        toolbarVisibilityImageView = findViewById(R.id.toolbar_visibility) //TODO: OnClick, hide/show the toolbarButtonLayout. OnLongPress, drag the toolbar.
+        toolbarButtonLayout = findViewById(R.id.toolbar_buttons)
+        toolbarUndoBtn = findViewById(R.id.toolbar_button_undo) //TODO action stack.
+        toolbarRedoBtn = findViewById(R.id.toolbar_button_redo)
+        toolbarPaletteBtn = findViewById(R.id.toolbar_button_palette) //TODO menu of colors (onColorPick, change background color of toolbarInnerCardView)
+        toolbarToolBtn = findViewById(R.id.toolbar_button_tool) //TODO menu & options for each tool
+        toolbarOptionsBtn = findViewById(R.id.toolbar_button_tool_options) //TODO menu. Contains canvas global options.
 
         //Receive intent from MainActivity:
         when {
