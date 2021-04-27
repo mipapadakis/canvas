@@ -1,4 +1,4 @@
-package com.mipapadakis.canvas.ui.canvas
+package com.mipapadakis.canvas.ui.create_canvas
 
 import android.Manifest
 import android.annotation.SuppressLint
@@ -34,7 +34,7 @@ private const val CODE_PERMISSION = 1001
 
 
 class CreateCanvasFragment : Fragment() {
-    private lateinit var canvasViewModel: CanvasViewModel
+    private lateinit var createCanvasViewModel: CreateCanvasViewModel
     private lateinit var interfaceOfMainActivity: InterfaceMainActivity
     private lateinit var scrollToBottomLayout: FrameLayout
     private lateinit var pixelLayout: LinearLayout
@@ -65,7 +65,7 @@ class CreateCanvasFragment : Fragment() {
             container: ViewGroup?,
             savedInstanceState: Bundle?
     ): View? {
-        canvasViewModel = ViewModelProvider(this).get(CanvasViewModel::class.java)
+        createCanvasViewModel = ViewModelProvider(this).get(CreateCanvasViewModel::class.java)
         val root = inflater.inflate(R.layout.fragment_create_canvas, container, false)
         importedImagePreview = root.findViewById(R.id.import_image_view)
 
@@ -90,14 +90,14 @@ class CreateCanvasFragment : Fragment() {
 
         root.findViewById<MaterialCardView>(R.id.import_card).setOnClickListener {
             if(importedImagePreview==null) importedImagePreview = root.findViewById(R.id.import_image_view)
-            if(canvasViewModel.importImagePreview.value?.isEmpty() == true) pickImageFromGallery()
-            else if(canvasViewModel.importImagePreview.value!=null) {
+            if(createCanvasViewModel.importImagePreview.value?.isEmpty() == true) pickImageFromGallery()
+            else if(createCanvasViewModel.importImagePreview.value!=null) {
                 val intent = Intent(context, CanvasActivity::class.java)
-                intent.putExtra(IMPORT_IMAGE_INTENT_KEY, canvasViewModel.importImagePreview.value)
+                intent.putExtra(IMPORT_IMAGE_INTENT_KEY, createCanvasViewModel.importImagePreview.value)
                 startActivity(intent)
             }
         }
-        canvasViewModel.importImagePreview.observe(viewLifecycleOwner, {
+        createCanvasViewModel.importImagePreview.observe(viewLifecycleOwner, {
             if (it.isEmpty()) {
                 importedImagePreview?.setImageDrawable(ContextCompat.getDrawable(requireContext(), R.drawable.baseline_collections_black_24))
                 importDetails.text = resources.getString(R.string.create_canvas_import_details)
@@ -107,8 +107,8 @@ class CreateCanvasFragment : Fragment() {
             }
         })
         importedImagePreview?.setOnClickListener {
-            if(canvasViewModel.importImagePreview.value?.isNotEmpty() == true){
-                canvasViewModel.setImportImagePreview("")
+            if(createCanvasViewModel.importImagePreview.value?.isNotEmpty() == true){
+                createCanvasViewModel.setImportImagePreview("")
                 pickImageFromGallery()
             }
         }
@@ -127,10 +127,10 @@ class CreateCanvasFragment : Fragment() {
             startCanvasIntent(CanvasDefaultSize.A4.width, CanvasDefaultSize.A4.height) }
         root.findViewById<MaterialCardView>(R.id.custom_card).setOnClickListener {
             when {
-                canvasViewModel.customUnit.value == canvasViewModel.UNIT_PIXEL ->
-                    startCanvasIntent(canvasViewModel.unitPixels[WIDTH], canvasViewModel.unitPixels[HEIGHT])
+                createCanvasViewModel.customUnit.value == createCanvasViewModel.UNIT_PIXEL ->
+                    startCanvasIntent(createCanvasViewModel.unitPixels[WIDTH], createCanvasViewModel.unitPixels[HEIGHT])
                 dpiInputIsValidInPixels() -> {
-                    val inPixels = inchToPixels(canvasViewModel.unitInches[WIDTH], canvasViewModel.unitInches[HEIGHT], canvasViewModel.dpi)!!
+                    val inPixels = inchToPixels(createCanvasViewModel.unitInches[WIDTH], createCanvasViewModel.unitInches[HEIGHT], createCanvasViewModel.dpi)!!
                     startCanvasIntent(inPixels[WIDTH], inPixels[HEIGHT])
                 }
                 else -> showToast("Wrong Input!\n Pixel dimensions must be between 1 and 4096.")
@@ -151,19 +151,19 @@ class CreateCanvasFragment : Fragment() {
         dpiLayout.setOnClickListener {}
         root.findViewById<LinearLayout>(R.id.custom_button_toggle_group).setOnClickListener {}
 
-        canvasViewModel.customUnit.observe(viewLifecycleOwner, {
+        createCanvasViewModel.customUnit.observe(viewLifecycleOwner, {
             when (it) {
-                canvasViewModel.UNIT_PIXEL -> setPixelUnit()
-                canvasViewModel.UNIT_MM -> setMmUnit(root)
+                createCanvasViewModel.UNIT_PIXEL -> setPixelUnit()
+                createCanvasViewModel.UNIT_MM -> setMmUnit(root)
                 else -> setInchUnit(root)
             }
         })
 
         pixelBtn.setOnClickListener {
-            canvasViewModel.setCustomUnit(canvasViewModel.UNIT_PIXEL)
+            createCanvasViewModel.setCustomUnit(createCanvasViewModel.UNIT_PIXEL)
             updateCustomSizeImageView(root.findViewById(R.id.custom_image_view))}
-        mmBtn.setOnClickListener { canvasViewModel.setCustomUnit(canvasViewModel.UNIT_MM)}
-        inchBtn.setOnClickListener { canvasViewModel.setCustomUnit(canvasViewModel.UNIT_INCH)}
+        mmBtn.setOnClickListener { createCanvasViewModel.setCustomUnit(createCanvasViewModel.UNIT_MM)}
+        inchBtn.setOnClickListener { createCanvasViewModel.setCustomUnit(createCanvasViewModel.UNIT_INCH)}
         setPixelLayoutListeners(root)
         setDpiLayoutListeners(root)
         setKeyboardVisibilityListener(root)
@@ -206,9 +206,9 @@ class CreateCanvasFragment : Fragment() {
         //If dpiWidth and dpiHeight values were previously inches, convert them to mm
         beginChange()
         root.findViewById<EditText>(R.id.custom_dpi_input_width).setText(
-                canvasViewModel.unitMillimeters[WIDTH].toString())
+                createCanvasViewModel.unitMillimeters[WIDTH].toString())
         root.findViewById<EditText>(R.id.custom_dpi_input_height).setText(
-                canvasViewModel.unitMillimeters[HEIGHT].toString())
+                createCanvasViewModel.unitMillimeters[HEIGHT].toString())
         commitChange()
         root.findViewById<TextView>(R.id.custom_dpi_width_unit).text = resources.getString(R.string.unit_millimeters)
         root.findViewById<TextView>(R.id.custom_dpi_height_unit).text = resources.getString(R.string.unit_millimeters)
@@ -217,7 +217,7 @@ class CreateCanvasFragment : Fragment() {
         inchBtn.setBackgroundColor(deactivatedButtonColor)
         pixelLayout.visibility = View.GONE
         dpiLayout.visibility = View.VISIBLE
-        canvasViewModel.lastDpiUnitUsed = canvasViewModel.UNIT_MM
+        createCanvasViewModel.lastDpiUnitUsed = createCanvasViewModel.UNIT_MM
         updateCustomSizeImageView(root.findViewById(R.id.custom_image_view))
         scrollToBottom()
     }
@@ -226,9 +226,9 @@ class CreateCanvasFragment : Fragment() {
         //If dpiWidth and dpiHeight values were previously millimeters, convert them to inches
         beginChange()
         root.findViewById<EditText>(R.id.custom_dpi_input_width).setText(
-                canvasViewModel.unitInches[WIDTH].toString())
+                createCanvasViewModel.unitInches[WIDTH].toString())
         root.findViewById<EditText>(R.id.custom_dpi_input_height).setText(
-                canvasViewModel.unitInches[HEIGHT].toString())
+                createCanvasViewModel.unitInches[HEIGHT].toString())
         commitChange()
         root.findViewById<TextView>(R.id.custom_dpi_width_unit).text = resources.getString(R.string.unit_inches)
         root.findViewById<TextView>(R.id.custom_dpi_height_unit).text = resources.getString(R.string.unit_inches)
@@ -237,7 +237,7 @@ class CreateCanvasFragment : Fragment() {
         inchBtn.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.yellow_2))
         pixelLayout.visibility = View.GONE
         dpiLayout.visibility = View.VISIBLE
-        canvasViewModel.lastDpiUnitUsed = canvasViewModel.UNIT_INCH
+        createCanvasViewModel.lastDpiUnitUsed = createCanvasViewModel.UNIT_INCH
         updateCustomSizeImageView(root.findViewById(R.id.custom_image_view))
         scrollToBottom()
     }
@@ -266,12 +266,12 @@ class CreateCanvasFragment : Fragment() {
 
         widthEditText.addTextChangedListener {
             val input = if(it == null || it.isEmpty() || !it.toString().isDigitsOnly() || it.toString().toInt()<=0){
-                if(!it.toString().isDigitsOnly()) canvasViewModel.unitPixels[WIDTH]
+                if(!it.toString().isDigitsOnly()) createCanvasViewModel.unitPixels[WIDTH]
                 else 1
             } else if(it.toString().toInt() > 4096){
                 4096
             } else it.toString().toInt()
-            canvasViewModel.unitPixels[WIDTH] = input
+            createCanvasViewModel.unitPixels[WIDTH] = input
             beginChange()
             widthSlider.value = input.toFloat()
             commitChange()
@@ -279,12 +279,12 @@ class CreateCanvasFragment : Fragment() {
         }
         heightEditText.addTextChangedListener {
             val input = if(it == null || it.isEmpty() || !it.toString().isDigitsOnly() || it.toString().toInt()<=0){
-                if(!it.toString().isDigitsOnly()) canvasViewModel.unitPixels[HEIGHT]
+                if(!it.toString().isDigitsOnly()) createCanvasViewModel.unitPixels[HEIGHT]
                 else 1
             } else if(it.toString().toInt() > 4096){
                 4096
             } else it.toString().toInt()
-            canvasViewModel.unitPixels[HEIGHT] = input
+            createCanvasViewModel.unitPixels[HEIGHT] = input
             beginChange()
             heightSlider.value = input.toFloat()
             commitChange()
@@ -299,41 +299,41 @@ class CreateCanvasFragment : Fragment() {
         val inPixelTextView = root.findViewById<TextView>(R.id.custom_dpi_in_pixels)
 
         widthEditText.addTextChangedListener{
-            if(canvasViewModel.customUnit.value==canvasViewModel.UNIT_INCH){
+            if(createCanvasViewModel.customUnit.value==createCanvasViewModel.UNIT_INCH){
                 val input = if(it == null || it.isEmpty() || !isDouble(it.toString())){
-                    if(!isDouble(it.toString())) canvasViewModel.unitInches[WIDTH]
+                    if(!isDouble(it.toString())) createCanvasViewModel.unitInches[WIDTH]
                     else 0.0
                 } else it.toString().toDouble()
-                canvasViewModel.unitInches[WIDTH] = input
-                if(!isUnderChange()) canvasViewModel.unitMillimeters[WIDTH] = inchToMm(input)
+                createCanvasViewModel.unitInches[WIDTH] = input
+                if(!isUnderChange()) createCanvasViewModel.unitMillimeters[WIDTH] = inchToMm(input)
             }
             else{
                 val input = if(it == null || it.isEmpty() || !isDouble(it.toString())){
-                    if(!isDouble(it.toString())) canvasViewModel.unitMillimeters[WIDTH]
+                    if(!isDouble(it.toString())) createCanvasViewModel.unitMillimeters[WIDTH]
                     else 0.0
                 } else it.toString().toDouble()
-                canvasViewModel.unitMillimeters[WIDTH] = input
-                if(!isUnderChange()) canvasViewModel.unitInches[WIDTH] = mmToInch(input)
+                createCanvasViewModel.unitMillimeters[WIDTH] = input
+                if(!isUnderChange()) createCanvasViewModel.unitInches[WIDTH] = mmToInch(input)
             }
             updateInPixelsTextView(inPixelTextView)
             updateCustomSizeImageView(root.findViewById(R.id.custom_image_view))
         }
         heightEditText.addTextChangedListener {
-            if(canvasViewModel.customUnit.value==canvasViewModel.UNIT_INCH){
+            if(createCanvasViewModel.customUnit.value==createCanvasViewModel.UNIT_INCH){
                 val input = if(it == null || it.isEmpty() || !isDouble(it.toString())){
-                    if(!isDouble(it.toString())) canvasViewModel.unitInches[HEIGHT]
+                    if(!isDouble(it.toString())) createCanvasViewModel.unitInches[HEIGHT]
                     else 0.0
                 } else it.toString().toDouble()
-                canvasViewModel.unitInches[HEIGHT] = input
-                if(!isUnderChange()) canvasViewModel.unitMillimeters[HEIGHT] = inchToMm(input)
+                createCanvasViewModel.unitInches[HEIGHT] = input
+                if(!isUnderChange()) createCanvasViewModel.unitMillimeters[HEIGHT] = inchToMm(input)
             }
             else{
                 val input = if(it == null || it.isEmpty() || !isDouble(it.toString())){
-                    if(!isDouble(it.toString())) canvasViewModel.unitMillimeters[HEIGHT]
+                    if(!isDouble(it.toString())) createCanvasViewModel.unitMillimeters[HEIGHT]
                     else 0.0
                 } else it.toString().toDouble()
-                canvasViewModel.unitMillimeters[HEIGHT] = input
-                if(!isUnderChange()) canvasViewModel.unitInches[HEIGHT] = mmToInch(input)
+                createCanvasViewModel.unitMillimeters[HEIGHT] = input
+                if(!isUnderChange()) createCanvasViewModel.unitInches[HEIGHT] = mmToInch(input)
 //                if(abs(canvasViewModel.unitInches[WIDTH] - mmToInch(input)) >=0.009)
 //                    canvasViewModel.unitMillimeters[HEIGHT] = inchToMm(input)
             }
@@ -342,10 +342,10 @@ class CreateCanvasFragment : Fragment() {
         }
         dpiEditText.addTextChangedListener {
             val input = if(it == null || it.isEmpty() || !it.toString().isDigitsOnly()){
-                if(!it.toString().isDigitsOnly()) canvasViewModel.dpi
+                if(!it.toString().isDigitsOnly()) createCanvasViewModel.dpi
                 else 0
             } else it.toString().toInt()
-            canvasViewModel.dpi = input
+            createCanvasViewModel.dpi = input
             updateInPixelsTextView(inPixelTextView)
             updateCustomSizeImageView(root.findViewById(R.id.custom_image_view))
         }
@@ -365,24 +365,24 @@ class CreateCanvasFragment : Fragment() {
     private fun inchToMm(inch: Double): Double = inch*25.4
     private fun isDouble(str: String) = (str.isDigitsOnly() || str.contains("."))
     private fun dpiInputIsValidInPixels(): Boolean{
-        val inPixels = if(canvasViewModel.customUnit.value == canvasViewModel.UNIT_MM){
-            mmToPixels(canvasViewModel.unitMillimeters[WIDTH],
-                    canvasViewModel.unitMillimeters[HEIGHT], canvasViewModel.dpi)
+        val inPixels = if(createCanvasViewModel.customUnit.value == createCanvasViewModel.UNIT_MM){
+            mmToPixels(createCanvasViewModel.unitMillimeters[WIDTH],
+                    createCanvasViewModel.unitMillimeters[HEIGHT], createCanvasViewModel.dpi)
         } else{
-            inchToPixels(canvasViewModel.unitInches[WIDTH],
-                    canvasViewModel.unitInches[HEIGHT], canvasViewModel.dpi)
+            inchToPixels(createCanvasViewModel.unitInches[WIDTH],
+                    createCanvasViewModel.unitInches[HEIGHT], createCanvasViewModel.dpi)
         }
         return inPixels != null
     }
     private fun updateInPixelsTextView(inPixelTextView: TextView){
-        val mmToPixels = mmToPixels(canvasViewModel.unitMillimeters[WIDTH],
-                canvasViewModel.unitMillimeters[HEIGHT], canvasViewModel.dpi)
-        val inchToPixels = inchToPixels(canvasViewModel.unitInches[WIDTH],
-                canvasViewModel.unitInches[HEIGHT], canvasViewModel.dpi)
+        val mmToPixels = mmToPixels(createCanvasViewModel.unitMillimeters[WIDTH],
+                createCanvasViewModel.unitMillimeters[HEIGHT], createCanvasViewModel.dpi)
+        val inchToPixels = inchToPixels(createCanvasViewModel.unitInches[WIDTH],
+                createCanvasViewModel.unitInches[HEIGHT], createCanvasViewModel.dpi)
 
         // Note: Due to rounding errors, sometimes mmToPixels will be different from inchToPixels.
         // In that case, prioritize inchToPixels over mmToPixels (because dpi uses inches).
-        val inPixels = if(canvasViewModel.customUnit.value == canvasViewModel.UNIT_INCH
+        val inPixels = if(createCanvasViewModel.customUnit.value == createCanvasViewModel.UNIT_INCH
                 || (mmToPixels!=inchToPixels)) inchToPixels else mmToPixels
 
         //Update inPixelTextView:
@@ -395,20 +395,20 @@ class CreateCanvasFragment : Fragment() {
     }
 
     private fun updateCustomSizeImageView(customImageView: ImageView){
-        when (canvasViewModel.customUnit.value) {
-            canvasViewModel.UNIT_PIXEL ->
-                drawRectangle(customImageView, canvasViewModel.unitPixels[WIDTH], canvasViewModel.unitPixels[HEIGHT], false)
-            canvasViewModel.UNIT_INCH -> {
-                val inPixels = inchToPixels(canvasViewModel.unitInches[WIDTH],
-                        canvasViewModel.unitInches[HEIGHT],
-                        canvasViewModel.dpi)
+        when (createCanvasViewModel.customUnit.value) {
+            createCanvasViewModel.UNIT_PIXEL ->
+                drawRectangle(customImageView, createCanvasViewModel.unitPixels[WIDTH], createCanvasViewModel.unitPixels[HEIGHT], false)
+            createCanvasViewModel.UNIT_INCH -> {
+                val inPixels = inchToPixels(createCanvasViewModel.unitInches[WIDTH],
+                        createCanvasViewModel.unitInches[HEIGHT],
+                        createCanvasViewModel.dpi)
                         ?: arrayListOf(0,0)
                 drawRectangle(customImageView, inPixels[WIDTH], inPixels[HEIGHT], false)
             }
             else -> {
-                val inPixels = mmToPixels(canvasViewModel.unitMillimeters[WIDTH],
-                        canvasViewModel.unitMillimeters[HEIGHT],
-                        canvasViewModel.dpi)
+                val inPixels = mmToPixels(createCanvasViewModel.unitMillimeters[WIDTH],
+                        createCanvasViewModel.unitMillimeters[HEIGHT],
+                        createCanvasViewModel.dpi)
                         ?: arrayListOf(0,0)
                 drawRectangle(customImageView, inPixels[WIDTH], inPixels[HEIGHT], false)
             }
@@ -506,9 +506,9 @@ class CreateCanvasFragment : Fragment() {
     private fun scrollToBottom(){
         scrollToBottomLayout.requestFocus()
         scrollToBottomLayout.clearFocus()}
-    private fun beginChange(){canvasViewModel.change = canvasViewModel.UNCOMMITTED}
-    private fun commitChange() {canvasViewModel.change = canvasViewModel.COMMITTED}
-    private fun isUnderChange() = canvasViewModel.change == canvasViewModel.UNCOMMITTED
+    private fun beginChange(){createCanvasViewModel.change = createCanvasViewModel.UNCOMMITTED}
+    private fun commitChange() {createCanvasViewModel.change = createCanvasViewModel.COMMITTED}
+    private fun isUnderChange() = createCanvasViewModel.change == createCanvasViewModel.UNCOMMITTED
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
@@ -541,8 +541,8 @@ class CreateCanvasFragment : Fragment() {
         if (resultCode == Activity.RESULT_OK && requestCode == CODE_IMAGE_PICK){
             val uri = data?.data
             importedImagePreview?.setImageURI(uri)
-            canvasViewModel.setImportImagePreview(uri.toString())
+            createCanvasViewModel.setImportImagePreview(uri.toString())
         }
-        else canvasViewModel.setImportImagePreview("")
+        else createCanvasViewModel.setImportImagePreview("")
     }
 }

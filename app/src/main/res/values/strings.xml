@@ -45,5 +45,11 @@
         • Triple-finger single click resets canvas to original size.
     </string>
     <string name="toolbar_button">toolbar button</string>
+    <string name="tools_menu_brush">Brush</string>
+    <string name="tools_menu_bucket">Bucket</string>
+    <string name="tools_menu_eraser">Eraser</string>
+    <string name="tools_menu_eyedropper">Eyedropper</string>
+    <string name="tools_menu_select">Select</string>
+    <string name="tools_menu_shape">Shape</string>
 
 </resources>

@@ -1,4 +1,4 @@
-package com.mipapadakis.canvas.ui.canvas
+package com.mipapadakis.canvas.ui
 
 import android.content.Context
 import android.content.res.Resources
@@ -18,8 +18,8 @@ class DeviceDimensions {
         }
         fun getCenter(context: Context): Point {
             val point = Point()
-            point.x = getWidth(context)/2
-            point.y = getHeight(context)/2
+            point.x = getWidth(context) /2
+            point.y = getHeight(context) /2
             return point
         }
         fun dpToPixels(context: Context, dp: Float): Float{

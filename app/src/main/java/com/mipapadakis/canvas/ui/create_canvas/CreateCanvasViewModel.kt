@@ -1,13 +1,11 @@
-package com.mipapadakis.canvas.ui.canvas
+package com.mipapadakis.canvas.ui.create_canvas
 
-import android.app.WallpaperInfo
-import android.renderscript.Element.DataType
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 
 
-class CanvasViewModel : ViewModel() {
+class CreateCanvasViewModel : ViewModel() {
     val UNIT_PIXEL = 0
     val UNIT_MM = 1
     val UNIT_INCH = 2

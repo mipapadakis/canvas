@@ -1,17 +1,12 @@
-package com.mipapadakis.canvas.ui.canvas
+package com.mipapadakis.canvas.ui
 
 import android.content.Context
-import android.graphics.Bitmap
-import android.graphics.Canvas
-import android.graphics.Paint
-import android.graphics.RectF
-import android.graphics.drawable.BitmapDrawable
 import android.util.Log
 import android.view.MotionEvent
 import android.view.animation.LinearInterpolator
 import android.widget.RelativeLayout
 import androidx.appcompat.widget.AppCompatImageView
-import androidx.core.graphics.drawable.toBitmap
+import com.mipapadakis.canvas.ui.create_canvas.MyTouchListener
 import kotlin.math.atan2
 import kotlin.math.min
 import kotlin.math.sqrt
@@ -33,6 +28,7 @@ class CanvasImageView(context: Context?) : AppCompatImageView(context!!), MyTouc
     var rawY = 0f
     var dx = 0f
     var dy = 0f
+
     companion object {
         private const val MIN_TOUCH_DISTANCE = 10F
         private const val MIN_SCALE = 0.3 //Determines how much the user can zoom out
@@ -64,14 +60,21 @@ class CanvasImageView(context: Context?) : AppCompatImageView(context!!), MyTouc
 
     //First called in CanvasActivity.onAttachedToWindow()
     fun onAttachedToWindowInitializer(width: Int, height: Int){
-//        //TODO: make a method out of this?
+        val center = DeviceDimensions.getCenter(context!!)
+        params = layoutParams as RelativeLayout.LayoutParams
+        params.leftMargin = center.x - DeviceDimensions.getWidth(context) / 2
+        params.topMargin = center.y - DeviceDimensions.getHeight(context) / 2
+        params.rightMargin = 0
+        params.bottomMargin = 0
+        layoutParams = params
+
 //        val bitmap = drawable.toBitmap()
 //        val myRectPaint = Paint()
 //        myRectPaint.setARGB (255, 0, 0, 0)
 //        val x1 = 100F
 //        val y1 = 100F
-//        val x2 = 500F
-//        val y2 = 500F
+//        val x2 = 300F
+//        val y2 = 300F
 //
 //        //Create a new image bitmap and attach a brand new canvas to it
 //        val tempBitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)

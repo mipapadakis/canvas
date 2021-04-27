@@ -13,7 +13,7 @@
 
     <fragment
         android:id="@+id/nav_canvas"
-        android:name="com.mipapadakis.canvas.ui.canvas.CreateCanvasFragment"
+        android:name="com.mipapadakis.canvas.ui.create_canvas.CreateCanvasFragment"
         android:label="@string/menu_create"
         tools:layout="@layout/fragment_create_canvas" />
 

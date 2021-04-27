@@ -8,20 +8,17 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentTransaction
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.findNavController
 import androidx.recyclerview.widget.DefaultItemAnimator
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.floatingactionbutton.FloatingActionButton
-import com.google.android.material.navigation.NavigationView
 import com.mipapadakis.canvas.InterfaceMainActivity
 import com.mipapadakis.canvas.R
 import com.mipapadakis.canvas.model.CvImage
 import com.mipapadakis.canvas.model.layer.CvLayer
 import com.mipapadakis.canvas.model.shape.CvShape
-import com.mipapadakis.canvas.ui.canvas.CreateCanvasFragment
 
 
 class GalleryFragment : Fragment() {

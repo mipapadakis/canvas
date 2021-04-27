@@ -1,10 +1,12 @@
-package com.mipapadakis.canvas.ui.canvas
+package com.mipapadakis.canvas.ui
 
 import android.content.Context
 import androidx.core.content.ContextCompat
 import com.mipapadakis.canvas.R
 
-class CanvasColor {
+class CanvasColor(val colorID: Int){
+    val colorName: String = getColorNameFromId(colorID)
+
     companion object {
         private val colorNameAndIdList = initColorNameAndIdList()
         private val basicColorNameAndIdList = initBasicColorNameAndIdList()
@@ -204,11 +206,10 @@ class CanvasColor {
             for(c in colorNameAndIdList) if(c.name == name) return getColorFromId(context, c.id)
             return null
         }
-        fun getColorNameFromId(context: Context, id: Int): String{
+        fun getColorNameFromId(id: Int): String{
             for(c in colorNameAndIdList) if(c.id == id) return c.name
             return "Transparent" //;)
         }
-
-        class ColorNameAndId(var name: String, var id: Int)
     }
 }
+open class ColorNameAndId(var name: String, var id: Int)

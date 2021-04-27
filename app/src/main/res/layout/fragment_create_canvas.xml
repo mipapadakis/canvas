@@ -5,7 +5,7 @@
     android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_margin="8dp"
-    tools:context=".ui.canvas.CreateCanvasFragment"
+    tools:context=".ui.create_canvas.CreateCanvasFragment"
     android:orientation="vertical">
 
     <TextView

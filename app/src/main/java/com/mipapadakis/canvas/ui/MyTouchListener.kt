@@ -1,4 +1,4 @@
-package com.mipapadakis.canvas.ui.canvas
+package com.mipapadakis.canvas.ui.create_canvas
 
 import android.annotation.SuppressLint
 import android.os.CountDownTimer

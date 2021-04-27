@@ -38,7 +38,6 @@
                     android:id="@+id/toolbar_buttons"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:paddingHorizontal="2dp"
                     android:orientation="horizontal"
                     android:background="@color/green"
                     android:visibility="visible">
@@ -72,7 +71,7 @@
                         android:contentDescription="@string/toolbar_button" />
 
                     <ImageButton
-                        android:id="@+id/toolbar_button_tool_options"
+                        android:id="@+id/toolbar_button_options"
                         android:layout_width="@dimen/toolbar_button_size"
                         android:layout_height="@dimen/toolbar_button_size"
                         android:src="@drawable/baseline_settings_black_36"
@@ -84,7 +83,6 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_vertical"
-                    android:paddingHorizontal="5dp"
                     android:src="@drawable/baseline_visibility_off_black_36"
                     android:contentDescription="@string/toolbar_button" />
             </LinearLayout>
