@@ -6,6 +6,8 @@ import android.view.MotionEvent
 import android.view.animation.LinearInterpolator
 import android.widget.RelativeLayout
 import androidx.appcompat.widget.AppCompatImageView
+import androidx.core.graphics.drawable.toBitmap
+import com.mipapadakis.canvas.model.CvImage
 import com.mipapadakis.canvas.ui.create_canvas.MyTouchListener
 import kotlin.math.atan2
 import kotlin.math.min
@@ -68,27 +70,9 @@ class CanvasImageView(context: Context?) : AppCompatImageView(context!!), MyTouc
         params.bottomMargin = 0
         layoutParams = params
 
-//        val bitmap = drawable.toBitmap()
-//        val myRectPaint = Paint()
-//        myRectPaint.setARGB (255, 0, 0, 0)
-//        val x1 = 100F
-//        val y1 = 100F
-//        val x2 = 300F
-//        val y2 = 300F
-//
-//        //Create a new image bitmap and attach a brand new canvas to it
-//        val tempBitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
-//        val tempCanvas = Canvas(tempBitmap)
-//
-//        //Draw the image bitmap into the canvas
-//        tempCanvas.drawBitmap(bitmap, 0F, 0F, myRectPaint)
-//
-//        //Draw everything else you want into the canvas, in this example a rectangle with rounded edges
-//        tempCanvas.drawRoundRect(RectF(x1, y1, x2, y2), 20F, 20F, myRectPaint)
-//
-//        //Attach the canvas to the ImageView
-//        setImageDrawable(BitmapDrawable(resources, tempBitmap))
-//
+        val cvImage = CvImage(width, height)
+        cvImage.bitmap = drawable.toBitmap()
+        setImageDrawable(cvImage.drawRect(resources))
 //        //setPositionToCenter()
     }
 

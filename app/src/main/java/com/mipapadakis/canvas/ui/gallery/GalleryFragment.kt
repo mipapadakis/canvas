@@ -73,8 +73,9 @@ class GalleryFragment : Fragment() {
     }
 
     private fun createCvImage(title: String, drawableId: Int): CvImage{
-        return CvImage(Bitmap.createBitmap(BitmapFactory.decodeResource(context?.resources, drawableId)),
-                title, listOf(CvLayer(null)), listOf(CvShape(null)))
+        val cvImage = CvImage(Bitmap.createBitmap(BitmapFactory.decodeResource(context?.resources, drawableId)))
+        cvImage.title = title
+        return cvImage
     }
 
     override fun onAttach(context: Context) {
