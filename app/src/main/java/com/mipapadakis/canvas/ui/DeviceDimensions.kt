@@ -1,8 +1,11 @@
 package com.mipapadakis.canvas.ui
 
+import android.app.Activity
 import android.content.Context
 import android.content.res.Resources
 import android.graphics.Point
+import android.os.Build
+import android.util.DisplayMetrics
 import android.util.TypedValue
 
 
@@ -30,6 +33,30 @@ class DeviceDimensions {
             val r = context.resources
             val metrics = r.displayMetrics
             return px / (metrics.densityDpi / 160f)
+        }
+        fun getSoftKeyBarSize(activity: Activity): Int {
+
+//            val outMetrics = DisplayMetrics()
+//            if (Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
+//                val display = activity.display
+//                display?.getRealMetrics(outMetrics)
+//            } else {
+//                @Suppress("DEPRECATION")
+//                val display = activity.windowManager.defaultDisplay
+//                @Suppress("DEPRECATION")
+//                display.getMetrics(outMetrics)
+//            }
+
+            // getRealMetrics is only available with API 17 and +
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+                val metrics = DisplayMetrics()
+                activity.windowManager.defaultDisplay.getMetrics(metrics)
+                val usableHeight = metrics.heightPixels
+                activity.windowManager.defaultDisplay.getRealMetrics(metrics)
+                val realHeight = metrics.heightPixels
+                return if (realHeight > usableHeight) realHeight - usableHeight else 0
+            }
+            return 0
         }
     }
 }

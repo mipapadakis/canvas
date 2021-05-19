@@ -14,7 +14,7 @@ import kotlin.math.min
 import kotlin.math.sqrt
 
 
-/** Custom ImageView which represents the canvas */
+/** Custom ImageView which represents the canvas. It handles canvas changes and touches. */
 class CanvasImageView(context: Context?) : AppCompatImageView(context!!), MyTouchListener.MultiTouchListener /*, OnTouchListener*/ {
     private lateinit var params: RelativeLayout.LayoutParams
     private var mode = MODE_NONE

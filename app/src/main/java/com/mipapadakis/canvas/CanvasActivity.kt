@@ -12,10 +12,14 @@ import android.view.ViewConfiguration
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.cardview.widget.CardView
+import androidx.lifecycle.ViewModelProvider
 import com.mipapadakis.canvas.ui.CanvasImageView
 import com.mipapadakis.canvas.ui.DeviceDimensions
 import com.mipapadakis.canvas.ui.create_canvas.CreateCanvasFragment
 import com.mipapadakis.canvas.ui.create_canvas.MyTouchListener
+import java.io.File
+import java.text.SimpleDateFormat
+import java.util.*
 
 
 private const val IMPORT_IMAGE_INTENT_KEY = CreateCanvasFragment.IMPORT_IMAGE_INTENT_KEY
@@ -30,6 +34,7 @@ private const val LOW_ALPHA = 0.3f
 
 @SuppressLint("ClickableViewAccessibility")
 class CanvasActivity : AppCompatActivity() {
+    private lateinit var canvasViewModel: CanvasViewModel //TODO
     private lateinit var layoutCanvas: RelativeLayout
     private lateinit var canvasIV: CanvasImageView
     private var devicePixelWidth: Int = 0
@@ -56,6 +61,7 @@ class CanvasActivity : AppCompatActivity() {
         toast = Toast(this)
         devicePixelWidth = DeviceDimensions.getWidth(this)
         devicePixelHeight = DeviceDimensions.getHeight(this)
+        canvasViewModel = ViewModelProvider(this).get(CanvasViewModel::class.java)
         layoutCanvas = findViewById(R.id.canvas_layout)
         canvasIV = CanvasImageView(applicationContext)
 
@@ -109,6 +115,24 @@ class CanvasActivity : AppCompatActivity() {
             }
         }))
         setToolbar()
+    }
+
+    /** Create a temp cv file. */
+    private fun createCvFile(fileName: String?): File {
+        val locale = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N)
+                resources.configuration.locales.get(0)
+            else resources.configuration.locale
+
+        //val folder = getDir(currentDate, MODE_PRIVATE) //Create directory
+        //https://developer.android.com/training/data-storage/app-specific#internal-create-cache
+        //Create temp file in cacheDir
+        return if(fileName==null || fileName.length<=3){
+            val sdf = SimpleDateFormat("dd/M/yyyy, hh:mm", locale)
+            val currentDate = sdf.format(Date())
+            File.createTempFile("Temp file ($currentDate)", ".cv", cacheDir)
+        } else File.createTempFile(fileName, ".cv", cacheDir) //Create temp file in cacheDir
+        //TODO: If user sets a name for this project, rename this file accordingly.
+        // if this is an existing project, don't create a new directory. Rather, must open the project's dir.
     }
 
     private fun getImageDimensionsFromUri(uri: Uri) {
@@ -174,16 +198,36 @@ class CanvasActivity : AppCompatActivity() {
                 }
                 MotionEvent.ACTION_MOVE -> {
                     timer?.cancel()
-                    if (dX != -1f && dY != -1f) toolbarOuterCardView.animate()
+                    val navBarHeight = DeviceDimensions.getSoftKeyBarSize(this) + 10 // for Redmi 9: 220 pixels
+                    val newY = when {
+                        event.rawY + dY>layoutCanvas.bottom-navBarHeight-> layoutCanvas.bottom.toFloat()-navBarHeight //TODO debug
+                        event.rawY + dY<layoutCanvas.top -> layoutCanvas.top.toFloat()
+                        else -> event.rawY + dY
+                    }
+                    if (dX != -1f && dY != -1f)
+                            toolbarOuterCardView.animate()
                             //.x(event.rawX + dX)
-                            .y(event.rawY + dY)
+                            .y(newY)
                             .setDuration(0)
                             .start()
                 }
             }
             true
         }
+    /*TODO:
+    toolbarOuterCardView = findViewById(R.id.toolbar_outer_card)
+    toolbarInnerCardView = findViewById(R.id.toolbar_inner_card) //TODO: Its background color is the same as the brush color.
+    toolbarVisibilityImageView = findViewById(R.id.toolbar_visibility) //TODO: OnClick, hide/show the toolbarButtonLayout. OnLongPress, drag the toolbar.
+    toolbarButtonLayout = findViewById(R.id.toolbar_buttons)
+    toolbarUndoBtn = findViewById(R.id.toolbar_button_undo) //TODO action stack.
+    toolbarRedoBtn = findViewById(R.id.toolbar_button_redo)
+    toolbarPaletteBtn = findViewById(R.id.toolbar_button_palette) //TODO menu of colors (onColorPick, change background color of toolbarInnerCardView)
+    toolbarToolBtn = findViewById(R.id.toolbar_button_tool) //TODO menu & options for each tool
+    toolbarOptionsBtn = findViewById(R.id.toolbar_button_options) //TODO menu. Contains canvas global options.*/
+
+
     }
+
     private fun inViewInBounds(view: View, x: Int, y: Int): Boolean {
         view.getDrawingRect(outRect)
         view.getLocationOnScreen(location)

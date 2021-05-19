@@ -9,7 +9,7 @@ import android.graphics.drawable.BitmapDrawable
 import com.mipapadakis.canvas.model.layer.CvLayer
 import com.mipapadakis.canvas.model.shape.CvShape
 
-/**
+/** This represents the user's painting, containing all its properties (title, layers, shapes)
  * @property bitmap: contains the image created by the user, consisted of all the visible layers.
  * @param width: The width of the image. It can be changed by the user from the global settings.
  * @param height: The height of the image. It can be changed by the user from the global settings.
@@ -25,6 +25,7 @@ class CvImage(var width: Int, var height: Int) {
     var layers: ArrayList<CvLayer> = ArrayList()
     var shapes: ArrayList<CvShape> = ArrayList()
 
+    /** Create a CvImage using a given bitmap */
     constructor(bitmap: Bitmap) : this(bitmap.width, bitmap.height) {
         this.bitmap = bitmap
     }
@@ -38,6 +39,8 @@ class CvImage(var width: Int, var height: Int) {
         layers.add(CvLayer(bitmap))
     }
 
+    /** Create a new layer from the given bitmap.
+     * @param bmp: If null, create an empty layer. */
     fun newLayer(bmp: Bitmap?){
         if(bmp==null) layers.add(0, CvLayer(Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)))
         else layers.add(0, CvLayer(bmp))
