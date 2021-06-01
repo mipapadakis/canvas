@@ -1,6 +1,7 @@
 package com.mipapadakis.canvas.ui
 
 import android.content.Context
+import android.graphics.*
 import android.util.Log
 import android.view.MotionEvent
 import android.view.animation.LinearInterpolator
@@ -8,15 +9,15 @@ import android.widget.RelativeLayout
 import androidx.appcompat.widget.AppCompatImageView
 import androidx.core.graphics.drawable.toBitmap
 import com.mipapadakis.canvas.model.CvImage
-import com.mipapadakis.canvas.ui.create_canvas.MyTouchListener
 import kotlin.math.atan2
 import kotlin.math.min
 import kotlin.math.sqrt
 
 
 /** Custom ImageView which represents the canvas. It handles canvas changes and touches. */
-class CanvasImageView(context: Context?) : AppCompatImageView(context!!), MyTouchListener.MultiTouchListener /*, OnTouchListener*/ {
+class CanvasImageView(context: Context?) : AppCompatImageView(context!!), MyTouchListener.MultiTouchListener{
     private lateinit var params: RelativeLayout.LayoutParams
+    private lateinit var cvImage: CvImage
     private var mode = MODE_NONE
     private var oldDist = 1f
     private var newRot = 0f
@@ -24,12 +25,13 @@ class CanvasImageView(context: Context?) : AppCompatImageView(context!!), MyTouc
     var restoreAngle = 0f
     var startingWidth = 0
     var startingHeight = 0
-    var scalediff = 0f
+    var scaleDiff = 0f
     var angle = 0f
     var rawX = 0f
     var rawY = 0f
     var dx = 0f
     var dy = 0f
+    var drawPath: Path? = null
 
     companion object {
         private const val MIN_TOUCH_DISTANCE = 10F
@@ -39,48 +41,26 @@ class CanvasImageView(context: Context?) : AppCompatImageView(context!!), MyTouc
         private const val MODE_ZOOM = 2
     }
 
-    private fun showStuff(msg: String){
-        /**TODO dx, dy, rawX, rawY:
-        Results:
-        • onMove, params and iv attributes are same (except +5*params.width and +10*params.height).
-        • When I change params, iv attributes stay same as last move.
-        • params.width = iv.width and params.height = iv.height, always
-        • params and iv independent of rotation or scaling.*/
-
-        Log.i("CanvasInfo", ".\n$msg\n" +
-                "\tparams.leftMargin: ${params.leftMargin}\n" +
-                "\tparams.topMargin: ${params.topMargin}\n" +
-                "\tparams.rightMargin: ${params.rightMargin}\n" +
-                "\tparams.bottomMargin: ${params.bottomMargin}\n\n" +
-                "\tleft: ${left}\n" +
-                "\ttop: ${top}\n" +
-                "\tright: ${right}\n" +
-                "\tbottom: ${bottom}\n")
-    }
-
     init { setOnTouchListener(MyTouchListener(this)) }
 
     //First called in CanvasActivity.onAttachedToWindow()
     fun onAttachedToWindowInitializer(width: Int, height: Int){
-        val center = DeviceDimensions.getCenter(context!!)
-        params = layoutParams as RelativeLayout.LayoutParams
-        params.leftMargin = center.x - DeviceDimensions.getWidth(context) / 2
-        params.topMargin = center.y - DeviceDimensions.getHeight(context) / 2
-        params.rightMargin = 0
-        params.bottomMargin = 0
-        layoutParams = params
+        cvImage = CvImage(drawable.toBitmap())
+        setImageBitmap(cvImage.layers[0].bitmap)
+        drawPath = Path()
+    }
 
-        val cvImage = CvImage(width, height)
-        cvImage.bitmap = drawable.toBitmap()
-        setImageDrawable(cvImage.drawRect(resources))
-//        //setPositionToCenter()
+    fun drawFreeHand(path: Path?){///////////////////////////////////////////////////////////////////////////
+        if(mode== MODE_ZOOM) return
+        cvImage.layers[0].drawFreeHand(path)
+        setImageBitmap(cvImage.layers[0].bitmap)
     }
 
     private fun setPositionToCenter(){
-        val center = DeviceDimensions.getCenter(context!!)
+        //val center = DeviceDimensions.getCenter(context!!)
         params = layoutParams as RelativeLayout.LayoutParams
-        params.leftMargin = center.x - width / 2
-        params.topMargin = center.y - height / 2
+        params.leftMargin = 0 //center.x - width / 2
+        params.topMargin = 0 //center.y - height / 2
         params.rightMargin = 0
         params.bottomMargin = 0
         layoutParams = params
@@ -92,7 +72,7 @@ class CanvasImageView(context: Context?) : AppCompatImageView(context!!), MyTouc
     }
 
     private fun resetScale(){
-        scalediff = 1F
+        scaleDiff = 1F
         animate().scaleY(1F).duration = 200
         animate().scaleX(1F).duration = 200
     }
@@ -100,7 +80,7 @@ class CanvasImageView(context: Context?) : AppCompatImageView(context!!), MyTouc
         val scaleRatioX = DeviceDimensions.getWidth(context).toFloat()/width.toFloat()
         val scaleRatioY = DeviceDimensions.getHeight(context).toFloat()/height.toFloat()
         val scaleToFit = min(scaleRatioX, scaleRatioY)
-        scalediff = scaleToFit
+        scaleDiff = scaleToFit
         animate().scaleX(scaleToFit).duration = 200
         animate().scaleY(scaleToFit).duration = 200
     }
@@ -120,66 +100,23 @@ class CanvasImageView(context: Context?) : AppCompatImageView(context!!), MyTouc
         return Math.toDegrees(radians).toFloat()
     }
 
-    /*
-    override fun onTouch(v: View, event: MotionEvent): Boolean {
-        val imageView = v as ImageView
-        (imageView.drawable as BitmapDrawable).setAntiAlias(true)
-        when (event.action and MotionEvent.ACTION_MASK) {
-            MotionEvent.ACTION_DOWN -> {
-            }
-            MotionEvent.ACTION_POINTER_DOWN -> {
-                params = imageView.layoutParams as RelativeLayout.LayoutParams
-                startingWidth = params!!.width
-                startingHeight = params!!.height
-                dx = event.rawX - params!!.leftMargin
-                dy = event.rawY - params!!.topMargin
-                mode = MODE_DRAG
-                oldDist = touchDistance(event)
-                if (oldDist > MIN_TOUCH_DISTANCE) mode = MODE_ZOOM
-                d = touchRotation(event)
-            }
-            MotionEvent.ACTION_UP -> {
-            }
-            MotionEvent.ACTION_POINTER_UP -> mode = MODE_NONE
-            MotionEvent.ACTION_MOVE -> if (mode == MODE_DRAG) {
-                rawX = event.rawX
-                rawY = event.rawY
-                params!!.leftMargin = (rawX - dx).toInt()
-                params!!.topMargin = (rawY - dy).toInt()
-                params!!.rightMargin = 0
-                params!!.bottomMargin = 0
-                params!!.rightMargin = params!!.leftMargin + 5 * params!!.width
-                params!!.bottomMargin = params!!.topMargin + 10 * params!!.height
-                imageView.layoutParams = params
-            } else if (mode == MODE_ZOOM && event.pointerCount == 2) {
-                newRot = touchRotation(event)
-                val r = newRot - d
-                angle = r
-                rawX = event.rawX
-                rawY = event.rawY
-                val newDist = touchDistance(event)
-                if (newDist > MIN_TOUCH_DISTANCE) {
-                    val scale = newDist / oldDist * imageView.scaleX
-                    if (scale > MIN_SCALE) {
-                        scalediff = scale
-                        imageView.scaleX = scale
-                        imageView.scaleY = scale
-                    }
-                }
-                imageView.animate().rotationBy(angle).setDuration(0).setInterpolator(LinearInterpolator()).start()
-                rawX = event.rawX
-                rawY = event.rawY
-                params!!.leftMargin = (rawX - dx + scalediff).toInt()
-                params!!.topMargin = (rawY - dy + scalediff).toInt()
-                params!!.rightMargin = 0
-                params!!.bottomMargin = 0
-                params!!.rightMargin = params!!.leftMargin + 5 * params!!.width
-                params!!.bottomMargin = params!!.topMargin + 10 * params!!.height
-                imageView.layoutParams = params
-            }
-        }
-        return true
-    }*/
+    fun mapScreenCoordsToBitmapCoords(e: MotionEvent): FloatArray {
+        // Get the coordinates of the touch point x, y
+        val x = e.x
+        val y = e.y
+        // The coordinates of the target point
+        val dst = FloatArray(2)
+        // Get the matrix of ImageView
+        val imageMatrix: Matrix = getImageMatrix()
+        // Create an inverse matrix
+        val inverseMatrix = Matrix()
+        // Inverse, the inverse matrix is assigned
+        imageMatrix.invert(inverseMatrix)
+        // Get the value of the target point dst through the inverse matrix mapping
+        inverseMatrix.mapPoints(dst, floatArrayOf(x, y))
+        // Return the position on the Bitmap
+        return dst
+    }
 
     override fun on1PointerTap(event: MotionEvent) {
         Log.i("CanvasTouchListener", "on1PointerTap")
@@ -189,7 +126,8 @@ class CanvasImageView(context: Context?) : AppCompatImageView(context!!), MyTouc
         Log.i("CanvasTouchListener", "on2PointerTap")
     }
 
-    //TODO: if setting of 3-finger screenshot is enabled, and user taps with three fingers aligned horizontally, onCancel is called. Fix?
+    //TODO: if setting of 3-finger screenshot is enabled, and user taps with three fingers
+    // aligned horizontally, onCancel is called. Fix?
     override fun on3PointerTap(event: MotionEvent) {
         Log.i("CanvasTouchListener", "on3PointerTap")
     }
@@ -200,9 +138,9 @@ class CanvasImageView(context: Context?) : AppCompatImageView(context!!), MyTouc
 
     override fun on2PointerDoubleTap(event: MotionEvent) {
         Log.i("CanvasTouchListener", "on2PointerDoubleTap")
-        showStuff("BEFORE CHANGE:")
+        //showStuff("BEFORE CHANGE:")
         setPositionToCenter()
-        showStuff("AFTER PARAM CHANGE:")
+        //showStuff("AFTER PARAM CHANGE:")
         restoreRotation()
         scaleToFitScreen()
         //resetScale()
@@ -224,9 +162,16 @@ class CanvasImageView(context: Context?) : AppCompatImageView(context!!), MyTouc
         Log.i("CanvasTouchListener", "on3PointerLongPress")
     }
 
-    override fun on1PointerDown(event: MotionEvent) {}
+    override fun on1PointerDown(event: MotionEvent) {
+        ///////////////canvasPaint.setColor(paintColor)
+        val yo = mapScreenCoordsToBitmapCoords(event)
+        drawPath?.moveTo(yo[0], yo[1])//////////////////////////////////////////
+        drawFreeHand(drawPath)
+        invalidate()
+    }
 
     override fun on2PointerDown(event: MotionEvent) {
+        //TODO attempting to zoom -> erase anything drawn in on1PointerDown
         params = layoutParams as RelativeLayout.LayoutParams
         startingWidth = params.width
         startingHeight = params.height
@@ -240,13 +185,30 @@ class CanvasImageView(context: Context?) : AppCompatImageView(context!!), MyTouc
 
     override fun on3PointerDown(event: MotionEvent) {}
 
-    override fun on1PointerUp(event: MotionEvent) {}
+    override fun on1PointerUp(event: MotionEvent) {
+        val yo = mapScreenCoordsToBitmapCoords(event)
+        drawPath?.lineTo(yo[0], yo[1])//////////////////////////////////////////
+        ///////////////drawCanvas.drawPath(drawPath, drawPaint)
+//        c!!.drawPath(drawPath!!, CanvasViewModel.paint)
+        drawFreeHand(drawPath)
+        drawPath?.reset()
+        mode = MODE_NONE
+        invalidate()
+    }
 
     override fun on2PointerUp(event: MotionEvent) {}
 
     override fun on3PointerUp(event: MotionEvent) {}
 
     override fun onPointerMove(event: MotionEvent) {
+        if(event.pointerCount==1){
+            //drawCanvas.drawPath(drawPath, drawPaint)
+            val yo = mapScreenCoordsToBitmapCoords(event)
+            drawPath?.lineTo(yo[0], yo[1])//////////////////////////////////////////
+            drawFreeHand(drawPath)
+            invalidate()
+        }
+
         if (mode == MODE_DRAG) {
             rawX = event.rawX
             rawY = event.rawY
@@ -257,7 +219,8 @@ class CanvasImageView(context: Context?) : AppCompatImageView(context!!), MyTouc
             params.rightMargin = params.leftMargin + 5 * params.width
             params.bottomMargin = params.topMargin + 10 * params.height
             layoutParams = params
-        } else if (mode == MODE_ZOOM && event.pointerCount == 2) {
+        }
+        else if (mode == MODE_ZOOM && event.pointerCount == 2) {
             newRot = touchRotation(event)
             angle = newRot - d
             rawX = event.rawX
@@ -266,7 +229,7 @@ class CanvasImageView(context: Context?) : AppCompatImageView(context!!), MyTouc
             if (newDist > MIN_TOUCH_DISTANCE) {
                 val scale = newDist / oldDist * scaleX
                 if (scale > MIN_SCALE) {
-                    scalediff = scale
+                    scaleDiff = scale
                     scaleX = scale
                     scaleY = scale
                 }
@@ -275,15 +238,12 @@ class CanvasImageView(context: Context?) : AppCompatImageView(context!!), MyTouc
             animate().rotationBy(angle).setDuration(0).setInterpolator(LinearInterpolator()).start()
             rawX = event.rawX
             rawY = event.rawY
-            params.leftMargin = (rawX - dx + scalediff).toInt()
-            params.topMargin = (rawY - dy + scalediff).toInt()
-            params.rightMargin = 0
-            params.bottomMargin = 0
+            params.leftMargin = (rawX - dx + scaleDiff).toInt()
+            params.topMargin = (rawY - dy + scaleDiff).toInt()
             params.rightMargin = params.leftMargin + 5 * params.width
             params.bottomMargin = params.topMargin + 10 * params.height
             layoutParams = params
         }
-        //Log.i("CanvasTouchListener", "onPointerMove")
     }
 
     override fun onCancelTouch() {

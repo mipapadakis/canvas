@@ -1,5 +1,6 @@
-package com.mipapadakis.canvas.ui.create_canvas
+package com.mipapadakis.canvas.ui
 
+import android.R.attr.bitmap
 import android.annotation.SuppressLint
 import android.os.CountDownTimer
 import android.util.Log
@@ -7,6 +8,7 @@ import android.view.MotionEvent
 import android.view.View
 import android.view.ViewConfiguration
 import kotlin.math.abs
+
 
 private const val POINTER_1 = 0
 private const val POINTER_2 = 1
@@ -25,12 +27,13 @@ class MyTouchListener(private val touchListener: MultiTouchListener): View.OnTou
     //Example: touchEvent[POINTER_2][3] is the third touchEvent of pointer_2.
     //touchEvent[POINTER_2][3] will be set to 0 if POINTER_2 went UP within the last TIMEOUT ms
     private var touchEvent: Array<ArrayList<TouchEvent>?> = arrayOf(null, null, null)
-    private var doubleTapFirstTouch:TouchEvent? = null
+    private var doubleTapFirstTouch: TouchEvent? = null
     private var longPressTimer: CountDownTimer? = null
     private var longPressTouchEvent: TouchEvent? = null
 
     @SuppressLint("ClickableViewAccessibility")
     override fun onTouch(view: View?, event: MotionEvent?): Boolean {
+
         if(view==null || event==null) {
             touchListener.onCancelTouch()
             return false
@@ -92,7 +95,9 @@ class MyTouchListener(private val touchListener: MultiTouchListener): View.OnTou
 
     private fun pointerUp(event: MotionEvent){
         dismissOldTouches(event)
-        val numberOfClicks = arrayOf(numberOfPointerClicks(POINTER_1), numberOfPointerClicks(POINTER_2), numberOfPointerClicks(POINTER_3))
+        val numberOfClicks = arrayOf(numberOfPointerClicks(POINTER_1), numberOfPointerClicks(
+            POINTER_2
+        ), numberOfPointerClicks(POINTER_3))
         when {
             numberOfClicks.contentEquals(arrayOf(1, 0, 0)) -> touchListener.on1PointerTap(event)
             numberOfClicks.contentEquals(arrayOf(1, 1, 0)) -> touchListener.on2PointerTap(event)

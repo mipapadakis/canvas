@@ -17,8 +17,6 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.mipapadakis.canvas.InterfaceMainActivity
 import com.mipapadakis.canvas.R
 import com.mipapadakis.canvas.model.CvImage
-import com.mipapadakis.canvas.model.layer.CvLayer
-import com.mipapadakis.canvas.model.shape.CvShape
 
 
 class GalleryFragment : Fragment() {
@@ -73,8 +71,7 @@ class GalleryFragment : Fragment() {
     }
 
     private fun createCvImage(title: String, drawableId: Int): CvImage{
-        val cvImage = CvImage(Bitmap.createBitmap(BitmapFactory.decodeResource(context?.resources, drawableId)))
-        cvImage.title = title
+        val cvImage = CvImage(title, Bitmap.createBitmap(BitmapFactory.decodeResource(context?.resources, drawableId)))
         return cvImage
     }
 

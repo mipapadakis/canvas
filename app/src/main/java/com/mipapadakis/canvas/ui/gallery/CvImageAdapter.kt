@@ -31,7 +31,7 @@ class CvImageAdapter(liveDataToObserve: LiveData<List<CvImage>>, lifecycleOwner:
 
     override fun onBindViewHolder(holder: ItemViewHolder, position: Int) {
         val cvImage: CvImage = imageList[position]
-        holder.image.setImageBitmap(cvImage.bitmap)
+        holder.image.setImageBitmap(cvImage.layers[0].bitmap) //TODO
         holder.titleTV.text = cvImage.title
         holder.button1.text = "Button 1" //TODO
         holder.button2.text = "Button 2" //TODO

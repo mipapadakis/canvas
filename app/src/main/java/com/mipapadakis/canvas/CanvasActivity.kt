@@ -12,11 +12,9 @@ import android.view.ViewConfiguration
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.cardview.widget.CardView
-import androidx.lifecycle.ViewModelProvider
-import com.mipapadakis.canvas.ui.CanvasImageView
-import com.mipapadakis.canvas.ui.DeviceDimensions
+import androidx.core.content.ContextCompat
+import com.mipapadakis.canvas.ui.*
 import com.mipapadakis.canvas.ui.create_canvas.CreateCanvasFragment
-import com.mipapadakis.canvas.ui.create_canvas.MyTouchListener
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
@@ -34,16 +32,18 @@ private const val LOW_ALPHA = 0.3f
 
 @SuppressLint("ClickableViewAccessibility")
 class CanvasActivity : AppCompatActivity() {
-    private lateinit var canvasViewModel: CanvasViewModel //TODO
-    private lateinit var layoutCanvas: RelativeLayout
-    private lateinit var canvasIV: CanvasImageView
     private var devicePixelWidth: Int = 0
     private var devicePixelHeight: Int = 0
     private var canvasWidth = 540
     private var canvasHeight = 984
     private lateinit var toast: Toast
-    var outRect = Rect()
-    var location = IntArray(2)
+    private var outRect = Rect()
+    private var location = IntArray(2)
+
+    //Views
+    private lateinit var layoutCanvas: RelativeLayout
+    private lateinit var canvasIV: CanvasImageView
+    //private lateinit var drawingView: DrawingView
     private lateinit var toolbarOuterCardView: CardView
     private lateinit var toolbarInnerCardView: CardView
     private lateinit var toolbarVisibilityImageView: ImageView
@@ -61,20 +61,14 @@ class CanvasActivity : AppCompatActivity() {
         toast = Toast(this)
         devicePixelWidth = DeviceDimensions.getWidth(this)
         devicePixelHeight = DeviceDimensions.getHeight(this)
-        canvasViewModel = ViewModelProvider(this).get(CanvasViewModel::class.java)
+        //canvasViewModel = ViewModelProvider(this).get(CanvasViewModel::class.java)
+        val layoutParamsCanvas = RelativeLayout.LayoutParams(devicePixelWidth, devicePixelHeight)
+        layoutParamsCanvas.addRule(RelativeLayout.BELOW)
         layoutCanvas = findViewById(R.id.canvas_layout)
-        canvasIV = CanvasImageView(applicationContext)
+        canvasIV = CanvasImageView(this)
+//        drawingView = DrawingView(this)
+//        drawingView.setBrushSize(10f)
 
-        //TODO
-        toolbarOuterCardView = findViewById(R.id.toolbar_outer_card)
-        toolbarInnerCardView = findViewById(R.id.toolbar_inner_card) //TODO: Its background color is the same as the brush color.
-        toolbarVisibilityImageView = findViewById(R.id.toolbar_visibility) //TODO: OnClick, hide/show the toolbarButtonLayout. OnLongPress, drag the toolbar.
-        toolbarButtonLayout = findViewById(R.id.toolbar_buttons)
-        toolbarUndoBtn = findViewById(R.id.toolbar_button_undo) //TODO action stack.
-        toolbarRedoBtn = findViewById(R.id.toolbar_button_redo)
-        toolbarPaletteBtn = findViewById(R.id.toolbar_button_palette) //TODO menu of colors (onColorPick, change background color of toolbarInnerCardView)
-        toolbarToolBtn = findViewById(R.id.toolbar_button_tool) //TODO menu & options for each tool
-        toolbarOptionsBtn = findViewById(R.id.toolbar_button_options) //TODO menu. Contains canvas global options.
 
         //Receive intent from MainActivity:
         when {
@@ -84,8 +78,6 @@ class CanvasActivity : AppCompatActivity() {
                 //Initialize canvasWidth and canvasHeight:
                 if(uri!=null) getImageDimensionsFromUri(Uri.parse(uri))
                 showToast("canvasWidth=$canvasWidth, canvasHeight=$canvasHeight")
-                val layoutParamsCanvas = RelativeLayout.LayoutParams(devicePixelWidth, devicePixelHeight)
-                layoutParamsCanvas.addRule(RelativeLayout.BELOW)
                 canvasIV.layoutParams = layoutParamsCanvas
                 canvasIV.setImageURI(Uri.parse(uri))
                 layoutCanvas.addView(canvasIV)
@@ -93,8 +85,6 @@ class CanvasActivity : AppCompatActivity() {
             else -> {
                 canvasWidth= intent.getIntExtra(DIMENSION_WIDTH_INTENT_KEY, 540)
                 canvasHeight= intent.getIntExtra(DIMENSION_HEIGHT_INTENT_KEY, 984)
-                val layoutParamsCanvas = RelativeLayout.LayoutParams(devicePixelWidth, devicePixelHeight)
-                layoutParamsCanvas.addRule(RelativeLayout.BELOW)
                 canvasIV.layoutParams = layoutParamsCanvas
                 val bitmap = Bitmap.createBitmap(canvasWidth, canvasHeight, Bitmap.Config.ARGB_8888)
                 val canvas = Canvas(bitmap)
@@ -119,7 +109,7 @@ class CanvasActivity : AppCompatActivity() {
 
     /** Create a temp cv file. */
     private fun createCvFile(fileName: String?): File {
-        val locale = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N)
+        @Suppress("DEPRECATION") val locale = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N)
                 resources.configuration.locales.get(0)
             else resources.configuration.locale
 
@@ -151,12 +141,24 @@ class CanvasActivity : AppCompatActivity() {
     }
 
     private fun setToolbar() {
+        toolbarOuterCardView = findViewById(R.id.toolbar_outer_card)
+        toolbarInnerCardView = findViewById(R.id.toolbar_inner_card) //TODO: Its background color is the same as the brush color.
+        toolbarVisibilityImageView = findViewById(R.id.toolbar_visibility) //TODO: OnClick, hide/show the toolbarButtonLayout. OnLongPress, drag the toolbar.
+        toolbarButtonLayout = findViewById(R.id.toolbar_buttons)
+        toolbarUndoBtn = findViewById(R.id.toolbar_button_undo) //TODO action stack.
+        toolbarRedoBtn = findViewById(R.id.toolbar_button_redo)
+        toolbarPaletteBtn = findViewById(R.id.toolbar_button_palette) //TODO menu of colors (onColorPick, change background color of toolbarInnerCardView)
+        toolbarToolBtn = findViewById(R.id.toolbar_button_tool) //TODO menu & options for each tool
+        toolbarOptionsBtn = findViewById(R.id.toolbar_button_options) //TODO menu. Contains canvas global options.
         setupToolbarMenus()
         var timer: CountDownTimer? = null
         var longPressed = false
         var dX = 0f
         var dY = 0f
         toolbarVisibilityImageView.setOnTouchListener { v, event ->
+            val drawableOff = getDrawableFromId(R.drawable.baseline_visibility_off_black_36)
+            val drawableOn = getDrawableFromId(R.drawable.baseline_visibility_black_36)
+
             when (event.action) {
                 MotionEvent.ACTION_DOWN -> {
                     longPressed = false
@@ -171,6 +173,7 @@ class CanvasActivity : AppCompatActivity() {
                             if (Build.VERSION.SDK_INT >= 26) {
                                 vibrator.vibrate(VibrationEffect.createOneShot(70, VibrationEffect.DEFAULT_AMPLITUDE))
                             } else {
+                                @Suppress("DEPRECATION")
                                 vibrator.vibrate(70)
                             }
                             dX = toolbarOuterCardView.x - event.rawX
@@ -184,11 +187,11 @@ class CanvasActivity : AppCompatActivity() {
                     timer?.cancel()
                     if (!longPressed && inViewInBounds(v, event.rawX.toInt(), event.rawY.toInt())) {
                         if (toolbarButtonLayout.visibility == View.GONE) {
-                            toolbarVisibilityImageView.setImageResource(R.drawable.baseline_visibility_off_black_36)
+                            toolbarVisibilityImageView.setImageDrawable(drawableOff)
                             toolbarButtonLayout.visibility = View.VISIBLE
                             //toolbarOuterCardView.animate().x(v.x+toolbarButtonLayout.x/2).setDuration(0).start() TODO
                         } else {
-                            toolbarVisibilityImageView.setBackgroundResource(R.drawable.baseline_visibility_black_36)
+                            toolbarVisibilityImageView.setImageDrawable(drawableOn)
                             toolbarButtonLayout.visibility = View.GONE
                         }
                     } else toolbarOuterCardView.alpha = FULL_ALPHA
@@ -214,24 +217,25 @@ class CanvasActivity : AppCompatActivity() {
             }
             true
         }
-    /*TODO:
-    toolbarOuterCardView = findViewById(R.id.toolbar_outer_card)
-    toolbarInnerCardView = findViewById(R.id.toolbar_inner_card) //TODO: Its background color is the same as the brush color.
-    toolbarVisibilityImageView = findViewById(R.id.toolbar_visibility) //TODO: OnClick, hide/show the toolbarButtonLayout. OnLongPress, drag the toolbar.
-    toolbarButtonLayout = findViewById(R.id.toolbar_buttons)
-    toolbarUndoBtn = findViewById(R.id.toolbar_button_undo) //TODO action stack.
-    toolbarRedoBtn = findViewById(R.id.toolbar_button_redo)
-    toolbarPaletteBtn = findViewById(R.id.toolbar_button_palette) //TODO menu of colors (onColorPick, change background color of toolbarInnerCardView)
-    toolbarToolBtn = findViewById(R.id.toolbar_button_tool) //TODO menu & options for each tool
-    toolbarOptionsBtn = findViewById(R.id.toolbar_button_options) //TODO menu. Contains canvas global options.*/
+        toolbarInnerCardView.setCardBackgroundColor(CanvasColor.getColorFromId(this, CanvasPreferences.startingColorId))
+        CanvasViewModel.paint.color = CanvasColor.getColorFromId(this, CanvasPreferences.startingColorId)
 
-
+        /*TODO:
+        toolbarOuterCardView = findViewById(R.id.toolbar_outer_card)
+        toolbarInnerCardView = findViewById(R.id.toolbar_inner_card) //Its background color is the same as the brush color.
+        toolbarVisibilityImageView = findViewById(R.id.toolbar_visibility) //OnClick, hide/show the toolbarButtonLayout. OnLongPress, drag the toolbar.
+        toolbarButtonLayout = findViewById(R.id.toolbar_buttons)
+        toolbarUndoBtn = findViewById(R.id.toolbar_button_undo) //TODO action stack.
+        toolbarRedoBtn = findViewById(R.id.toolbar_button_redo)
+        toolbarPaletteBtn = findViewById(R.id.toolbar_button_palette) //TODO palette menu
+        toolbarToolBtn = findViewById(R.id.toolbar_button_tool) //TODO menu & options for each tool
+        toolbarOptionsBtn = findViewById(R.id.toolbar_button_options) //TODO menu. Contains canvas global options.*/
     }
 
     private fun inViewInBounds(view: View, x: Int, y: Int): Boolean {
         view.getDrawingRect(outRect)
         view.getLocationOnScreen(location)
-        outRect.offset(location.get(0), location.get(1))
+        outRect.offset(location[0], location[1])
         return outRect.contains(x, y)
     }
 
@@ -244,25 +248,26 @@ class CanvasActivity : AppCompatActivity() {
                 Toast.makeText(applicationContext, it.title, Toast.LENGTH_SHORT).show()
                 when (it.itemId) {
                     R.id.color_black -> {
-                        //TODO canvasViewmodel.color = CanvasColor(R.color.black)
+                        CanvasViewModel.paint.color = CanvasColor.getColorFromId(this, R.color.black)
                     }
                     R.id.color_red -> {
-                        //TODO canvasViewmodel.color = CanvasColor(R.color.red)
+                        CanvasViewModel.paint.color = CanvasColor.getColorFromId(this, R.color.red)
                     }
                     R.id.color_green -> {
-                        //TODO ...
+                        CanvasViewModel.paint.color = CanvasColor.getColorFromId(this, R.color.green)
                     }
                     R.id.color_blue -> {
-                        //TODO ...
+                        CanvasViewModel.paint.color = CanvasColor.getColorFromId(this, R.color.blue)
                     }
                     R.id.color_yellow -> {
-                        //TODO ...
+                        CanvasViewModel.paint.color = CanvasColor.getColorFromId(this, R.color.yellow)
                     }
                     R.id.color_purple -> {
-                        //TODO ...
+                        CanvasViewModel.paint.color = CanvasColor.getColorFromId(this, R.color.purple)
                     }
-                    else -> {}
+                    else -> {} //TODO palette
                 }
+                toolbarInnerCardView.setCardBackgroundColor(CanvasViewModel.paint.color)
                 true
             }
             paletteMenu.show()
@@ -293,6 +298,9 @@ class CanvasActivity : AppCompatActivity() {
             //TODO specific menu for each tool
         }
     }
+
+    fun getColorFromId(id: Int) = CanvasColor.getColorFromId(this, id)
+    fun getDrawableFromId(id: Int) = ContextCompat.getDrawable(this, id)
 
     @Suppress("SameParameterValue")
     private fun showToast(text: String){

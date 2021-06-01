@@ -1,20 +1,33 @@
 package com.mipapadakis.canvas
 
+import android.graphics.Paint
 import androidx.lifecycle.ViewModel
 import com.mipapadakis.canvas.ui.CanvasColor
-import com.mipapadakis.canvas.R
 
 
 /** Store here the current tool and its options.*/
 class CanvasViewModel: ViewModel() {
     companion object{
-        const val SIZE_TINY = 0
-        const val SIZE_SMALL = 1
-        const val SIZE_NORMAL = 2
-        const val SIZE_BIG = 3
-        const val SIZE_LARGE = 4
+//        var colorID = CanvasPreferences.startingColorId
+//        val brushSize = CanvasPreferences.startingBrushSize
+        val paint = Paint().apply {
+            isAntiAlias = true
+            color = CanvasPreferences.startingColorId
+            strokeWidth = 20F
+            style = Paint.Style.STROKE
+            strokeCap = Paint.Cap.ROUND
+        }
     }
 
-    var color = CanvasColor(R.color.black)
-    val brushSize = SIZE_NORMAL
+    //var colorID = CanvasPreferences.startingColorId
+
+//    fun setColor(color: Int){  this.color = color }
+//    fun getColor() = color
+
+    //val brushSize = CanvasPreferences.startingBrushSize
+
+//    private val _colorId = MutableLiveData<Int>().apply { value = R.color.black }
+//    val colorId: LiveData<Int> = _colorId
+//    fun setColor(id: Int){  _colorId.value = id }
+//    fun getCanvasColor() = CanvasColor(colorId.value ?: 0)
 }
