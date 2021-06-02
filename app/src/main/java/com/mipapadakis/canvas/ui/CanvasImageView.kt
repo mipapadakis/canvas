@@ -34,10 +34,12 @@ class CanvasImageView(context: Context?) : AppCompatImageView(context!!), MyTouc
     var drawPath: Path? = null
 
     companion object {
+        private const val X = 0
+        private const val Y = 1
         private const val MIN_TOUCH_DISTANCE = 10F
         private const val MIN_SCALE = 0.3 //Determines how much the user can zoom out
         private const val MODE_NONE = 0
-        private const val MODE_DRAG = 1
+        private const val MODE_DRAW = 1
         private const val MODE_ZOOM = 2
     }
 
@@ -51,7 +53,7 @@ class CanvasImageView(context: Context?) : AppCompatImageView(context!!), MyTouc
     }
 
     fun drawFreeHand(path: Path?){///////////////////////////////////////////////////////////////////////////
-        if(mode== MODE_ZOOM) return
+        if(mode != MODE_DRAW) return
         cvImage.layers[0].drawFreeHand(path)
         setImageBitmap(cvImage.layers[0].bitmap)
     }
@@ -104,7 +106,6 @@ class CanvasImageView(context: Context?) : AppCompatImageView(context!!), MyTouc
         // Get the coordinates of the touch point x, y
         val x = e.x
         val y = e.y
-        // The coordinates of the target point
         val dst = FloatArray(2)
         // Get the matrix of ImageView
         val imageMatrix: Matrix = getImageMatrix()
@@ -138,12 +139,9 @@ class CanvasImageView(context: Context?) : AppCompatImageView(context!!), MyTouc
 
     override fun on2PointerDoubleTap(event: MotionEvent) {
         Log.i("CanvasTouchListener", "on2PointerDoubleTap")
-        //showStuff("BEFORE CHANGE:")
         setPositionToCenter()
-        //showStuff("AFTER PARAM CHANGE:")
         restoreRotation()
         scaleToFitScreen()
-        //resetScale()
     }
 
     override fun on3PointerDoubleTap(event: MotionEvent) {
@@ -163,9 +161,9 @@ class CanvasImageView(context: Context?) : AppCompatImageView(context!!), MyTouc
     }
 
     override fun on1PointerDown(event: MotionEvent) {
-        ///////////////canvasPaint.setColor(paintColor)
-        val yo = mapScreenCoordsToBitmapCoords(event)
-        drawPath?.moveTo(yo[0], yo[1])//////////////////////////////////////////
+        val bitmapCoords = mapScreenCoordsToBitmapCoords(event)
+        drawPath?.moveTo(bitmapCoords[X], bitmapCoords[Y])
+        setModeDraw()
         drawFreeHand(drawPath)
         invalidate()
     }
@@ -177,48 +175,46 @@ class CanvasImageView(context: Context?) : AppCompatImageView(context!!), MyTouc
         startingHeight = params.height
         dx = event.rawX - params.leftMargin
         dy = event.rawY - params.topMargin
-        mode = MODE_DRAG
+        setModeDraw()
         oldDist = touchDistance(event)
-        if (oldDist > MIN_TOUCH_DISTANCE) mode = MODE_ZOOM
+        if (oldDist > MIN_TOUCH_DISTANCE) {
+            setModeZoom()
+            val centerOfPointers = arrayOf((event.getX(0)+event.getX(1))/2,
+                (event.getY(0)+event.getY(1))/2)
+            pivotX = centerOfPointers[X]
+            pivotY = centerOfPointers[Y]
+        }
         d = touchRotation(event)
     }
 
-    override fun on3PointerDown(event: MotionEvent) {}
+    override fun on3PointerDown(event: MotionEvent) {
+        setModeNone()
+    }
 
     override fun on1PointerUp(event: MotionEvent) {
-        val yo = mapScreenCoordsToBitmapCoords(event)
-        drawPath?.lineTo(yo[0], yo[1])//////////////////////////////////////////
-        ///////////////drawCanvas.drawPath(drawPath, drawPaint)
-//        c!!.drawPath(drawPath!!, CanvasViewModel.paint)
+        val bitmapCoords = mapScreenCoordsToBitmapCoords(event)
+        drawPath?.lineTo(bitmapCoords[X],bitmapCoords[Y])
         drawFreeHand(drawPath)
         drawPath?.reset()
-        mode = MODE_NONE
+        setModeNone()
         invalidate()
     }
 
-    override fun on2PointerUp(event: MotionEvent) {}
+    override fun on2PointerUp(event: MotionEvent) {
+        setModeNone()
+    }
 
-    override fun on3PointerUp(event: MotionEvent) {}
+    override fun on3PointerUp(event: MotionEvent) {
+        oldDist = touchDistance(event)
+        setModeNone()
+    }
 
     override fun onPointerMove(event: MotionEvent) {
-        if(event.pointerCount==1){
-            //drawCanvas.drawPath(drawPath, drawPaint)
-            val yo = mapScreenCoordsToBitmapCoords(event)
-            drawPath?.lineTo(yo[0], yo[1])//////////////////////////////////////////
+        if (mode == MODE_DRAW && event.pointerCount == 1) {
+            val bitmapCoords = mapScreenCoordsToBitmapCoords(event)
+            drawPath?.lineTo(bitmapCoords[X], bitmapCoords[Y])
             drawFreeHand(drawPath)
             invalidate()
-        }
-
-        if (mode == MODE_DRAG) {
-            rawX = event.rawX
-            rawY = event.rawY
-            params.leftMargin = (rawX - dx).toInt()
-            params.topMargin = (rawY - dy).toInt()
-            params.rightMargin = 0
-            params.bottomMargin = 0
-            params.rightMargin = params.leftMargin + 5 * params.width
-            params.bottomMargin = params.topMargin + 10 * params.height
-            layoutParams = params
         }
         else if (mode == MODE_ZOOM && event.pointerCount == 2) {
             newRot = touchRotation(event)
@@ -236,10 +232,8 @@ class CanvasImageView(context: Context?) : AppCompatImageView(context!!), MyTouc
             }
             restoreAngle -= angle
             animate().rotationBy(angle).setDuration(0).setInterpolator(LinearInterpolator()).start()
-            rawX = event.rawX
-            rawY = event.rawY
             params.leftMargin = (rawX - dx + scaleDiff).toInt()
-            params.topMargin = (rawY - dy + scaleDiff).toInt()
+            params.topMargin =  (rawY - dy + scaleDiff).toInt()
             params.rightMargin = params.leftMargin + 5 * params.width
             params.bottomMargin = params.topMargin + 10 * params.height
             layoutParams = params
@@ -248,5 +242,19 @@ class CanvasImageView(context: Context?) : AppCompatImageView(context!!), MyTouc
 
     override fun onCancelTouch() {
         Log.i("CanvasTouchListener", "onCancelTouch")
+    }
+
+    fun setModeNone(){
+        mode = MODE_NONE
+        drawPath = Path()
+    }
+
+    fun setModeDraw(){
+        mode = MODE_DRAW
+    }
+
+    fun setModeZoom(){
+        mode = MODE_ZOOM
+        drawPath = Path()
     }
 }
