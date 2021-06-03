@@ -3,44 +3,42 @@ package com.mipapadakis.canvas.model.layer
 import android.graphics.*
 import com.mipapadakis.canvas.CanvasViewModel
 
+
 class CvLayer(var bitmap: Bitmap){
-    val width: Int = bitmap.width
-    val height: Int = bitmap.height
+    private val initialWidth: Int = bitmap.width
+    private val initialHeight: Int = bitmap.height
+    //var canvas: Canvas
     var visible = true
 
-    fun setVisible(){ visible=true } //TODO
+    init {
+//        val workingBitmap: Bitmap = Bitmap.createBitmap(bitmap)
+//        val mutableBitmap = workingBitmap.copy(Bitmap.Config.ARGB_8888, true)
+//        canvas = Canvas(mutableBitmap)
+    }
+
+    fun setVisible(){ visible = true } //TODO
     fun setInvisible(){ visible = false } //TODO
+    fun isVisible() = visible //TODO
 
     fun clearCanvas(){
-        bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+        bitmap = Bitmap.createBitmap(initialWidth, initialHeight, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(bitmap)
         canvas.drawColor(Color.WHITE)
     }
 
-    fun drawFreeHand(path: Path?){
-        val tempCanvas = Canvas(bitmap)
-
-        //Draw the image bitmap into the canvas
-        tempCanvas.drawBitmap(bitmap, 0f, 0f, CanvasViewModel.paint)
-        tempCanvas.drawPath(path?: Path(), CanvasViewModel.paint) //TODO debug? (if path==null -> ?)
+    fun drawFreeHand(canvas: Canvas, path: Path?){
+        //canvas.drawColor( Color.TRANSPARENT, PorterDuff.Mode.CLEAR)
+        canvas.drawPath(path ?: Path(), CanvasViewModel.paint)
     }
 
-    fun drawRect(){ //TODO
+    fun drawRect(canvas: Canvas){ //TODO
         val x1 = 100F
         val y1 = 100F
         val x2 = 300F
         val y2 = 300F
 
-        //Create a new image bitmap and attach a brand new canvas to it
-        val tempBitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
-        val tempCanvas = Canvas(tempBitmap)
-        tempCanvas.drawColor(Color.WHITE)
-
-        //Draw the image bitmap into the canvas
-        tempCanvas.drawBitmap(bitmap, 0f, 0f, CanvasViewModel.paint)
-        tempCanvas.drawRoundRect(RectF(x1, y1, x2, y2), 20F, 20F, CanvasViewModel.paint)
-
-        bitmap = tempBitmap
+        //canvas.drawColor( Color.TRANSPARENT, PorterDuff.Mode.CLEAR)
+        canvas.drawRoundRect(RectF(x1, y1, x2, y2), 20F, 20F, CanvasViewModel.paint)
     }
 }
 

@@ -1,5 +1,6 @@
 package com.mipapadakis.canvas
 
+import android.graphics.CornerPathEffect
 import android.graphics.Paint
 import androidx.lifecycle.ViewModel
 import com.mipapadakis.canvas.ui.CanvasColor
@@ -13,9 +14,12 @@ class CanvasViewModel: ViewModel() {
         val paint = Paint().apply {
             isAntiAlias = true
             color = CanvasPreferences.startingColorId
+            strokeJoin = Paint.Join.ROUND
+            strokeCap = Paint.Cap.ROUND
             strokeWidth = 20F
             style = Paint.Style.STROKE
-            strokeCap = Paint.Cap.ROUND
+            pathEffect = CornerPathEffect(10F)
+            isDither = true
         }
     }
 

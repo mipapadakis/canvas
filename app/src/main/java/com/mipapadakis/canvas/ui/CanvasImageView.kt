@@ -1,13 +1,17 @@
 package com.mipapadakis.canvas.ui
 
 import android.content.Context
-import android.graphics.*
+import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.graphics.Matrix
+import android.graphics.Path
 import android.util.Log
 import android.view.MotionEvent
 import android.view.animation.LinearInterpolator
 import android.widget.RelativeLayout
 import androidx.appcompat.widget.AppCompatImageView
 import androidx.core.graphics.drawable.toBitmap
+import com.mipapadakis.canvas.CanvasViewModel
 import com.mipapadakis.canvas.model.CvImage
 import kotlin.math.atan2
 import kotlin.math.min
@@ -18,20 +22,16 @@ import kotlin.math.sqrt
 class CanvasImageView(context: Context?) : AppCompatImageView(context!!), MyTouchListener.MultiTouchListener{
     private lateinit var params: RelativeLayout.LayoutParams
     private lateinit var cvImage: CvImage
+    private var drawPath: Path? = null
     private var mode = MODE_NONE
+    private var restoreAngle = 0f
+    private var scaleDiff = 0f
     private var oldDist = 1f
     private var newRot = 0f
+    private var angle = 0f
+    private var dx = 0f
+    private var dy = 0f
     private var d = 0f
-    var restoreAngle = 0f
-    var startingWidth = 0
-    var startingHeight = 0
-    var scaleDiff = 0f
-    var angle = 0f
-    var rawX = 0f
-    var rawY = 0f
-    var dx = 0f
-    var dy = 0f
-    var drawPath: Path? = null
 
     companion object {
         private const val X = 0
@@ -47,15 +47,26 @@ class CanvasImageView(context: Context?) : AppCompatImageView(context!!), MyTouc
 
     //First called in CanvasActivity.onAttachedToWindow()
     fun onAttachedToWindowInitializer(width: Int, height: Int){
+    }
+
+    override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
+        super.onSizeChanged(w, h, oldw, oldh)
         cvImage = CvImage(drawable.toBitmap())
-        setImageBitmap(cvImage.layers[0].bitmap)
+        //setImageBitmap(cvImage.layers[0].bitmap)
         drawPath = Path()
     }
 
-    fun drawFreeHand(path: Path?){///////////////////////////////////////////////////////////////////////////
-        if(mode != MODE_DRAW) return
-        cvImage.layers[0].drawFreeHand(path)
-        setImageBitmap(cvImage.layers[0].bitmap)
+    override fun onDraw(canvas: Canvas?) {
+        super.onDraw(canvas)
+        if(mode == MODE_DRAW) {
+            cvImage.layers[0].drawFreeHand(Canvas(drawable.toBitmap()), drawPath)
+            //canvas!!.drawBitmap(cvImage.layers[0].bitmap, 0f, 0f, CanvasViewModel.paint)
+            setImageBitmap(cvImage.layers[0].bitmap)
+        }
+    }
+
+    fun drawPath(){
+
     }
 
     private fun setPositionToCenter(){
@@ -164,15 +175,13 @@ class CanvasImageView(context: Context?) : AppCompatImageView(context!!), MyTouc
         val bitmapCoords = mapScreenCoordsToBitmapCoords(event)
         drawPath?.moveTo(bitmapCoords[X], bitmapCoords[Y])
         setModeDraw()
-        drawFreeHand(drawPath)
+        drawPath()
         invalidate()
     }
 
     override fun on2PointerDown(event: MotionEvent) {
         //TODO attempting to zoom -> erase anything drawn in on1PointerDown
         params = layoutParams as RelativeLayout.LayoutParams
-        startingWidth = params.width
-        startingHeight = params.height
         dx = event.rawX - params.leftMargin
         dy = event.rawY - params.topMargin
         setModeDraw()
@@ -194,10 +203,10 @@ class CanvasImageView(context: Context?) : AppCompatImageView(context!!), MyTouc
     override fun on1PointerUp(event: MotionEvent) {
         val bitmapCoords = mapScreenCoordsToBitmapCoords(event)
         drawPath?.lineTo(bitmapCoords[X],bitmapCoords[Y])
-        drawFreeHand(drawPath)
+        drawPath()
+        invalidate()
         drawPath?.reset()
         setModeNone()
-        invalidate()
     }
 
     override fun on2PointerUp(event: MotionEvent) {
@@ -213,14 +222,12 @@ class CanvasImageView(context: Context?) : AppCompatImageView(context!!), MyTouc
         if (mode == MODE_DRAW && event.pointerCount == 1) {
             val bitmapCoords = mapScreenCoordsToBitmapCoords(event)
             drawPath?.lineTo(bitmapCoords[X], bitmapCoords[Y])
-            drawFreeHand(drawPath)
+            drawPath()
             invalidate()
         }
         else if (mode == MODE_ZOOM && event.pointerCount == 2) {
             newRot = touchRotation(event)
             angle = newRot - d
-            rawX = event.rawX
-            rawY = event.rawY
             val newDist = touchDistance(event)
             if (newDist > MIN_TOUCH_DISTANCE) {
                 val scale = newDist / oldDist * scaleX
@@ -232,8 +239,8 @@ class CanvasImageView(context: Context?) : AppCompatImageView(context!!), MyTouc
             }
             restoreAngle -= angle
             animate().rotationBy(angle).setDuration(0).setInterpolator(LinearInterpolator()).start()
-            params.leftMargin = (rawX - dx + scaleDiff).toInt()
-            params.topMargin =  (rawY - dy + scaleDiff).toInt()
+            params.leftMargin = (event.rawX - dx + scaleDiff).toInt()
+            params.topMargin =  (event.rawY - dy + scaleDiff).toInt()
             params.rightMargin = params.leftMargin + 5 * params.width
             params.bottomMargin = params.topMargin + 10 * params.height
             layoutParams = params
