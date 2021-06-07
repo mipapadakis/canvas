@@ -6,13 +6,13 @@
             android:icon="@drawable/baseline_brush_black_18"
             android:title="@string/tools_menu_brush" />
         <item
-            android:id="@+id/tool_bucket"
-            android:icon="@drawable/baseline_format_color_fill_black_18"
-            android:title="@string/tools_menu_bucket" />
-        <item
             android:id="@+id/tool_eraser"
             android:icon="@drawable/baseline_info_black_24"
             android:title="@string/tools_menu_eraser"/>
+        <item
+            android:id="@+id/tool_bucket"
+            android:icon="@drawable/baseline_format_color_fill_black_18"
+            android:title="@string/tools_menu_bucket" />
         <item
             android:id="@+id/tool_eyedropper"
             android:icon="@drawable/baseline_feedback_black_24"
@@ -25,5 +25,9 @@
             android:id="@+id/tool_shape"
             android:icon="@drawable/baseline_star_outline_black_24"
             android:title="@string/tools_menu_shape" />
+        <item
+            android:id="@+id/tool_text"
+            android:icon="@drawable/baseline_star_outline_black_24"
+            android:title="@string/tools_menu_text" />
     </group>
 </menu>

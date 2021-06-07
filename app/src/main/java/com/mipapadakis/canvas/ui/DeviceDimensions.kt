@@ -35,18 +35,6 @@ class DeviceDimensions {
             return px / (metrics.densityDpi / 160f)
         }
         fun getSoftKeyBarSize(activity: Activity): Int {
-
-//            val outMetrics = DisplayMetrics()
-//            if (Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
-//                val display = activity.display
-//                display?.getRealMetrics(outMetrics)
-//            } else {
-//                @Suppress("DEPRECATION")
-//                val display = activity.windowManager.defaultDisplay
-//                @Suppress("DEPRECATION")
-//                display.getMetrics(outMetrics)
-//            }
-
             // getRealMetrics is only available with API 17 and +
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
                 val metrics = DisplayMetrics()

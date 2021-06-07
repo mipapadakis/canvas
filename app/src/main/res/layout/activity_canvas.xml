@@ -1,11 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/canvas_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="?attr/colorSecondaryVariant"
+    android:background="?attr/colorPrimaryVariant"
+    android:orientation="vertical"
     tools:context=".CanvasActivity">
 
     <androidx.cardview.widget.CardView
@@ -45,7 +47,7 @@
                         android:layout_width="@dimen/toolbar_button_size"
                         android:layout_height="@dimen/toolbar_button_size"
                         android:src="@drawable/baseline_undo_black_36"
-                        android:contentDescription="@string/toolbar_button" />
+                        android:contentDescription="@string/toolbar_button"/>
 
                     <ImageButton
                         android:id="@+id/toolbar_button_redo"
@@ -79,11 +81,379 @@
                 <ImageView
                     android:id="@+id/toolbar_visibility"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                    android:layout_height="match_parent"
                     android:layout_gravity="center_vertical"
                     android:src="@drawable/baseline_visibility_off_black_36"
                     android:contentDescription="@string/toolbar_button" />
             </LinearLayout>
+        </androidx.cardview.widget.CardView>
+    </androidx.cardview.widget.CardView>
+
+
+    <androidx.cardview.widget.CardView
+        android:id="@+id/bottom_toolbar_outer_card"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        app:cardCornerRadius="8dp"
+        app:cardElevation="6dp"
+        app:cardPreventCornerOverlap="true"
+        app:cardUseCompatPadding="true"
+        app:cardBackgroundColor="@color/black"
+        android:visibility="visible">
+
+        <androidx.cardview.widget.CardView
+            android:id="@+id/bottom_toolbar_inner_card"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:cardBackgroundColor="@color/green"
+            app:cardPreventCornerOverlap="true"
+            app:cardUseCompatPadding="true"
+            app:cardCornerRadius="4dp">
+
+            <HorizontalScrollView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <!--////////////////////////////////////BRUSH////////////////////////////////////-->
+                    <LinearLayout
+                        android:id="@+id/tool_brush_properties"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_horizontal"
+                        android:orientation="horizontal">
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:paddingHorizontal="15dp"
+                            android:layout_gravity="center"
+                            android:gravity="center"
+                            android:textSize="14sp"
+                            android:textStyle="bold"
+                            android:text="Brush\nproperties:"/>
+
+                        <ImageButton
+                            android:id="@+id/property_brush_color"
+                            android:layout_width="@dimen/toolbar_button_size"
+                            android:layout_height="@dimen/toolbar_button_size"
+                            android:src="@drawable/baseline_color_lens_black_36"
+                            android:contentDescription="@string/bottom_toolbar_button" />
+
+                        <androidx.appcompat.widget.AppCompatButton
+                            android:id="@+id/property_brush_size"
+                            android:layout_width="@dimen/toolbar_button_size"
+                            android:layout_height="@dimen/toolbar_button_size"
+                            android:textSize="12sp"
+                            android:text="size"
+                            android:scaleType="centerCrop"
+                            android:layout_gravity="center"
+                            android:contentDescription="@string/bottom_toolbar_button" />
+
+                        <androidx.appcompat.widget.AppCompatButton
+                            android:id="@+id/property_brush_type"
+                            android:layout_width="@dimen/toolbar_button_size"
+                            android:layout_height="@dimen/toolbar_button_size"
+                            android:textSize="12sp"
+                            android:text="type"
+                            android:scaleType="centerCrop"
+                            android:layout_gravity="center"
+                            android:contentDescription="@string/bottom_toolbar_button" />
+
+                        <androidx.appcompat.widget.AppCompatButton
+                            android:id="@+id/property_brush_opacity"
+                            android:layout_width="74dp"
+                            android:layout_height="@dimen/toolbar_button_size"
+                            android:textSize="12sp"
+                            android:text="opacity"
+                            android:scaleType="centerCrop"
+                            android:layout_gravity="center"
+                            android:contentDescription="@string/bottom_toolbar_button" />
+                    </LinearLayout>
+
+                    <!--////////////////////////////////////ERASER///////////////////////////////////-->
+                    <LinearLayout
+                        android:id="@+id/tool_eraser_properties"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_horizontal"
+                        android:orientation="horizontal">
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:paddingHorizontal="15dp"
+                            android:layout_gravity="center"
+                            android:gravity="center"
+                            android:textSize="14sp"
+                            android:textStyle="bold"
+                            android:text="Eraser\nproperties:"/>
+
+                        <androidx.appcompat.widget.AppCompatButton
+                            android:id="@+id/property_eraser_size"
+                            android:layout_width="@dimen/toolbar_button_size"
+                            android:layout_height="@dimen/toolbar_button_size"
+                            android:textSize="12sp"
+                            android:text="size"
+                            android:scaleType="centerCrop"
+                            android:layout_gravity="center"
+                            android:contentDescription="@string/bottom_toolbar_button" />
+
+                        <androidx.appcompat.widget.AppCompatButton
+                            android:id="@+id/property_eraser_opacity"
+                            android:layout_width="74dp"
+                            android:layout_height="@dimen/toolbar_button_size"
+                            android:textSize="12sp"
+                            android:text="opacity"
+                            android:scaleType="centerCrop"
+                            android:layout_gravity="center"
+                            android:contentDescription="@string/bottom_toolbar_button" />
+                    </LinearLayout>
+
+                    <!--////////////////////////////////////BUCKET///////////////////////////////////-->
+                    <LinearLayout
+                        android:id="@+id/tool_bucket_properties"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_horizontal"
+                        android:orientation="horizontal">
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:paddingHorizontal="15dp"
+                            android:layout_gravity="center"
+                            android:gravity="center"
+                            android:textSize="14sp"
+                            android:textStyle="bold"
+                            android:text="Bucket\nproperties:"/>
+
+                        <ImageButton
+                            android:id="@+id/property_bucket_color"
+                            android:layout_width="@dimen/toolbar_button_size"
+                            android:layout_height="@dimen/toolbar_button_size"
+                            android:src="@drawable/baseline_color_lens_black_36"
+                            android:contentDescription="@string/bottom_toolbar_button" />
+
+                        <androidx.appcompat.widget.AppCompatButton
+                            android:id="@+id/property_bucket_opacity"
+                            android:layout_width="74dp"
+                            android:layout_height="@dimen/toolbar_button_size"
+                            android:textSize="12sp"
+                            android:text="opacity"
+                            android:scaleType="centerCrop"
+                            android:layout_gravity="center"
+                            android:contentDescription="@string/bottom_toolbar_button" />
+                    </LinearLayout>
+
+                    <!--////////////////////////////////////SELECT///////////////////////////////////-->
+                    <LinearLayout
+                        android:id="@+id/tool_select_properties"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_horizontal"
+                        android:orientation="horizontal">
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:paddingHorizontal="15dp"
+                            android:layout_gravity="center"
+                            android:gravity="center"
+                            android:textSize="14sp"
+                            android:textStyle="bold"
+                            android:text="Selection\nproperties:"/>
+
+                        <androidx.appcompat.widget.AppCompatButton
+                            android:id="@+id/property_select_type"
+                            android:layout_width="@dimen/toolbar_button_size"
+                            android:layout_height="@dimen/toolbar_button_size"
+                            android:textSize="12sp"
+                            android:text="type"
+                            android:scaleType="centerCrop"
+                            android:layout_gravity="center"
+                            android:contentDescription="@string/bottom_toolbar_button" />
+
+                        <androidx.appcompat.widget.AppCompatButton
+                            android:id="@+id/property_select_method"
+                            android:layout_width="74dp"
+                            android:layout_height="@dimen/toolbar_button_size"
+                            android:textSize="12sp"
+                            android:text="method"
+                            android:scaleType="centerCrop"
+                            android:layout_gravity="center"
+                            android:contentDescription="@string/bottom_toolbar_button" />
+                    </LinearLayout>
+
+                    <!--////////////////////////////////////SHAPE////////////////////////////////////-->
+                    <LinearLayout
+                        android:id="@+id/tool_shape_properties"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_horizontal"
+                        android:orientation="horizontal">
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:paddingHorizontal="15dp"
+                            android:layout_gravity="center"
+                            android:gravity="center"
+                            android:textSize="14sp"
+                            android:textStyle="bold"
+                            android:text="Shape\nproperties:"/>
+
+                        <ImageButton
+                            android:id="@+id/property_shape_color"
+                            android:layout_width="@dimen/toolbar_button_size"
+                            android:layout_height="@dimen/toolbar_button_size"
+                            android:src="@drawable/baseline_color_lens_black_36"
+                            android:contentDescription="@string/bottom_toolbar_button" />
+
+                        <androidx.appcompat.widget.AppCompatButton
+                            android:id="@+id/property_shape_stroke_size"
+                            android:layout_width="74dp"
+                            android:layout_height="@dimen/toolbar_button_size"
+                            android:textSize="12sp"
+                            android:text="stroke size"
+                            android:scaleType="centerCrop"
+                            android:layout_gravity="center"
+                            android:contentDescription="@string/bottom_toolbar_button" />
+
+                        <androidx.appcompat.widget.AppCompatButton
+                            android:id="@+id/property_shape_stroke_type"
+                            android:layout_width="74dp"
+                            android:layout_height="@dimen/toolbar_button_size"
+                            android:textSize="12sp"
+                            android:text="stroke type"
+                            android:scaleType="centerCrop"
+                            android:layout_gravity="center"
+                            android:contentDescription="@string/bottom_toolbar_button" />
+
+                        <androidx.appcompat.widget.AppCompatButton
+                            android:id="@+id/property_shape_opacity"
+                            android:layout_width="74dp"
+                            android:layout_height="@dimen/toolbar_button_size"
+                            android:textSize="12sp"
+                            android:text="opacity"
+                            android:scaleType="centerCrop"
+                            android:layout_gravity="center"
+                            android:contentDescription="@string/bottom_toolbar_button" />
+                    </LinearLayout>
+
+                    <!--/////////////////////////////////////TEXT////////////////////////////////////-->
+                    <LinearLayout
+                        android:id="@+id/tool_text_properties"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_horizontal"
+                        android:orientation="horizontal">
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:paddingHorizontal="15dp"
+                            android:layout_gravity="center"
+                            android:gravity="center"
+                            android:textSize="14sp"
+                            android:textStyle="bold"
+                            android:text="Text\nproperties:"/>
+
+                        <androidx.appcompat.widget.AppCompatButton
+                            android:id="@+id/property_text_font"
+                            android:layout_width="@dimen/toolbar_button_size"
+                            android:layout_height="@dimen/toolbar_button_size"
+                            android:textSize="12sp"
+                            android:text="font"
+                            android:scaleType="centerCrop"
+                            android:layout_gravity="center"
+                            android:contentDescription="@string/bottom_toolbar_button" />
+
+                        <androidx.appcompat.widget.AppCompatButton
+                            android:id="@+id/property_text_font_size"
+                            android:layout_width="@dimen/toolbar_button_size"
+                            android:layout_height="@dimen/toolbar_button_size"
+                            android:textSize="12sp"
+                            android:text="font size"
+                            android:scaleType="centerCrop"
+                            android:layout_gravity="center"
+                            android:contentDescription="@string/bottom_toolbar_button" />
+                    </LinearLayout>
+
+                    <!--////////////////////////////////////LAYERS///////////////////////////////////-->
+                    <LinearLayout
+                        android:id="@+id/canvas_layers_properties"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_horizontal"
+                        android:orientation="horizontal">
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:paddingHorizontal="15dp"
+                            android:layout_gravity="center"
+                            android:gravity="center"
+                            android:textSize="14sp"
+                            android:textStyle="bold"
+                            android:text="Layer\nproperties:"/>
+
+                        <ImageButton
+                            android:id="@+id/property_layers_add"
+                            android:layout_width="@dimen/toolbar_button_size"
+                            android:layout_height="@dimen/toolbar_button_size"
+                            android:padding="12dp"
+                            android:scaleType="fitXY"
+                            android:src="@drawable/add_layer"
+                            android:contentDescription="@string/bottom_toolbar_button" />
+
+                        <ImageButton
+                            android:id="@+id/property_layers_list"
+                            android:layout_width="@dimen/toolbar_button_size"
+                            android:layout_height="@dimen/toolbar_button_size"
+                            android:src="@drawable/baseline_layers_black_36"
+                            android:contentDescription="@string/bottom_toolbar_button" />
+                    </LinearLayout>
+
+                    <!--//////////////////////////////////TRANSFORM//////////////////////////////////-->
+                    <LinearLayout
+                        android:id="@+id/canvas_transform_properties"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_horizontal"
+                        android:orientation="horizontal">
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:paddingHorizontal="15dp"
+                            android:layout_gravity="center"
+                            android:gravity="center"
+                            android:textSize="14sp"
+                            android:textStyle="bold"
+                            android:text="Transform\nproperties:"/>
+
+                        <androidx.appcompat.widget.AppCompatButton
+                            android:id="@+id/property_transform_crop"
+                            android:layout_width="@dimen/toolbar_button_size"
+                            android:layout_height="@dimen/toolbar_button_size"
+                            android:textSize="12sp"
+                            android:text="crop"
+                            android:scaleType="centerCrop"
+                            android:layout_gravity="center"
+                            android:contentDescription="@string/bottom_toolbar_button" />
+
+                        <androidx.appcompat.widget.AppCompatButton
+                            android:id="@+id/property_transform_size"
+                            android:layout_width="@dimen/toolbar_button_size"
+                            android:layout_height="@dimen/toolbar_button_size"
+                            android:textSize="12sp"
+                            android:text="size"
+                            android:scaleType="centerCrop"
+                            android:layout_gravity="center"
+                            android:contentDescription="@string/bottom_toolbar_button" />
+                    </LinearLayout>
+
+                    <!--////////////////////////////////////XXXXX////////////////////////////////////-->
+                </LinearLayout>
+            </HorizontalScrollView>
         </androidx.cardview.widget.CardView>
     </androidx.cardview.widget.CardView>
 </RelativeLayout>

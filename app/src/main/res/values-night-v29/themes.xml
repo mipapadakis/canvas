@@ -13,4 +13,10 @@
         <!-- Customize your theme here. -->
         <item name="android:forceDarkAllowed">false</item>
     </style>
+
+    <style name="ButtonWithoutPadding">
+        <item name="android:padding">0dp</item>
+        <item name="android:minWidth">88dp</item>
+        <item name="android:minHeight">36dp</item>
+    </style>
 </resources>

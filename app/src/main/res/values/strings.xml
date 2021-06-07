@@ -43,13 +43,21 @@
     Tutorial:
         • Two-finger double click resizes canvas to fit the screen.
         • Triple-finger single click resets canvas to original size.
+        • Long Press on a button shows a dialog explaining its use.
     </string>
     <string name="toolbar_button">toolbar button</string>
+    <string name="bottom_toolbar_button">bottom toolbar button</string>
     <string name="tools_menu_brush">Brush</string>
     <string name="tools_menu_bucket">Bucket</string>
     <string name="tools_menu_eraser">Eraser</string>
     <string name="tools_menu_eyedropper">Eyedropper</string>
     <string name="tools_menu_select">Select</string>
     <string name="tools_menu_shape">Shape</string>
+    <string name="tools_menu_text">Text</string>
+    <string name="canvas_menu_layers">Layers</string>
+    <string name="canvas_menu_settings">Settings</string>
+    <string name="canvas_menu_transform">Transform Canvas</string>
+    <string name="canvas_menu_save">Save</string>
+    <string name="canvas_menu_share">Share</string>
 
 </resources>
