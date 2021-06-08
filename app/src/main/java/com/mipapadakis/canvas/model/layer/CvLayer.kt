@@ -7,6 +7,7 @@ import com.mipapadakis.canvas.CanvasViewModel
 class CvLayer(var bitmap: Bitmap){
     private val initialWidth: Int = bitmap.width
     private val initialHeight: Int = bitmap.height
+    private val paint = CanvasViewModel.paint
     //var canvas: Canvas
     var visible = true
 
@@ -26,9 +27,14 @@ class CvLayer(var bitmap: Bitmap){
         canvas.drawColor(Color.WHITE)
     }
 
-    fun drawFreeHand(canvas: Canvas, path: Path?){
+    fun drawPath(canvas: Canvas, path: Path?){
         //canvas.drawColor( Color.TRANSPARENT, PorterDuff.Mode.CLEAR)
-        canvas.drawPath(path ?: Path(), CanvasViewModel.paint)
+
+        canvas.drawPath(path ?: Path(), paint)
+    }
+
+    fun drawDot(canvas: Canvas, x: Float, y: Float){
+        canvas.drawPoint(x,y,paint)
     }
 
     fun drawRect(canvas: Canvas){ //TODO

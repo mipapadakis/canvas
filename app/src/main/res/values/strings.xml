@@ -59,5 +59,14 @@
     <string name="canvas_menu_transform">Transform Canvas</string>
     <string name="canvas_menu_save">Save</string>
     <string name="canvas_menu_share">Share</string>
+    <string name="shape_menu_line">Line</string>
+    <string name="shape_menu_square">Square</string>
+    <string name="shape_menu_rectangle">Rectangle</string>
+    <string name="shape_menu_circle">Circle</string>
+    <string name="shape_menu_oval">Oval</string>
+    <string name="shape_menu_polygon">Polygon</string>
+    <string name="shape_menu_triangle">Triangle</string>
+    <string name="shape_menu_arrow">Arrow</string>
+    <string name="shape_menu_callout">Callout</string>
 
 </resources>

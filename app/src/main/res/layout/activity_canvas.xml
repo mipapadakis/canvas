@@ -56,18 +56,21 @@
                         android:src="@drawable/baseline_redo_black_36"
                         android:contentDescription="@string/toolbar_button" />
 
+                    <!--
                     <ImageButton
                         android:id="@+id/toolbar_button_palette"
                         android:layout_width="@dimen/toolbar_button_size"
                         android:layout_height="@dimen/toolbar_button_size"
                         android:src="@drawable/baseline_color_lens_black_36"
-                        android:contentDescription="@string/toolbar_button" />
+                        android:contentDescription="@string/toolbar_button" />-->
 
                     <ImageButton
                         android:id="@+id/toolbar_button_tool"
                         android:layout_width="@dimen/toolbar_button_size"
                         android:layout_height="@dimen/toolbar_button_size"
                         android:src="@drawable/baseline_brush_black_36"
+                        android:padding="12dp"
+                        android:scaleType="fitXY"
                         android:contentDescription="@string/toolbar_button" />
 
                     <ImageButton
@@ -116,7 +119,7 @@
                 android:layout_height="wrap_content">
 
                 <LinearLayout
-                    android:layout_width="match_parent"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:orientation="vertical">
 
@@ -308,6 +311,16 @@
                             android:layout_width="@dimen/toolbar_button_size"
                             android:layout_height="@dimen/toolbar_button_size"
                             android:src="@drawable/baseline_color_lens_black_36"
+                            android:contentDescription="@string/bottom_toolbar_button" />
+
+                        <androidx.appcompat.widget.AppCompatButton
+                            android:id="@+id/property_shape_type"
+                            android:layout_width="74dp"
+                            android:layout_height="@dimen/toolbar_button_size"
+                            android:textSize="12sp"
+                            android:text="type"
+                            android:scaleType="centerCrop"
+                            android:layout_gravity="center"
                             android:contentDescription="@string/bottom_toolbar_button" />
 
                         <androidx.appcompat.widget.AppCompatButton

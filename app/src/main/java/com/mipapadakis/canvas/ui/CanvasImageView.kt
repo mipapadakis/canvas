@@ -2,9 +2,9 @@ package com.mipapadakis.canvas.ui
 
 import android.content.Context
 import android.graphics.*
+import android.os.CountDownTimer
 import android.util.Log
 import android.view.MotionEvent
-import android.view.ViewConfiguration
 import android.view.animation.LinearInterpolator
 import android.widget.RelativeLayout
 import androidx.appcompat.widget.AppCompatImageView
@@ -15,10 +15,11 @@ import kotlin.math.atan2
 import kotlin.math.min
 import kotlin.math.sqrt
 
+private const val POINTER_DOWN_DELAY = 10L
 
 /** Custom ImageView which represents the canvas. It handles canvas changes and touches. */
 class CanvasImageView(context: Context?) : AppCompatImageView(context!!), MyTouchListener.MultiTouchListener{
-    private val touchTolerance = ViewConfiguration.get(context).scaledTouchSlop //If the finger has moved less than the touchTolerance distance, don't draw.
+    private val touchTolerance = 0.1f //ViewConfiguration.get(context).scaledTouchSlop //If the finger has moved less than the touchTolerance distance, don't draw.
     private lateinit var params: RelativeLayout.LayoutParams
     private val paint = CanvasViewModel.paint
     private lateinit var cvImage: CvImage
@@ -39,7 +40,7 @@ class CanvasImageView(context: Context?) : AppCompatImageView(context!!), MyTouc
     //Cached paths (of the whole drawing)
 
     //Cached coordinates:
-    //private var firstPoint = Point()//Coords of position at on1PointerDown(), for MODE_DRAW
+    private var firstPoint = Point()//Coords of position at on1PointerDown(), for MODE_DRAW
     private var prevPoint = Point() //Coords of last position of pointer, for MODE_DRAW
 
     companion object {
@@ -74,12 +75,12 @@ class CanvasImageView(context: Context?) : AppCompatImageView(context!!), MyTouc
 
         if(mode == MODE_DRAW) {
             try {
-                cvImage.layers[0].drawFreeHand(Canvas(drawable.toBitmap()), currentPath)
+                cvImage.layers[0].drawPath(Canvas(drawable.toBitmap()), currentPath)
             }catch(e: java.lang.IllegalStateException){
                 //Must pass a mutable bitmap to the Canvas constructor.
                 val workingBitmap: Bitmap = Bitmap.createBitmap(drawable.toBitmap())
                 val mutableBitmap = workingBitmap.copy(Bitmap.Config.ARGB_8888, true)
-                cvImage.layers[0].drawFreeHand(Canvas(mutableBitmap), currentPath)
+                cvImage.layers[0].drawPath(Canvas(mutableBitmap), currentPath)
             }
             //canvas!!.drawBitmap(cvImage.layers[0].bitmap, 0f, 0f, paint)
             setImageBitmap(cvImage.layers[0].bitmap)
@@ -165,7 +166,6 @@ class CanvasImageView(context: Context?) : AppCompatImageView(context!!), MyTouc
 
     override fun on1PointerTap(event: MotionEvent) {
         Log.i("CanvasTouchListener", "on1PointerTap")
-        //TODO paint a dot at event position
     }
 
     override fun on2PointerTap(event: MotionEvent) {
@@ -209,13 +209,33 @@ class CanvasImageView(context: Context?) : AppCompatImageView(context!!), MyTouc
     }
 
     override fun on1PointerDown(event: MotionEvent) {
-        //firstPoint = Point(event)
+        firstPoint = Point(event)
         prevPoint = Point(event)
         currentPath.reset()
         val bitmapCoords = mapScreenCoordsToBitmapCoords(event)
         currentPath.moveTo(bitmapCoords.x, bitmapCoords.y)
         //currentPath.moveTo(event.x, event.y)
         setModeDraw()
+
+        object : CountDownTimer(POINTER_DOWN_DELAY,POINTER_DOWN_DELAY) {
+            override fun onTick(millisUntilFinished: Long) {}
+            override fun onFinish(){
+                if(mode== MODE_DRAW && firstPoint.equalTo(Point(event))){
+                    val currentBitmapCoords = mapScreenCoordsToBitmapCoords(event)
+                    try {
+                        cvImage.layers[0].drawDot(Canvas(drawable.toBitmap()), currentBitmapCoords.x, currentBitmapCoords.y)
+                    }catch(e: java.lang.IllegalStateException){
+                        //Must pass a mutable bitmap to the Canvas constructor.
+                        val workingBitmap: Bitmap = Bitmap.createBitmap(drawable.toBitmap())
+                        val mutableBitmap = workingBitmap.copy(Bitmap.Config.ARGB_8888, true)
+                        cvImage.layers[0].drawDot(Canvas(mutableBitmap), currentBitmapCoords.x, currentBitmapCoords.y)
+                    }
+                    //canvas!!.drawBitmap(cvImage.layers[0].bitmap, 0f, 0f, paint)
+                    setImageBitmap(cvImage.layers[0].bitmap)
+                }
+            }
+        }.start()
+
 //        invalidate()
     }
 
@@ -328,5 +348,6 @@ class CanvasImageView(context: Context?) : AppCompatImageView(context!!), MyTouc
             x=-1f
             y=-1f
         }
+        fun equalTo(p: Point) = x==p.x && y==p.y
     }
 }
