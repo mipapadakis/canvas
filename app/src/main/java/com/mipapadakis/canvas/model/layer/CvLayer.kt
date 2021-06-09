@@ -29,7 +29,6 @@ class CvLayer(var bitmap: Bitmap){
 
     fun drawPath(canvas: Canvas, path: Path?){
         //canvas.drawColor( Color.TRANSPARENT, PorterDuff.Mode.CLEAR)
-
         canvas.drawPath(path ?: Path(), paint)
     }
 

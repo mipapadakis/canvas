@@ -83,12 +83,14 @@ class CanvasImageView(context: Context?) : AppCompatImageView(context!!), MyTouc
                 cvImage.layers[0].drawPath(Canvas(mutableBitmap), currentPath)
             }
             //canvas!!.drawBitmap(cvImage.layers[0].bitmap, 0f, 0f, paint)
-            setImageBitmap(cvImage.layers[0].bitmap)
+            //setImageBitmap(cvImage.layers[0].bitmap)
         }
 
         /**canvas.save()
-        canvas.translate(dx, dy)
-        cvImage.layers[0].drawFreeHand(Canvas(drawable.toBitmap()), currentPath)
+        val coords = mapScreenCoordsToBitmapCoords(0f,0f)
+        canvas.translate(coords.x, coords.y)
+
+        cvImage.layers[0].drawPath(Canvas(drawable.toBitmap()), currentPath)
         canvas.drawBitmap(cvImage.layers[0].bitmap, 0f, 0f, null)
         drawable.draw(canvas)
         canvas.restore()*/
@@ -285,13 +287,11 @@ class CanvasImageView(context: Context?) : AppCompatImageView(context!!), MyTouc
             if(touchToleranceOk) {
                 val currentBitmapCoords = mapScreenCoordsToBitmapCoords(event)
 //                val prevBitmapCoords = mapScreenCoordsToBitmapCoords(prevPoint.x, prevPoint.y)
-//                currentPath.quadTo(currentBitmapCoords.x, currentBitmapCoords.y,
-//                    (prevBitmapCoords.x + currentBitmapCoords.x) / 2,
-//                    (prevBitmapCoords.y + currentBitmapCoords.y) / 2)
-//                currentPath.quadTo(event.x, event.y, (prevPoint.x + event.x) / 2, (prevPoint.y + event.y) / 2) //TODO search quadTo() https://developer.android.com/codelabs/advanced-android-kotlin-training-canvas#5
-//                prevPoint = Point(event)
+//                currentPath.quadTo(currentBitmapCoords.x, currentBitmapCoords.y, (prevBitmapCoords.x + currentBitmapCoords.x) / 2, (prevBitmapCoords.y + currentBitmapCoords.y) / 2)
+                //currentPath.quadTo(event.x, event.y, (prevPoint.x + event.x) / 2, (prevPoint.y + event.y) / 2) //TODO search quadTo() https://developer.android.com/codelabs/advanced-android-kotlin-training-canvas#5
                 currentPath.lineTo(currentBitmapCoords.x, currentBitmapCoords.y)
                 invalidate()
+                prevPoint = Point(event)
             }
             // else, pointer remains roughly at the same position => avoid drawing.
         }

@@ -2,18 +2,17 @@ package com.mipapadakis.canvas
 
 import android.annotation.SuppressLint
 import android.content.Context
-import android.content.DialogInterface
 import android.graphics.*
 import android.net.Uri
 import android.os.*
 import android.util.Log
 import android.view.*
 import android.widget.*
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.AppCompatButton
 import androidx.cardview.widget.CardView
 import androidx.core.content.ContextCompat
+import androidx.core.graphics.alpha
 import com.mipapadakis.canvas.ui.*
 import com.mipapadakis.canvas.ui.create_canvas.CreateCanvasFragment
 import java.io.File
@@ -345,27 +344,100 @@ class CanvasActivity : AppCompatActivity() {
     }
 
     private fun setupToolbarMenus() {
-        //val v: View = findViewById(R.id.button2)
         addPopMenuTools()
         addPopMenuCanvas()
+
         //BRUSH
         addPopMenuColor(toolBrushColorBtn)
         toolBrushSizeBtn.setOnClickListener {
-            numberPicker("Brush Size", "Choose a value:", CanvasViewModel.paint.strokeWidth.toInt()){
-                CanvasViewModel.paint.strokeWidth = it*CanvasViewModel.PAINT_MAX_SIZE/100
+            numberPicker("Brush Size", "Choose number of pixels:", CanvasViewModel.paint.strokeWidth.toInt()){
+                CanvasViewModel.paint.strokeWidth = it.toFloat()
             }
         }
 
+        //TODO brush type
+        toolBrushOpacityBtn.setOnClickListener {
+            numberPicker("Brush Opacity", "Choose percentage:", CanvasViewModel.paint.alpha*100/255){
+                CanvasViewModel.paint.alpha = it*255/100
+                showToast("CanvasViewModel.paint.alpha = ${CanvasViewModel.paint.alpha}")
+            }
+        }
+
+        //ERASER
+        toolEraserSizeBtn.setOnClickListener {
+            numberPicker("Eraser Size", "Choose number of pixels:", CanvasViewModel.eraserSize.toInt()){
+                CanvasViewModel.eraserSize = it.toFloat()
+            }
+        }
+        toolEraserOpacityBtn.setOnClickListener {
+            numberPicker("Eraser Opacity", "Choose percentage:", CanvasViewModel.eraserOpacity){
+                CanvasViewModel.eraserOpacity = it
+            }
+        }
+
+        //BUCKET
         addPopMenuColor(toolBucketColorBtn)
+        toolBucketOpacityBtn.setOnClickListener {
+            numberPicker("Eraser Opacity", "Choose percentage:", CanvasViewModel.bucketOpacity){
+                CanvasViewModel.bucketOpacity = it
+            }
+        }
+
+        //SELECT
+        //TODO toolSelectTypeBtn
+        //TODO toolSelectMethodBtn
+
+        //SHAPE
         addPopMenuColor(toolShapeColorBtn)
-        addPopMenuShapes()
+        addPopMenuShapeType()
+        toolShapeStrokeSizeBtn.setOnClickListener {
+            numberPicker("Shape Stroke Size", "Choose number of pixels:", CanvasViewModel.shapePaint.strokeWidth.toInt()){
+                CanvasViewModel.shapePaint.strokeWidth = it.toFloat()
+            }
+        }
+        //TODO stroke type
+        toolShapeOpacityBtn.setOnClickListener {
+            numberPicker("Eraser Opacity", "Choose percentage:", CanvasViewModel.shapePaint.alpha){
+                CanvasViewModel.shapePaint.alpha = it
+            }
+        }
+
+        //TEXT
+        toolTextFontSizeBtn.setOnClickListener {
+            numberPicker("Font Size", "Choose pixel height:", CanvasViewModel.textFontSize){
+                CanvasViewModel.textFontSize = it
+            }
+        }
+
+    }
+
+    private fun addPopMenuColor(btn: ImageButton){
+        btn.setOnClickListener {
+            val paletteMenu = PopupMenu(this, btn)
+            paletteMenu.menuInflater.inflate(R.menu.palette, paletteMenu.menu)
+            paletteMenu.setOnMenuItemClickListener {
+                when (it.itemId) {
+                    R.id.color_black -> { CanvasViewModel.paint.color = CanvasColor.getColorFromId(this, R.color.black) }
+                    R.id.color_red -> { CanvasViewModel.paint.color = CanvasColor.getColorFromId(this, R.color.red) }
+                    R.id.color_green -> { CanvasViewModel.paint.color = CanvasColor.getColorFromId(this, R.color.green) }
+                    R.id.color_blue -> { CanvasViewModel.paint.color = CanvasColor.getColorFromId(this, R.color.blue) }
+                    R.id.color_yellow -> { CanvasViewModel.paint.color = CanvasColor.getColorFromId(this, R.color.yellow) }
+                    R.id.color_purple -> { CanvasViewModel.paint.color = CanvasColor.getColorFromId(this, R.color.purple) }
+                    else -> {} //TODO palette
+                }
+                toolbarInnerCardView.setCardBackgroundColor(CanvasViewModel.paint.color)
+                bottomToolbarInnerCardView.setCardBackgroundColor(CanvasViewModel.paint.color)
+                true
+            }
+            paletteMenu.show()
+        }
     }
 
     private fun numberPicker(title: String, message: String, currentValue: Int, positive: (number: Int) -> Unit){
         val numberPicker = NumberPicker(this)
         numberPicker.minValue = 1
         numberPicker.maxValue = 100
-        numberPicker.value = currentValue*100/CanvasViewModel.PAINT_MAX_SIZE.toInt()
+        numberPicker.value = currentValue
 
         val builder: android.app.AlertDialog.Builder = android.app.AlertDialog.Builder(this)
         builder.setView(numberPicker)
@@ -377,6 +449,47 @@ class CanvasActivity : AppCompatActivity() {
         builder.setNegativeButton( "CANCEL") { _, _ ->}
         builder.create()
         builder.show()
+    }
+
+
+    /** Don't need this, since I'm using the drawable IDs as key identifiers.
+     *  For example, CanvasViewModel.SHAPE_TYPE_LINE == R.drawable.baseline_show_chart_black_36.
+     * private fun getCurrentShapeId(): Int{
+        return when (CanvasViewModel.shapeType) {
+            CanvasViewModel.SHAPE_TYPE_LINE -> { R.drawable.baseline_show_chart_black_36 }
+            CanvasViewModel.SHAPE_TYPE_SQUARE -> { R.drawable.baseline_check_box_outline_blank_black_36 }
+            CanvasViewModel.SHAPE_TYPE_RECTANGLE -> { R.drawable.baseline_crop_16_9_black_36 }
+            CanvasViewModel.SHAPE_TYPE_CIRCLE -> { R.drawable.baseline_panorama_fish_eye_black_36 }
+            CanvasViewModel.SHAPE_TYPE_OVAL -> { R.drawable.oval }
+            CanvasViewModel.SHAPE_TYPE_POLYGON -> { R.drawable.baseline_star_outline_black_36 }
+            CanvasViewModel.SHAPE_TYPE_TRIANGLE -> { R.drawable.baseline_change_history_black_36 }
+            CanvasViewModel.SHAPE_TYPE_ARROW -> { R.drawable.baseline_east_black_36 }
+            CanvasViewModel.SHAPE_TYPE_CALLOUT -> { R.drawable.baseline_chat_bubble_outline_black_36 }
+            else -> {R.drawable.baseline_show_chart_black_36}
+        }
+    }*/
+    private fun addPopMenuShapeType(){
+        toolShapeTypeBtn.setOnClickListener {
+            val menu = PopupMenu(this, toolShapeTypeBtn)
+            menu.menuInflater.inflate(R.menu.shapes, menu.menu)
+            menu.setOnMenuItemClickListener {
+                when (it.itemId) {
+                    R.id.shape_line -> {CanvasViewModel.shapeType = CanvasViewModel.SHAPE_TYPE_LINE}
+                    R.id.shape_square -> { CanvasViewModel.shapeType = CanvasViewModel.SHAPE_TYPE_SQUARE}
+                    R.id.shape_rectangle -> { CanvasViewModel.shapeType = CanvasViewModel.SHAPE_TYPE_RECTANGLE }
+                    R.id.shape_circle -> { CanvasViewModel.shapeType = CanvasViewModel.SHAPE_TYPE_CIRCLE }
+                    R.id.shape_oval -> { CanvasViewModel.shapeType = CanvasViewModel.SHAPE_TYPE_OVAL }
+                    R.id.shape_polygon -> { CanvasViewModel.shapeType = CanvasViewModel.SHAPE_TYPE_POLYGON }
+                    R.id.shape_triangle -> { CanvasViewModel.shapeType = CanvasViewModel.SHAPE_TYPE_TRIANGLE }
+                    R.id.shape_arrow -> { CanvasViewModel.shapeType = CanvasViewModel.SHAPE_TYPE_ARROW }
+                    R.id.shape_callout -> { CanvasViewModel.shapeType = CanvasViewModel.SHAPE_TYPE_CALLOUT }
+                    else -> {}
+                }
+                toolbarToolBtn.setImageResource(CanvasViewModel.shapeType)
+                true
+            }
+            menu.show()
+        }
     }
 
     private fun addPopMenuCanvas() {
@@ -451,7 +564,7 @@ class CanvasActivity : AppCompatActivity() {
                     R.id.tool_shape -> {
                         toolShapeLayout.visibility = View.VISIBLE
                         CanvasViewModel.tool = CanvasViewModel.TOOL_SHAPE
-                        toolbarToolBtn.setImageResource(getCurrentShapeId())
+                        toolbarToolBtn.setImageResource(CanvasViewModel.shapeType)
                     }
                     R.id.tool_text -> {
                         toolTextLayout.visibility = View.VISIBLE
@@ -463,67 +576,6 @@ class CanvasActivity : AppCompatActivity() {
                 true
             }
             toolsMenu.show()
-        }
-    }
-
-    private fun addPopMenuShapes(){
-        toolShapeTypeBtn.setOnClickListener {
-            val menu = PopupMenu(this, toolShapeTypeBtn)
-            menu.menuInflater.inflate(R.menu.shapes, menu.menu)
-            menu.setOnMenuItemClickListener {
-                when (it.itemId) {
-                    R.id.shape_line -> {CanvasViewModel.shape = CanvasViewModel.SHAPE_LINE}
-                    R.id.shape_square -> { CanvasViewModel.shape = CanvasViewModel.SHAPE_SQUARE}
-                    R.id.shape_rectangle -> { CanvasViewModel.shape = CanvasViewModel.SHAPE_RECTANGLE }
-                    R.id.shape_circle -> { CanvasViewModel.shape = CanvasViewModel.SHAPE_CIRCLE }
-                    R.id.shape_oval -> { CanvasViewModel.shape = CanvasViewModel.SHAPE_OVAL }
-                    R.id.shape_polygon -> { CanvasViewModel.shape = CanvasViewModel.SHAPE_POLYGON }
-                    R.id.shape_triangle -> { CanvasViewModel.shape = CanvasViewModel.SHAPE_TRIANGLE }
-                    R.id.shape_arrow -> { CanvasViewModel.shape = CanvasViewModel.SHAPE_ARROW }
-                    R.id.shape_callout -> { CanvasViewModel.shape = CanvasViewModel.SHAPE_CALLOUT }
-                    else -> {}
-                }
-                toolbarToolBtn.setImageResource(getCurrentShapeId())
-                true
-            }
-            menu.show()
-        }
-    }
-
-    private fun getCurrentShapeId(): Int{
-        return when (CanvasViewModel.shape) {
-            CanvasViewModel.SHAPE_LINE -> { R.drawable.baseline_show_chart_black_36 }
-            CanvasViewModel.SHAPE_SQUARE -> { R.drawable.baseline_check_box_outline_blank_black_36 }
-            CanvasViewModel.SHAPE_RECTANGLE -> { R.drawable.baseline_crop_16_9_black_36 }
-            CanvasViewModel.SHAPE_CIRCLE -> { R.drawable.baseline_panorama_fish_eye_black_36 }
-            CanvasViewModel.SHAPE_OVAL -> { R.drawable.oval }
-            CanvasViewModel.SHAPE_POLYGON -> { R.drawable.baseline_star_outline_black_36 }
-            CanvasViewModel.SHAPE_TRIANGLE -> { R.drawable.baseline_change_history_black_36 }
-            CanvasViewModel.SHAPE_ARROW -> { R.drawable.baseline_east_black_36 }
-            CanvasViewModel.SHAPE_CALLOUT -> { R.drawable.baseline_chat_bubble_outline_black_36 }
-            else -> {R.drawable.baseline_show_chart_black_36}
-        }
-    }
-
-    private fun addPopMenuColor(btn: ImageButton){
-        btn.setOnClickListener {
-            val paletteMenu = PopupMenu(this, btn)
-            paletteMenu.menuInflater.inflate(R.menu.palette, paletteMenu.menu)
-            paletteMenu.setOnMenuItemClickListener {
-                when (it.itemId) {
-                    R.id.color_black -> { CanvasViewModel.paint.color = CanvasColor.getColorFromId(this, R.color.black) }
-                    R.id.color_red -> { CanvasViewModel.paint.color = CanvasColor.getColorFromId(this, R.color.red) }
-                    R.id.color_green -> { CanvasViewModel.paint.color = CanvasColor.getColorFromId(this, R.color.green) }
-                    R.id.color_blue -> { CanvasViewModel.paint.color = CanvasColor.getColorFromId(this, R.color.blue) }
-                    R.id.color_yellow -> { CanvasViewModel.paint.color = CanvasColor.getColorFromId(this, R.color.yellow) }
-                    R.id.color_purple -> { CanvasViewModel.paint.color = CanvasColor.getColorFromId(this, R.color.purple) }
-                    else -> {} //TODO palette
-                }
-                toolbarInnerCardView.setCardBackgroundColor(CanvasViewModel.paint.color)
-                bottomToolbarInnerCardView.setCardBackgroundColor(CanvasViewModel.paint.color)
-                true
-            }
-            paletteMenu.show()
         }
     }
 
