@@ -1,6 +1,5 @@
 package com.mipapadakis.canvas.ui
 
-import android.R.attr.bitmap
 import android.annotation.SuppressLint
 import android.os.CountDownTimer
 import android.util.Log
@@ -35,7 +34,8 @@ class MyTouchListener(private val touchListener: MultiTouchListener): View.OnTou
     override fun onTouch(view: View?, event: MotionEvent?): Boolean {
 
         if(view==null || event==null) {
-            touchListener.onCancelTouch()
+            touchListener.onCancelTouch(event)
+            longPressTimer?.cancel()
             return false
         }
 
@@ -58,7 +58,8 @@ class MyTouchListener(private val touchListener: MultiTouchListener): View.OnTou
             }
             MotionEvent.ACTION_CANCEL -> {
                 resetAllPointers()
-                touchListener.onCancelTouch()
+                touchListener.onCancelTouch(event)
+                longPressTimer?.cancel()
             }
             MotionEvent.ACTION_UP -> {
                 if(doubleTapFirstTouch==null) doubleTapFirstTouch = TouchEvent(event.x, event.y, event.eventTime)
@@ -176,7 +177,7 @@ class MyTouchListener(private val touchListener: MultiTouchListener): View.OnTou
         fun on2PointerUp(event: MotionEvent){}
         fun on3PointerUp(event: MotionEvent){}
         fun onPointerMove(event: MotionEvent){}
-        fun onCancelTouch(){
+        fun onCancelTouch(event: MotionEvent?){
             Log.i("CanvasTouchListener", "on2PointerDoubleTap")
         }
     }

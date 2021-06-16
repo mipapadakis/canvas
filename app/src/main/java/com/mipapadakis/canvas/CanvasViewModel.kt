@@ -29,6 +29,7 @@ class CanvasViewModel: ViewModel() {
         const val SELECT_TYPE_RECTANGULAR = R.drawable.select_rectangular
         const val SELECT_TYPE_OVAL = R.drawable.select_elliptical
         const val SELECT_TYPE_LASSO = R.drawable.select_lasso
+        const val SELECT_TYPE_MAGIC_WAND = 10 //TODO
 
         const val SELECT_METHOD_NEW = R.drawable.new_selection
         const val SELECT_METHOD_UNION = R.drawable.selection_union

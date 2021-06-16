@@ -102,8 +102,6 @@ class CanvasActivity : AppCompatActivity() {
         devicePixelWidth = DeviceDimensions.getWidth(this)
         devicePixelHeight = DeviceDimensions.getHeight(this)
         //canvasViewModel = ViewModelProvider(this).get(CanvasViewModel::class.java)
-        val layoutParamsCanvas = RelativeLayout.LayoutParams(devicePixelWidth, devicePixelHeight)
-        layoutParamsCanvas.addRule(RelativeLayout.BELOW)
         layoutCanvas = findViewById(R.id.canvas_layout)
         canvasIV = CanvasImageView(this)
 
@@ -119,6 +117,8 @@ class CanvasActivity : AppCompatActivity() {
                 //Initialize canvasWidth and canvasHeight:
                 if(uri!=null) getImageDimensionsFromUri(Uri.parse(uri))
                 showToast("canvasWidth=$canvasWidth, canvasHeight=$canvasHeight")
+                val layoutParamsCanvas = RelativeLayout.LayoutParams(canvasWidth, canvasHeight)
+                layoutParamsCanvas.addRule(RelativeLayout.BELOW)
                 canvasIV.layoutParams = layoutParamsCanvas
                 canvasIV.setImageURI(Uri.parse(uri))
                 layoutCanvas.addView(canvasIV)
@@ -126,6 +126,8 @@ class CanvasActivity : AppCompatActivity() {
             else -> {
                 canvasWidth = intent.getIntExtra(DIMENSION_WIDTH_INTENT_KEY, 540)
                 canvasHeight = intent.getIntExtra(DIMENSION_HEIGHT_INTENT_KEY, 984)
+                val layoutParamsCanvas = RelativeLayout.LayoutParams(canvasWidth, canvasHeight)
+                layoutParamsCanvas.addRule(RelativeLayout.BELOW)
                 canvasIV.layoutParams = layoutParamsCanvas
                 val bitmap = Bitmap.createBitmap(canvasWidth, canvasHeight, Bitmap.Config.ARGB_8888)
                 val canvas = Canvas(bitmap)
@@ -137,9 +139,7 @@ class CanvasActivity : AppCompatActivity() {
         //Handle background touches:
         layoutCanvas.setOnTouchListener(MyTouchListener(object : MyTouchListener.MultiTouchListener {
             //TODO
-            override fun on1PointerTap(event: MotionEvent) {
-                hideToolbars()
-            }
+            override fun on1PointerTap(event: MotionEvent) { toggleToolbarVisibility() }
             override fun on2PointerDoubleTap(event: MotionEvent) {
                 Log.i("CanvasTouchListener", "Background on2PointerDoubleTap")
                 canvasIV.on2PointerDoubleTap(event)
@@ -147,7 +147,15 @@ class CanvasActivity : AppCompatActivity() {
             override fun on1PointerLongPress(event: MotionEvent) {
                 Log.i("CanvasTouchListener", "Background on1PointerLongPress")
                 //TODO: set canvasIV center to event position
-                showToolBars()
+                toggleToolbarVisibility()
+            }
+            override fun on3PointerTap(event: MotionEvent) {
+                Log.i("CanvasTouchListener", "Background on3PointerTap")
+                canvasIV.on3PointerTap(event)
+            }
+            override fun onCancelTouch(event: MotionEvent?) {
+                super.onCancelTouch(event)
+                canvasIV.onCancelTouch(event)
             }
         }))
         setToolbar()
@@ -256,9 +264,7 @@ class CanvasActivity : AppCompatActivity() {
                 MotionEvent.ACTION_UP -> {
                     timer?.cancel()
                     if (!longPressed && inViewInBounds(v, event.rawX.toInt(), event.rawY.toInt())) {
-                        if (toolbarButtonLayout.visibility == View.GONE) showToolBars()
-                            //toolbarOuterCardView.animate().x(v.x+toolbarButtonLayout.x/2).setDuration(0).start() TODO
-                        else hideToolbars()
+                        toggleToolbarVisibility()
                     } else toolbarOuterCardView.alpha = FULL_ALPHA
                 }
                 MotionEvent.ACTION_CANCEL -> {
@@ -359,7 +365,6 @@ class CanvasActivity : AppCompatActivity() {
         toolBrushOpacityBtn.setOnClickListener {
             numberPicker("Brush Opacity", "Choose percentage:", CanvasViewModel.paint.alpha*100/255){
                 CanvasViewModel.paint.alpha = it*255/100
-                showToast("CanvasViewModel.paint.alpha = ${CanvasViewModel.paint.alpha}")
             }
         }
 
@@ -577,6 +582,12 @@ class CanvasActivity : AppCompatActivity() {
             }
             toolsMenu.show()
         }
+    }
+
+
+    private fun toggleToolbarVisibility(){
+        if(toolbarButtonLayout.visibility == View.VISIBLE) hideToolbars()
+        else showToolBars()
     }
 
     private fun showToolBars() {
