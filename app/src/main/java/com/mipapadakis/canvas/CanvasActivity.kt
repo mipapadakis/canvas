@@ -293,6 +293,13 @@ class CanvasActivity : AppCompatActivity() {
             }
             true
         }
+        toolbarUndoBtn.setOnClickListener {
+            if(!canvasIV.undo()) showToast("can't undo")
+        }
+        toolbarRedoBtn.setOnClickListener {
+            if(!canvasIV.redo()) showToast("can't redo")
+        }
+
         toolbarInnerCardView.setCardBackgroundColor(CanvasColor.getColorFromId(this, CanvasPreferences.startingColorId))
         bottomToolbarInnerCardView.setCardBackgroundColor(CanvasColor.getColorFromId(this, CanvasPreferences.startingColorId))
         CanvasViewModel.paint.color = CanvasColor.getColorFromId(this, CanvasPreferences.startingColorId)
