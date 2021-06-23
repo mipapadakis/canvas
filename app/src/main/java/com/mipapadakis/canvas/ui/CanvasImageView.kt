@@ -10,7 +10,6 @@ import androidx.appcompat.widget.AppCompatImageView
 import androidx.core.graphics.drawable.toBitmap
 import com.mipapadakis.canvas.CanvasViewModel
 import com.mipapadakis.canvas.model.CvImage
-import kotlin.collections.ArrayList
 import kotlin.math.atan2
 import kotlin.math.min
 import kotlin.math.sqrt
@@ -25,7 +24,7 @@ class CanvasImageView(context: Context?) : AppCompatImageView(context!!), MyTouc
     private lateinit var cvImage: CvImage
     private val paint = CanvasViewModel.paint
     private val history = ArrayList<Action>()
-    private var firstTime = true
+    //private var firstTime = true
     private var historyIndex = 0
     private var startingHeight = 0
     private var startingWidth = 0
@@ -212,7 +211,6 @@ class CanvasImageView(context: Context?) : AppCompatImageView(context!!), MyTouc
 
     override fun on2PointerUp(event: MotionEvent) {
         setModeNone()
-        //TODO: When double tapping, on2PointerUp() is called twice. Must avoid adding two actions to history.
     }
 
     override fun on3PointerUp(event: MotionEvent) {
@@ -231,7 +229,6 @@ class CanvasImageView(context: Context?) : AppCompatImageView(context!!), MyTouc
             // else, pointer remains roughly at the same position => avoid drawing.
         }
         else if (mode == MODE_PINCH && event.pointerCount == 2) {
-
             newRot = touchRotation(event)
             angle = newRot - d
             val newDist = touchDistance(event)
@@ -347,9 +344,7 @@ class CanvasImageView(context: Context?) : AppCompatImageView(context!!), MyTouc
         val currentAction = Action(actionType,
             Bitmap.createBitmap(extraBitmap),
             startingWidth,
-            startingHeight,
-            false,
-            false)
+            startingHeight)
 
         if(historyIndex<history.lastIndex) { //Redo:
             history[++historyIndex] = currentAction
@@ -361,43 +356,36 @@ class CanvasImageView(context: Context?) : AppCompatImageView(context!!), MyTouc
             history.add(currentAction)
             historyIndex = history.lastIndex
         }
-
-        showHistory("addActionToHistory")
-    }
-
-    private fun showHistory(msg: String){
-        val s = StringBuilder("$msg\n")
-        for(i in 0 until history.size){
-            s.append("\n• history[$i] = ")
-            when (history[i].actionType){
-                ACTION_DRAW ->  s.append("ACTION_DRAW")
-                ACTION_SCALE ->  s.append("ACTION_SCALE")
-                ACTION_ROTATE -> s.append("ACTION_ROTATE")
-                ACTION_FLIP_VERTICALLY ->  s.append("ACTION_FLIP_VERTICALLY")
-                ACTION_FLIP_HORIZONTALLY ->  s.append("ACTION_FLIP_HORIZONTALLY")
-                ACTION_CROP ->  s.append("ACTION_CROP")
-                else -> {s.append("ERROR")}
-            }
-            if(i==historyIndex) s.append(" -> active")
-        }
-        s.append("\nhistoryIndex = $historyIndex")
-        Log.i("CanvasHistory", s.toString())
     }
 
     fun undo(): Boolean{
         if(history.size==1 || historyIndex==0) return false
         history[--historyIndex].makeAction()
-        showHistory("undo")
         return true
     }
 
     fun redo(): Boolean{
         if(historyIndex==history.lastIndex) return false
         history[++historyIndex].makeAction()
-        showHistory("redo")
         return true
     }
 
+    fun flipVertically(){
+        val matrix = Matrix()
+        matrix.postScale(1f, -1f, width / 2f,height / 2f)
+        val flippedBmp = Bitmap.createBitmap(extraBitmap, 0, 0, width, height, matrix, true)
+        extraCanvas.drawBitmap(flippedBmp, 0f, 0f, null)
+        invalidate()
+        addActionToHistory(ACTION_FLIP_VERTICALLY)
+    }
+    fun flipHorizontally(){
+        val matrix = Matrix()
+        matrix.postScale(-1f, 1f, width / 2f,height / 2f)
+        val flippedBmp = Bitmap.createBitmap(extraBitmap, 0, 0, width, height, matrix, true)
+        extraCanvas.drawBitmap(flippedBmp, 0f, 0f, null)
+        invalidate()
+        addActionToHistory(ACTION_FLIP_HORIZONTALLY)
+    }
 
     inner class Point(var x: Float, var y: Float){
         constructor(x: Int, y: Int): this(x.toFloat(), y.toFloat())
@@ -415,9 +403,7 @@ class CanvasImageView(context: Context?) : AppCompatImageView(context!!), MyTouc
     inner class Action(val actionType: Int,
                        bitmap: Bitmap,
                        val cropWidth: Int,
-                       val cropHeight: Int,
-                       val flippedHorizontally: Boolean,
-                       val flippedVertically: Boolean){
+                       val cropHeight: Int){
         var bitmap: Bitmap
 
         init {

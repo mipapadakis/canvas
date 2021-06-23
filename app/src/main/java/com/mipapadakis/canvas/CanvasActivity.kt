@@ -12,7 +12,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.AppCompatButton
 import androidx.cardview.widget.CardView
 import androidx.core.content.ContextCompat
-import androidx.core.graphics.alpha
 import com.mipapadakis.canvas.ui.*
 import com.mipapadakis.canvas.ui.create_canvas.CreateCanvasFragment
 import java.io.File
@@ -44,7 +43,6 @@ class CanvasActivity : AppCompatActivity() {
     ////////////////////////////////////////////Views///////////////////////////////////////////////
     private lateinit var layoutCanvas: RelativeLayout
     private lateinit var canvasIV: CanvasImageView
-    //private lateinit var drawingView: DrawingView
     //Toolbar
     private lateinit var toolbarOuterCardView: CardView
     private lateinit var toolbarInnerCardView: CardView
@@ -87,7 +85,7 @@ class CanvasActivity : AppCompatActivity() {
     private lateinit var toolCanvasLayersListBtn: ImageButton
     private lateinit var toolCanvasTransformLayout: LinearLayout
     private lateinit var toolCanvasTransformCropBtn: AppCompatButton
-    private lateinit var toolCanvasTransformSizeBtn: AppCompatButton
+    private lateinit var toolCanvasTransformFlipBtn: AppCompatButton
     //TODO toolCanvasSaveLayout
     //TODO toolCanvasSettingsLayout
 
@@ -275,7 +273,7 @@ class CanvasActivity : AppCompatActivity() {
                     val upperBound = layoutCanvas.top
                     val lowerBound =
                         if(bottomToolbarOuterCardView.visibility==View.VISIBLE)
-                            (bottomToolbarOuterCardView.y - toolbarOuterCardView.height + toolbarOuterCardView.paddingBottom).toFloat()
+                            bottomToolbarOuterCardView.y - toolbarOuterCardView.height + toolbarOuterCardView.paddingBottom
                         else
                             (devicePixelHeight - toolbarOuterCardView.height).toFloat()
                     val newY = when {
@@ -334,7 +332,7 @@ class CanvasActivity : AppCompatActivity() {
         toolCanvasLayersListBtn = findViewById(R.id.property_layers_list)
         toolCanvasTransformLayout = findViewById(R.id.canvas_transform_properties)
         toolCanvasTransformCropBtn = findViewById(R.id.property_transform_crop)
-        toolCanvasTransformSizeBtn = findViewById(R.id.property_transform_size)
+        toolCanvasTransformFlipBtn = findViewById(R.id.property_transform_flip)
         properties = arrayOf(
             toolBrushLayout,
             toolEraserLayout,
@@ -421,6 +419,14 @@ class CanvasActivity : AppCompatActivity() {
             }
         }
 
+        //LAYERS
+        //todo add/copy/delete new layer
+        //todo choose layer
+
+        //TRANSFORM
+        addPopMenuTransformFlip()
+        //todo crop
+
     }
 
     private fun addPopMenuColor(btn: ImageButton){
@@ -498,6 +504,20 @@ class CanvasActivity : AppCompatActivity() {
                     else -> {}
                 }
                 toolbarToolBtn.setImageResource(CanvasViewModel.shapeType)
+                true
+            }
+            menu.show()
+        }
+    }
+    private fun addPopMenuTransformFlip(){
+        toolCanvasTransformFlipBtn.setOnClickListener {
+            val menu = PopupMenu(this, toolCanvasTransformFlipBtn)
+            menu.menuInflater.inflate(R.menu.transform_flip, menu.menu)
+            menu.setOnMenuItemClickListener {
+                when (it.itemId) {
+                    R.id.flip_vertically -> { canvasIV.flipVertically() }
+                    R.id.flip_horizontally-> { canvasIV.flipHorizontally() }
+                }
                 true
             }
             menu.show()

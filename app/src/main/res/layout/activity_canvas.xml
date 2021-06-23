@@ -454,11 +454,11 @@
                             android:contentDescription="@string/bottom_toolbar_button" />
 
                         <androidx.appcompat.widget.AppCompatButton
-                            android:id="@+id/property_transform_size"
+                            android:id="@+id/property_transform_flip"
                             android:layout_width="@dimen/toolbar_button_size"
                             android:layout_height="@dimen/toolbar_button_size"
                             android:textSize="12sp"
-                            android:text="size"
+                            android:text="flip"
                             android:scaleType="centerCrop"
                             android:layout_gravity="center"
                             android:contentDescription="@string/bottom_toolbar_button" />

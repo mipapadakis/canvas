@@ -68,5 +68,7 @@
     <string name="shape_menu_triangle">Triangle</string>
     <string name="shape_menu_arrow">Arrow</string>
     <string name="shape_menu_callout">Callout</string>
+    <string name="transform_flip_vertically">Vertically</string>
+    <string name="transform_flip_horizontally">Horizontally</string>
 
 </resources>
