@@ -134,6 +134,8 @@ class CanvasActivity : AppCompatActivity() {
                 layoutCanvas.addView(canvasIV)
             }
         }
+        //TODO set pngBackground resource as background for canvasIV //////////////////////////////////////////////////
+
         //Handle background touches:
         layoutCanvas.setOnTouchListener(MyTouchListener(object : MyTouchListener.MultiTouchListener {
             //TODO
