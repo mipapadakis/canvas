@@ -2,6 +2,8 @@ package com.mipapadakis.canvas
 
 import android.graphics.*
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.launch
 
 
 /** Store here the current tool and its options.*/
@@ -58,8 +60,17 @@ class CanvasViewModel: ViewModel() {
         }
 
         //Eraser
-        var eraserSize = 20f
-        var eraserOpacity = 0//%
+        val eraserPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            isAntiAlias = false
+            color = Color.TRANSPARENT
+            alpha = 255
+            strokeJoin = Paint.Join.ROUND
+            strokeCap = Paint.Cap.ROUND //BUTT
+            strokeWidth = 20F
+            style = Paint.Style.STROKE
+            xfermode = PorterDuffXfermode(PorterDuff.Mode.SRC_OUT)
+            //pathEffect = DashPathEffect(floatArrayOf(10f,5f), 3f) //CornerPathEffect(10F)
+        }
 
         //Bucket
         var bucketOpacity = 100//%
@@ -86,6 +97,11 @@ class CanvasViewModel: ViewModel() {
         //Text
         var textFont = 0 //TODO
         var textFontSize = 12
+
+        fun setBrushAndShapeColor(color: Int){
+            paint.color = color
+            shapePaint.color = color
+        }
     }
 
     //var colorID = CanvasPreferences.startingColorId

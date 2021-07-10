@@ -1,4 +1,4 @@
-package com.mipapadakis.canvas.ui
+package com.mipapadakis.canvas.tools
 
 import android.app.Activity
 import android.content.Context

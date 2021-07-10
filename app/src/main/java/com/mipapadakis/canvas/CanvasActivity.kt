@@ -12,6 +12,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.AppCompatButton
 import androidx.cardview.widget.CardView
 import androidx.core.content.ContextCompat
+import com.mipapadakis.canvas.tools.DeviceDimensions
 import com.mipapadakis.canvas.ui.*
 import com.mipapadakis.canvas.ui.create_canvas.CreateCanvasFragment
 import java.io.File
@@ -302,7 +303,7 @@ class CanvasActivity : AppCompatActivity() {
 
         toolbarInnerCardView.setCardBackgroundColor(CanvasColor.getColorFromId(this, CanvasPreferences.startingColorId))
         bottomToolbarInnerCardView.setCardBackgroundColor(CanvasColor.getColorFromId(this, CanvasPreferences.startingColorId))
-        CanvasViewModel.paint.color = CanvasColor.getColorFromId(this, CanvasPreferences.startingColorId)
+        CanvasViewModel.setBrushAndShapeColor(getColorFromId( CanvasPreferences.startingColorId))
     }
 
     private fun setBottomToolbar() {
@@ -377,13 +378,13 @@ class CanvasActivity : AppCompatActivity() {
 
         //ERASER
         toolEraserSizeBtn.setOnClickListener {
-            numberPicker("Eraser Size", "Choose number of pixels:", CanvasViewModel.eraserSize.toInt()){
-                CanvasViewModel.eraserSize = it.toFloat()
+            numberPicker("Eraser Size", "Choose number of pixels:", CanvasViewModel.eraserPaint.strokeWidth.toInt()){
+                CanvasViewModel.eraserPaint.strokeWidth = it.toFloat()
             }
         }
         toolEraserOpacityBtn.setOnClickListener {
-            numberPicker("Eraser Opacity", "Choose percentage:", CanvasViewModel.eraserOpacity){
-                CanvasViewModel.eraserOpacity = it
+            numberPicker("Eraser Opacity", "Choose percentage:", CanvasViewModel.eraserPaint.alpha*100/255){
+                CanvasViewModel.eraserPaint.alpha = it*255/100
             }
         }
 
@@ -437,12 +438,12 @@ class CanvasActivity : AppCompatActivity() {
             paletteMenu.menuInflater.inflate(R.menu.palette, paletteMenu.menu)
             paletteMenu.setOnMenuItemClickListener {
                 when (it.itemId) {
-                    R.id.color_black -> { CanvasViewModel.paint.color = CanvasColor.getColorFromId(this, R.color.black) }
-                    R.id.color_red -> { CanvasViewModel.paint.color = CanvasColor.getColorFromId(this, R.color.red) }
-                    R.id.color_green -> { CanvasViewModel.paint.color = CanvasColor.getColorFromId(this, R.color.green) }
-                    R.id.color_blue -> { CanvasViewModel.paint.color = CanvasColor.getColorFromId(this, R.color.blue) }
-                    R.id.color_yellow -> { CanvasViewModel.paint.color = CanvasColor.getColorFromId(this, R.color.yellow) }
-                    R.id.color_purple -> { CanvasViewModel.paint.color = CanvasColor.getColorFromId(this, R.color.purple) }
+                    R.id.color_black -> { CanvasViewModel.setBrushAndShapeColor(getColorFromId(R.color.black)) }
+                    R.id.color_red -> { CanvasViewModel.setBrushAndShapeColor(getColorFromId( R.color.red)) }
+                    R.id.color_green -> { CanvasViewModel.setBrushAndShapeColor(getColorFromId( R.color.green)) }
+                    R.id.color_blue -> { CanvasViewModel.setBrushAndShapeColor(getColorFromId( R.color.blue)) }
+                    R.id.color_yellow -> { CanvasViewModel.setBrushAndShapeColor(getColorFromId( R.color.yellow)) }
+                    R.id.color_purple -> { CanvasViewModel.setBrushAndShapeColor(getColorFromId( R.color.purple)) }
                     else -> {} //TODO palette
                 }
                 toolbarInnerCardView.setCardBackgroundColor(CanvasViewModel.paint.color)

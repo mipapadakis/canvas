@@ -10,6 +10,9 @@ import androidx.appcompat.widget.AppCompatImageView
 import androidx.core.graphics.drawable.toBitmap
 import com.mipapadakis.canvas.CanvasViewModel
 import com.mipapadakis.canvas.model.CvImage
+import com.mipapadakis.canvas.tools.DeviceDimensions
+import java.util.*
+import kotlin.collections.ArrayList
 import kotlin.math.atan2
 import kotlin.math.min
 import kotlin.math.sqrt
@@ -23,6 +26,8 @@ class CanvasImageView(context: Context?) : AppCompatImageView(context!!), MyTouc
     private lateinit var params: RelativeLayout.LayoutParams
     private lateinit var cvImage: CvImage
     private val paint = CanvasViewModel.paint
+    private val eraserPaint = CanvasViewModel.eraserPaint
+
     private val history = ArrayList<Action>()
     //private var firstTime = true
     private var historyIndex = 0
@@ -38,12 +43,13 @@ class CanvasImageView(context: Context?) : AppCompatImageView(context!!), MyTouc
     private var dy = 0f
     private var d = 0f
 
-    //Cached coordinates:
+    //Cached coordinates/bitmaps:
     private var firstPoint = Point()//Coords of position at on1PointerDown(), for MODE_DRAW
     private var prevPoint = Point() //Coords of last position of pointer, for MODE_DRAW
     private var currentPath = Path()
     private lateinit var extraCanvas: Canvas
     private lateinit var extraBitmap: Bitmap
+    private lateinit var firstBitmap: Bitmap
 
     companion object {
         private const val X = 0
@@ -79,7 +85,7 @@ class CanvasImageView(context: Context?) : AppCompatImageView(context!!), MyTouc
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
         super.onSizeChanged(w, h, oldw, oldh)
 
-        if (::extraBitmap.isInitialized) extraBitmap.recycle()
+        extraBitmap.recycle()
         extraBitmap = Bitmap.createBitmap(startingWidth, startingHeight, Bitmap.Config.ARGB_8888)
         extraCanvas = Canvas(extraBitmap)
         extraCanvas.drawColor(Color.WHITE)
@@ -88,25 +94,7 @@ class CanvasImageView(context: Context?) : AppCompatImageView(context!!), MyTouc
 
     override fun onDraw(canvas: Canvas) {
         // Draw the bitmap that has the saved path.
-        canvas.drawBitmap(extraBitmap, 0f, 0f, null)
-
-        /**if(mode == MODE_DRAW) {
-            try {
-                cvImage.layers[0].drawPath(Canvas(drawable.toBitmap()), currentPath)
-            }catch(e: java.lang.IllegalStateException){
-                //Must pass a mutable bitmap to the Canvas constructor.
-                val workingBitmap: Bitmap = Bitmap.createBitmap(drawable.toBitmap())
-                val mutableBitmap = workingBitmap.copy(Bitmap.Config.ARGB_8888, true)
-                cvImage.layers[0].drawPath(Canvas(mutableBitmap), currentPath)
-            }
-            //canvas.save()
-            //val coords = mapScreenCoordsToBitmapCoords(0f,0f)
-            //canvas.translate(coords.x, coords.y)
-            //cvImage.layers[0].drawPath(Canvas(drawable.toBitmap()), currentPath)
-            //canvas.drawBitmap(cvImage.layers[0].bitmap, 0f, 0f, null)
-            //drawable.draw(canvas)
-            //canvas.restore()
-        }*/
+        canvas.drawBitmap(extraBitmap)
     }
 
     override fun on1PointerTap(event: MotionEvent) { Log.i("CanvasTouchListener", "on1PointerTap") }
@@ -144,31 +132,13 @@ class CanvasImageView(context: Context?) : AppCompatImageView(context!!), MyTouc
         //if (::backupBitmap.isInitialized && !backupBitmap.isRecycled()) backupBitmap.recycle()
         //backupBitmap = Bitmap.createBitmap(drawable.toBitmap())
 
-        firstPoint = Point(event)
+        if(firstPoint.isEmpty() || CanvasViewModel.shapeType != CanvasViewModel.SHAPE_TYPE_POLYGON)
+            firstPoint = Point(event)
+        firstBitmap = Bitmap.createBitmap(extraBitmap)
         prevPoint = Point(event)
         currentPath.reset()
         currentPath.moveTo(event.x, event.y)
         setModeDraw()
-
-        /** When user touches with two pointers, avoid drawing with the first touch.
-        object : CountDownTimer(POINTER_DOWN_DELAY,POINTER_DOWN_DELAY) {
-            override fun onTick(millisUntilFinished: Long) {}
-            override fun onFinish(){
-                if(mode== MODE_DRAW && firstPoint.equalTo(Point(event))){
-                    val currentBitmapCoords = mapScreenCoordsToBitmapCoords(event)
-                    try {
-                        cvImage.layers[0].drawDot(Canvas(drawable.toBitmap()), currentBitmapCoords.x, currentBitmapCoords.y)
-                    }catch(e: java.lang.IllegalStateException){
-                        //Must pass a mutable bitmap to the Canvas constructor.
-                        val workingBitmap: Bitmap = Bitmap.createBitmap(drawable.toBitmap())
-                        val mutableBitmap = workingBitmap.copy(Bitmap.Config.ARGB_8888, true)
-                        cvImage.layers[0].drawDot(Canvas(mutableBitmap), currentBitmapCoords.x, currentBitmapCoords.y)
-                    }
-                    //canvas!!.drawBitmap(cvImage.layers[0].bitmap, 0f, 0f, paint)
-                    setImageBitmap(cvImage.layers[0].bitmap)
-                }
-            }
-        }.start()*/
     }
 
     override fun on2PointerDown(event: MotionEvent) {
@@ -193,13 +163,8 @@ class CanvasImageView(context: Context?) : AppCompatImageView(context!!), MyTouc
 
     override fun on1PointerUp(event: MotionEvent) {
         if(mode== MODE_DRAW){
-            currentPath.quadTo(prevPoint.x, prevPoint.y, (prevPoint.x + event.x) / 2, (prevPoint.y + event.y) / 2) //https://developer.android.com/codelabs/advanced-android-kotlin-training-canvas#5
-            extraCanvas.drawPath(currentPath, paint)
-            //Create a dot
-            currentPath.reset()
-            currentPath.moveTo(event.x, event.y)
-            currentPath.lineTo(event.x, event.y+1)
-            extraCanvas.drawPath(currentPath, paint)
+            draw(event, true) //Draw in case onPointerMove() has been called
+            drawDot(event) //Draw dot in case of single tap
             invalidate()
             addActionToHistory(ACTION_DRAW)
             currentPath.reset()
@@ -222,8 +187,7 @@ class CanvasImageView(context: Context?) : AppCompatImageView(context!!), MyTouc
     override fun onPointerMove(event: MotionEvent) {
         if (mode == MODE_DRAW && event.pointerCount == 1) {
             if(Math.abs(event.x-prevPoint.x) >= touchTolerance || Math.abs(event.y-prevPoint.y) >= touchTolerance) {
-                currentPath.quadTo(prevPoint.x, prevPoint.y, (prevPoint.x + event.x) / 2, (prevPoint.y + event.y) / 2) //https://developer.android.com/codelabs/advanced-android-kotlin-training-canvas#5
-                extraCanvas.drawPath(currentPath, paint)
+                draw(event, false)
             }
             invalidate()
             // else, pointer remains roughly at the same position => avoid drawing.
@@ -257,10 +221,123 @@ class CanvasImageView(context: Context?) : AppCompatImageView(context!!), MyTouc
         else Log.i("CanvasTouchListener", "onCancelTouch")
     }
 
+    /**@param pointerUp: used while the Shape tool is selected. When set to false, the user is in the
+     * process of creating a shape. When set to true, the user has lifted their finger, therefore
+     * the shape must be permanently drawn on the canvas.*/
+    private fun draw(event: MotionEvent, pointerUp: Boolean) {
+        when (CanvasViewModel.tool) {
+            CanvasViewModel.TOOL_BRUSH -> {
+                currentPath.quadTo(prevPoint.x, prevPoint.y, (prevPoint.x + event.x) / 2, (prevPoint.y + event.y) / 2) //https://developer.android.com/codelabs/advanced-android-kotlin-training-canvas#5
+                extraCanvas.drawPath(currentPath, paint)
+            }
+            CanvasViewModel.TOOL_ERASER -> {
+                currentPath.quadTo(prevPoint.x, prevPoint.y, (prevPoint.x + event.x) / 2, (prevPoint.y + event.y) / 2) //https://developer.android.com/codelabs/advanced-android-kotlin-training-canvas#5
+                extraCanvas.drawPath(currentPath, eraserPaint)
+            }
+            CanvasViewModel.TOOL_BUCKET -> {
+                val x = event.x.toInt()
+                val y = event.y.toInt()
+                val oldColor = extraBitmap.getPixel(x,y)
+                /** The floodFill Aglorithm consumes too many resources resulting to a crash in
+                 * many cases. To avoid this, use the floodFill_array() method which has no
+                 * recursion, and uses an array instead of accessing the pixels one by one.*/
+                //TODO: It is still pretty slow in cases of large areas to flood-fill.
+                bucketFloodFill(extraBitmap, x, y, oldColor, CanvasViewModel.paint.color)
+                extraCanvas.drawBitmap(extraBitmap)
+            }
+            CanvasViewModel.TOOL_EYEDROPPER -> {
+                CanvasViewModel.setBrushAndShapeColor(drawable.toBitmap().getPixel(event.x.toInt(), event.y.toInt()))
+            }
+            CanvasViewModel.TOOL_SHAPE -> {
+                //TODO: make them resizable
+                if(!pointerUp) extraCanvas.drawBitmap(firstBitmap)
+                when(CanvasViewModel.shapeType){
+                    CanvasViewModel.SHAPE_TYPE_LINE -> {
+                        extraCanvas.drawLine(firstPoint.x, firstPoint.y, event.x, event.y, CanvasViewModel.shapePaint)
+                    }
+                    CanvasViewModel.SHAPE_TYPE_RECTANGLE -> {
+                        extraCanvas.drawRect(firstPoint.x, firstPoint.y, event.x, event.y, CanvasViewModel.shapePaint)
+                    }
+                    CanvasViewModel.SHAPE_TYPE_SQUARE -> {} //TODO
+                    CanvasViewModel.SHAPE_TYPE_OVAL -> {
+                        extraCanvas.drawOval(firstPoint.x, firstPoint.y, event.x, event.y, CanvasViewModel.shapePaint)
+                    }
+                    CanvasViewModel.SHAPE_TYPE_CIRCLE -> {} //TODO
+                    CanvasViewModel.SHAPE_TYPE_POLYGON -> {
+                        extraCanvas.drawLine(firstPoint.x, firstPoint.y, event.x, event.y, CanvasViewModel.shapePaint)
+                        if(pointerUp) firstPoint = Point(event)
+                    }
+                    CanvasViewModel.SHAPE_TYPE_TRIANGLE -> {} //TODO
+                    CanvasViewModel.SHAPE_TYPE_ARROW -> {} //TODO
+                    CanvasViewModel.SHAPE_TYPE_CALLOUT -> {} //TODO
+                }
+                if (pointerUp) firstBitmap.recycle()
+            }
+            CanvasViewModel.TOOL_SELECT -> {}
+        }
+    }
+
+    private fun drawDot(event: MotionEvent){
+        val dot = Path()
+        dot.moveTo(event.x, event.y)
+        dot.lineTo(event.x, event.y+1)
+        when (CanvasViewModel.tool) {
+            CanvasViewModel.TOOL_BRUSH -> extraCanvas.drawPath(dot, paint)
+            CanvasViewModel.TOOL_ERASER -> extraCanvas.drawPath(dot, eraserPaint)
+        }
+    }
+
+    //https://stackoverflow.com/a/23032962/11535380
+    //The FLOOD-FILL algorithm, with no recursion for better performance:
+    private fun bucketFloodFill(bmp: Bitmap, x: Int, y: Int, oldColor: Int, newColor: Int ) {
+        if (oldColor == newColor) return
+        val pixelArray = IntArray(width * height)
+        val q: Queue<Array<Int>> = LinkedList()
+        val width = bmp.width
+        val height = bmp.height
+
+        bmp.getPixels(pixelArray, 0, width, 0, 0, width, height)
+        q.add(arrayOf(x,y))
+        while (q.size > 0) {
+            val node = q.poll() ?: continue // Returns and removes the element at the front the queue.
+            if (pixelArray[(width * node[Y] + node[X]).toInt()] != oldColor) continue
+            val e = arrayOf(node[X] + 1, node[Y])
+            while (node[X] >= 0 && pixelArray[(width * node[Y] + node[X]).toInt()] == oldColor) {
+                pixelArray[(width * node[Y] + node[X]).toInt()] = newColor // set pixel color
+                if (node[Y] > 0 && pixelArray[(width * (node[Y] - 1) + node[X]).toInt()] == oldColor)
+                    q.add(arrayOf( node[X], node[Y] - 1))
+                if (node[Y] < height-1 && pixelArray[(width * (node[Y] + 1) + node[X]).toInt()] == oldColor)
+                    q.add(arrayOf(node[X], node[Y] + 1))
+                node[X]--
+            }
+            while (e[X] < width && pixelArray[(width * e[Y] + e[X]).toInt()] == oldColor) {
+                pixelArray[(width * e[Y] + e[X]).toInt()] = newColor // setPixel
+                if (e[Y] > 0 && pixelArray[(width * (e[Y] - 1) + e[X]).toInt()] == oldColor)
+                    q.add(arrayOf(e[X], e[Y] - 1))
+                if (e[Y] < height - 1 && pixelArray[(width * (e[Y] + 1) + e[X]).toInt()] == oldColor)
+                    q.add(arrayOf(e[X], e[Y] + 1))
+                e[X]++
+            }
+        }
+        bmp.setPixels(pixelArray, 0, width, 0, 0, width, height)
+    }
+
+    /** The FLOOD FILL algorithm (Basic 4 Way Recursive Method).
+     * This method has low performance if there are many pixels to fill, resulting in a crash.
+     * private fun floodFill(x: Int, y: Int, oldColor: Int){
+        if(x !in 0 until extraBitmap.width || y !in 0 until extraBitmap.height) return
+        if(extraBitmap.getPixel(x, y) != oldColor) return
+        extraBitmap.setPixel(x, y, paint.color)
+        floodFill( x+1, y, oldColor) //East
+        floodFill( x-1, y, oldColor) //West
+        floodFill( x, y+1, oldColor) //North
+        floodFill( x, y-1, oldColor) //South
+    }*/
+
     fun setModeNone(){
         mode = MODE_NONE
         currentPath = Path()
-        //firstPoint.clear() //todo?
+        if(CanvasViewModel.shapeType != CanvasViewModel.SHAPE_TYPE_POLYGON) firstPoint.clear()
         prevPoint.clear()
     }
 
@@ -271,7 +348,7 @@ class CanvasImageView(context: Context?) : AppCompatImageView(context!!), MyTouc
     fun setModeZoom(){
         mode = MODE_PINCH
         currentPath = Path()
-        //firstPoint.clear()
+        firstPoint.clear()
         prevPoint.clear()
     }
 
@@ -321,6 +398,8 @@ class CanvasImageView(context: Context?) : AppCompatImageView(context!!), MyTouc
     }
 
     private fun getCanvasCenter() = Point((params.rightMargin + params.leftMargin)/2, (params.topMargin + params.bottomMargin)/2)
+
+    private fun Canvas.drawBitmap(bmp: Bitmap){ this.drawBitmap(bmp, 0f, 0f, null) }
 
 //    fun mapScreenCoordsToBitmapCoords(e: MotionEvent): Point {
 //        // Get the coordinates of the touch point x, y
@@ -374,7 +453,7 @@ class CanvasImageView(context: Context?) : AppCompatImageView(context!!), MyTouc
         val matrix = Matrix()
         matrix.postScale(1f, -1f, width / 2f,height / 2f)
         val flippedBmp = Bitmap.createBitmap(extraBitmap, 0, 0, width, height, matrix, true)
-        extraCanvas.drawBitmap(flippedBmp, 0f, 0f, null)
+        extraCanvas.drawBitmap(flippedBmp)
         invalidate()
         addActionToHistory(ACTION_FLIP_VERTICALLY)
     }
@@ -382,7 +461,7 @@ class CanvasImageView(context: Context?) : AppCompatImageView(context!!), MyTouc
         val matrix = Matrix()
         matrix.postScale(-1f, 1f, width / 2f,height / 2f)
         val flippedBmp = Bitmap.createBitmap(extraBitmap, 0, 0, width, height, matrix, true)
-        extraCanvas.drawBitmap(flippedBmp, 0f, 0f, null)
+        extraCanvas.drawBitmap(flippedBmp)
         invalidate()
         addActionToHistory(ACTION_FLIP_HORIZONTALLY)
     }
@@ -397,6 +476,7 @@ class CanvasImageView(context: Context?) : AppCompatImageView(context!!), MyTouc
             y=-1f
         }
         fun isEqualTo(p: Point) = x==p.x && y==p.y
+        fun isEmpty() = (x == -1f && y == -1f)
     }
 
     // History = List<Action>
@@ -420,7 +500,7 @@ class CanvasImageView(context: Context?) : AppCompatImageView(context!!), MyTouc
 
         fun makeAction(){
             //ACTION_DRAW
-            extraCanvas.drawBitmap(bitmap, 0f, 0f, null)
+            extraCanvas.drawBitmap(bitmap)
             invalidate()
 
             //ACTION_FLIP_VERTICALLY
