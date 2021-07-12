@@ -12,6 +12,9 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.AppCompatButton
 import androidx.cardview.widget.CardView
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import com.mipapadakis.canvas.tools.DeviceDimensions
 import com.mipapadakis.canvas.ui.*
 import com.mipapadakis.canvas.ui.create_canvas.CreateCanvasFragment
@@ -33,6 +36,7 @@ private const val LOW_ALPHA = 0.3f
 
 @SuppressLint("ClickableViewAccessibility")
 class CanvasActivity : AppCompatActivity() {
+    private lateinit var canvasViewModel: CanvasViewModel
     private var devicePixelWidth: Int = 0
     private var devicePixelHeight: Int = 0
     private var canvasWidth = 540
@@ -100,7 +104,7 @@ class CanvasActivity : AppCompatActivity() {
         toast = Toast(this)
         devicePixelWidth = DeviceDimensions.getWidth(this)
         devicePixelHeight = DeviceDimensions.getHeight(this)
-        //canvasViewModel = ViewModelProvider(this).get(CanvasViewModel::class.java)
+        canvasViewModel = ViewModelProvider(this).get(CanvasViewModel::class.java)
         layoutCanvas = findViewById(R.id.canvas_layout)
         canvasIV = CanvasImageView(this)
 
@@ -294,16 +298,16 @@ class CanvasActivity : AppCompatActivity() {
             }
             true
         }
-        toolbarUndoBtn.setOnClickListener {
-            if(!canvasIV.undo()) showToast("can't undo")
-        }
-        toolbarRedoBtn.setOnClickListener {
-            if(!canvasIV.redo()) showToast("can't redo")
-        }
+        toolbarUndoBtn.setOnClickListener { if(!canvasIV.undo()) showToast("can't undo") }
+        toolbarRedoBtn.setOnClickListener { if(!canvasIV.redo()) showToast("can't redo") }
 
-        toolbarInnerCardView.setCardBackgroundColor(CanvasColor.getColorFromId(this, CanvasPreferences.startingColorId))
-        bottomToolbarInnerCardView.setCardBackgroundColor(CanvasColor.getColorFromId(this, CanvasPreferences.startingColorId))
-        CanvasViewModel.setBrushAndShapeColor(getColorFromId( CanvasPreferences.startingColorId))
+        CanvasViewModel.toolbarColor.observe(this, {
+            toolbarInnerCardView.setCardBackgroundColor(CanvasViewModel.paint.color)
+            bottomToolbarInnerCardView.setCardBackgroundColor(CanvasViewModel.paint.color)
+        })
+        //bottomToolbarInnerCardView.setCardBackgroundColor(CanvasColor.getColorFromId(this, CanvasPreferences.startingColorId))
+        toolbarToolBtn.setImageResource(CanvasViewModel.tool)
+        CanvasViewModel.setPaintColor(getColorFromId( CanvasPreferences.startingColorId))
     }
 
     private fun setBottomToolbar() {
@@ -361,6 +365,12 @@ class CanvasActivity : AppCompatActivity() {
         addPopMenuTools()
         addPopMenuCanvas()
 
+        /** PATTERN DRAWING:
+        val pngBackgroundPattern = BitmapFactory.decodeResource(getResources(), R.drawable.png_background_pattern)
+        val patternBmpShader = BitmapShader( pngBackgroundPattern, Shader.TileMode.REPEAT, Shader.TileMode.REPEAT)
+        paint.shader = patternBmpShader
+         * */
+
         //BRUSH
         addPopMenuColor(toolBrushColorBtn)
         toolBrushSizeBtn.setOnClickListener {
@@ -391,8 +401,8 @@ class CanvasActivity : AppCompatActivity() {
         //BUCKET
         addPopMenuColor(toolBucketColorBtn)
         toolBucketOpacityBtn.setOnClickListener {
-            numberPicker("Eraser Opacity", "Choose percentage:", CanvasViewModel.bucketOpacity){
-                CanvasViewModel.bucketOpacity = it
+            numberPicker("Bucket Opacity", "Choose percentage:", CanvasViewModel.bucketPaint.alpha*100/255){
+                CanvasViewModel.bucketPaint.alpha = it*255/100
             }
         }
 
@@ -410,8 +420,8 @@ class CanvasActivity : AppCompatActivity() {
         }
         //TODO stroke type
         toolShapeOpacityBtn.setOnClickListener {
-            numberPicker("Eraser Opacity", "Choose percentage:", CanvasViewModel.shapePaint.alpha){
-                CanvasViewModel.shapePaint.alpha = it
+            numberPicker("Shape Opacity", "Choose percentage:", CanvasViewModel.shapePaint.alpha*100/255){
+                CanvasViewModel.shapePaint.alpha = it*255/100
             }
         }
 
@@ -438,12 +448,12 @@ class CanvasActivity : AppCompatActivity() {
             paletteMenu.menuInflater.inflate(R.menu.palette, paletteMenu.menu)
             paletteMenu.setOnMenuItemClickListener {
                 when (it.itemId) {
-                    R.id.color_black -> { CanvasViewModel.setBrushAndShapeColor(getColorFromId(R.color.black)) }
-                    R.id.color_red -> { CanvasViewModel.setBrushAndShapeColor(getColorFromId( R.color.red)) }
-                    R.id.color_green -> { CanvasViewModel.setBrushAndShapeColor(getColorFromId( R.color.green)) }
-                    R.id.color_blue -> { CanvasViewModel.setBrushAndShapeColor(getColorFromId( R.color.blue)) }
-                    R.id.color_yellow -> { CanvasViewModel.setBrushAndShapeColor(getColorFromId( R.color.yellow)) }
-                    R.id.color_purple -> { CanvasViewModel.setBrushAndShapeColor(getColorFromId( R.color.purple)) }
+                    R.id.color_black -> { CanvasViewModel.setPaintColor(getColorFromId(R.color.black)) }
+                    R.id.color_red -> { CanvasViewModel.setPaintColor(getColorFromId( R.color.red)) }
+                    R.id.color_green -> { CanvasViewModel.setPaintColor(getColorFromId( R.color.green)) }
+                    R.id.color_blue -> { CanvasViewModel.setPaintColor(getColorFromId( R.color.blue)) }
+                    R.id.color_yellow -> { CanvasViewModel.setPaintColor(getColorFromId( R.color.yellow)) }
+                    R.id.color_purple -> { CanvasViewModel.setPaintColor(getColorFromId( R.color.purple)) }
                     else -> {} //TODO palette
                 }
                 toolbarInnerCardView.setCardBackgroundColor(CanvasViewModel.paint.color)

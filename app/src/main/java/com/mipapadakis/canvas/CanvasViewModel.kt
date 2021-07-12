@@ -1,6 +1,8 @@
 package com.mipapadakis.canvas
 
 import android.graphics.*
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
@@ -55,7 +57,6 @@ class CanvasViewModel: ViewModel() {
             strokeCap = Paint.Cap.ROUND //BUTT
             strokeWidth = 20F
             style = Paint.Style.STROKE
-            //pathEffect = DashPathEffect(floatArrayOf(10f,5f), 3f) //CornerPathEffect(10F)
             isDither = true
         }
 
@@ -68,12 +69,19 @@ class CanvasViewModel: ViewModel() {
             strokeCap = Paint.Cap.ROUND //BUTT
             strokeWidth = 20F
             style = Paint.Style.STROKE
-            xfermode = PorterDuffXfermode(PorterDuff.Mode.SRC_OUT)
-            //pathEffect = DashPathEffect(floatArrayOf(10f,5f), 3f) //CornerPathEffect(10F)
+            xfermode = PorterDuffXfermode(PorterDuff.Mode.DST_OUT)
         }
 
         //Bucket
-        var bucketOpacity = 100//%
+        val bucketPaint = Paint().apply {
+            color = CanvasPreferences.startingColorId
+            alpha = 255
+            strokeJoin = Paint.Join.ROUND
+            strokeCap = Paint.Cap.ROUND //BUTT
+            strokeWidth = 20F
+            style = Paint.Style.STROKE
+            isDither = true
+        }
 
         //Select
         var selectType = SELECT_TYPE_RECTANGULAR
@@ -98,10 +106,15 @@ class CanvasViewModel: ViewModel() {
         var textFont = 0 //TODO
         var textFontSize = 12
 
-        fun setBrushAndShapeColor(color: Int){
+        fun setPaintColor(color: Int){
             paint.color = color
+            bucketPaint.color = color
             shapePaint.color = color
+            _toolbarColor.value = color
         }
+
+        private val _toolbarColor = MutableLiveData<Int>().apply { value = CanvasPreferences.startingColorId}
+        val toolbarColor: LiveData<Int> = _toolbarColor
     }
 
     //var colorID = CanvasPreferences.startingColorId
