@@ -14,6 +14,7 @@ import com.mipapadakis.canvas.model.CvImage
 import com.mipapadakis.canvas.tools.DeviceDimensions
 import java.util.*
 import kotlin.collections.ArrayList
+import kotlin.math.abs
 import kotlin.math.atan2
 import kotlin.math.min
 import kotlin.math.sqrt
@@ -52,8 +53,8 @@ class CanvasImageView(context: Context?) : AppCompatImageView(context!!), MyTouc
     private lateinit var backgroundBitmap: Bitmap //This has the png_backgound_pattern painted on it
     private lateinit var foregroundBitmap: Bitmap //This has all the user-created drawings on it.
     private lateinit var foregroundCanvas: Canvas
-    private lateinit var extraBitmap: Bitmap //Merges the background and foreground bitmaps together
-    private lateinit var extraCanvas: Canvas
+    private lateinit var visibleBitmap: Bitmap //Merges the background and foreground bitmaps together
+    private lateinit var visibleCanvas: Canvas
 
     companion object {
         private const val X = 0
@@ -80,11 +81,11 @@ class CanvasImageView(context: Context?) : AppCompatImageView(context!!), MyTouc
         startingWidth = width
         startingHeight = height
         setPositionToCenter()
-        extraBitmap = drawable.toBitmap()
+        visibleBitmap = drawable.toBitmap()
+        foregroundBitmap = Bitmap.createBitmap(visibleBitmap)
         createBackgroundBitmap()
-        foregroundBitmap = Bitmap.createBitmap(extraBitmap)
         addActionToHistory(ACTION_DRAW)
-        //cvImage = CvImage(drawable.toBitmap())
+        //cvImage = CvImage(drawable.toBitmap()) //TODO CvImage
     }
 
     private fun createBackgroundBitmap(){
@@ -108,21 +109,21 @@ class CanvasImageView(context: Context?) : AppCompatImageView(context!!), MyTouc
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
         super.onSizeChanged(w, h, oldw, oldh)
 
-        extraBitmap.recycle()
+        visibleBitmap.recycle()
         foregroundBitmap.recycle()
-        extraBitmap = Bitmap.createBitmap(startingWidth, startingHeight, Bitmap.Config.ARGB_8888)
-        foregroundBitmap = Bitmap.createBitmap(extraBitmap)
-        extraCanvas = Canvas(extraBitmap)
+        visibleBitmap = Bitmap.createBitmap(startingWidth, startingHeight, Bitmap.Config.ARGB_8888)
+        foregroundBitmap = Bitmap.createBitmap(visibleBitmap)
+        visibleCanvas = Canvas(visibleBitmap)
         foregroundCanvas = Canvas(foregroundBitmap)
         foregroundCanvas.drawColor(Color.WHITE)
         //if(firstTime){ firstTime = false }
     }
 
     override fun onDraw(canvas: Canvas) {
-        // Draw the bitmap that has the saved path.
-        extraCanvas.drawBitmap(backgroundBitmap)
-        extraCanvas.drawBitmap(foregroundBitmap)
-        canvas.drawBitmap(extraBitmap)
+        //Combine the background with the foreground into the visibleBitmap:
+        visibleCanvas.drawBitmap(backgroundBitmap)
+        visibleCanvas.drawBitmap(foregroundBitmap)
+        canvas.drawBitmap(visibleBitmap)
     }
 
     override fun on1PointerTap(event: MotionEvent) { Log.i("CanvasTouchListener", "on1PointerTap") }
@@ -159,10 +160,11 @@ class CanvasImageView(context: Context?) : AppCompatImageView(context!!), MyTouc
     override fun on1PointerDown(event: MotionEvent) {
         if(firstPoint.isEmpty() || CanvasViewModel.shapeType != CanvasViewModel.SHAPE_TYPE_POLYGON)
             firstPoint = Point(event)
-        firstBitmap = Bitmap.createBitmap(extraBitmap)
+        firstBitmap = Bitmap.createBitmap(foregroundBitmap)
         prevPoint = Point(event)
         currentPath.reset()
         currentPath.moveTo(event.x, event.y)
+        if(CanvasViewModel.tool == CanvasViewModel.TOOL_EYEDROPPER) draw(event, false)
         setModeDraw()
     }
 
@@ -237,18 +239,20 @@ class CanvasImageView(context: Context?) : AppCompatImageView(context!!), MyTouc
         else Log.i("CanvasTouchListener", "onCancelTouch")
     }
 
-    /**@param pointerUp: used while the Shape tool is selected. When set to false, the user is in the
-     * process of creating a shape. When set to true, the user has lifted their finger, therefore
-     * the shape must be permanently drawn on the canvas.*/
+    /**@param pointerUp: When set to false, the user is in the process of drawing.
+     * When set to true, the user has lifted their finger, therefore their drawing must be
+     * permanently drawn on the canvas.*/
     private fun draw(event: MotionEvent, pointerUp: Boolean) {
         when (CanvasViewModel.tool) {
             CanvasViewModel.TOOL_BRUSH -> {
                 //https://developer.android.com/codelabs/advanced-android-kotlin-training-canvas#5
                 currentPath.quadTo(prevPoint.x, prevPoint.y, (prevPoint.x + event.x) / 2, (prevPoint.y + event.y) / 2)
+                foregroundCanvas.drawBitmap(firstBitmap)
                 foregroundCanvas.drawPath(currentPath, paint)
             }
             CanvasViewModel.TOOL_ERASER -> {
                 currentPath.quadTo(prevPoint.x, prevPoint.y, (prevPoint.x + event.x) / 2, (prevPoint.y + event.y) / 2)
+                foregroundCanvas.drawBitmap(firstBitmap)
                 foregroundCanvas.drawPath(currentPath, eraserPaint)
             }
             CanvasViewModel.TOOL_BUCKET -> {
@@ -263,11 +267,18 @@ class CanvasImageView(context: Context?) : AppCompatImageView(context!!), MyTouc
                 foregroundCanvas.drawBitmap(foregroundBitmap)
             }
             CanvasViewModel.TOOL_EYEDROPPER -> {
-                CanvasViewModel.setPaintColor(foregroundBitmap.getPixel(event.x.toInt(), event.y.toInt()))
+                val xInBounds = if(event.x.toInt()<0) 0
+                else if(event.x.toInt()>=foregroundBitmap.width) foregroundBitmap.width-1
+                else event.x.toInt()
+                val yInBounds = if(event.y.toInt()<0) 0
+                else if(event.y.toInt()>=foregroundBitmap.height) foregroundBitmap.height-1
+                else event.y.toInt()
+                CanvasViewModel.setPaintColor(foregroundBitmap.getPixel(xInBounds, yInBounds))
             }
             CanvasViewModel.TOOL_SHAPE -> {
                 //TODO: make them resizable
-                if(!pointerUp) foregroundCanvas.drawBitmap(firstBitmap)
+                clearForeground()
+                foregroundCanvas.drawBitmap(firstBitmap)
                 when(CanvasViewModel.shapeType){
                     CanvasViewModel.SHAPE_TYPE_LINE -> {
                         foregroundCanvas.drawLine(firstPoint.x, firstPoint.y, event.x, event.y, CanvasViewModel.shapePaint)
@@ -275,11 +286,15 @@ class CanvasImageView(context: Context?) : AppCompatImageView(context!!), MyTouc
                     CanvasViewModel.SHAPE_TYPE_RECTANGLE -> {
                         foregroundCanvas.drawRect(firstPoint.x, firstPoint.y, event.x, event.y, CanvasViewModel.shapePaint)
                     }
-                    CanvasViewModel.SHAPE_TYPE_SQUARE -> {} //TODO
+                    CanvasViewModel.SHAPE_TYPE_SQUARE -> {
+                        foregroundCanvas.drawRect(getSquareCoords(firstPoint, Point(event)), CanvasViewModel.shapePaint)
+                    }
                     CanvasViewModel.SHAPE_TYPE_OVAL -> {
                         foregroundCanvas.drawOval(firstPoint.x, firstPoint.y, event.x, event.y, CanvasViewModel.shapePaint)
                     }
-                    CanvasViewModel.SHAPE_TYPE_CIRCLE -> {} //TODO
+                    CanvasViewModel.SHAPE_TYPE_CIRCLE -> {
+                        foregroundCanvas.drawOval(getSquareCoords(firstPoint, Point(event)), CanvasViewModel.shapePaint)
+                    }
                     CanvasViewModel.SHAPE_TYPE_POLYGON -> {
                         foregroundCanvas.drawLine(firstPoint.x, firstPoint.y, event.x, event.y, CanvasViewModel.shapePaint)
                         if(pointerUp) firstPoint = Point(event)
@@ -293,6 +308,18 @@ class CanvasImageView(context: Context?) : AppCompatImageView(context!!), MyTouc
             CanvasViewModel.TOOL_SELECT -> {}
         }
         invalidate()
+    }
+
+    /** Returns a RectF containing the coordinates of a square, created by combining the two points.*/
+    private fun getSquareCoords(pointA: Point, pointB: Point): RectF{
+        val side = min(abs(pointA.x - pointB.x), abs(pointA.y - pointB.y))
+        return if(pointB.x >= pointA.x && pointB.y >= pointA.y)
+            RectF(pointA.x, pointA.y,pointA.x + side, pointA.y + side)
+        else if(pointB.x < pointA.x && pointB.y >= pointA.y)
+            RectF(pointA.x - side, pointA.y, pointA.x, pointA.y + side)
+        else if(pointB.x >= pointA.x && pointB.y < pointA.y)
+            RectF(pointA.x, pointA.y - side,pointA.x + side, pointA.y)
+        else RectF(pointA.x - side, pointA.y - side,pointA.x, pointA.y)
     }
 
     //https://stackoverflow.com/a/23032962/11535380
@@ -409,6 +436,11 @@ class CanvasImageView(context: Context?) : AppCompatImageView(context!!), MyTouc
 
     private fun Canvas.drawBitmap(bmp: Bitmap){ this.drawBitmap(bmp, 0f, 0f, null) }
 
+    private fun clearForeground(){
+        foregroundBitmap = Bitmap.createBitmap(foregroundBitmap.width, foregroundBitmap.height, Bitmap.Config.ARGB_8888)
+        foregroundCanvas = Canvas(foregroundBitmap)
+    }
+
 //    fun mapScreenCoordsToBitmapCoords(e: MotionEvent): Point {
 //        // Get the coordinates of the touch point x, y
 //        val x = e.x
@@ -484,11 +516,6 @@ class CanvasImageView(context: Context?) : AppCompatImageView(context!!), MyTouc
 
             //ACTION_CROP
             //TODO
-        }
-
-        private fun clearForeground(){
-            foregroundBitmap = Bitmap.createBitmap(foregroundBitmap.width, foregroundBitmap.height, Bitmap.Config.ARGB_8888)
-            foregroundCanvas = Canvas(foregroundBitmap)
         }
     }
 

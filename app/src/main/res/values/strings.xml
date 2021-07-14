@@ -70,5 +70,7 @@
     <string name="shape_menu_callout">Callout</string>
     <string name="transform_flip_vertically">Vertically</string>
     <string name="transform_flip_horizontally">Horizontally</string>
+    <string name="stroke_type_stroke">Stroke</string>
+    <string name="stroke_type_fill">Fill</string>
 
 </resources>

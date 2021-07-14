@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <group>
+        <item
+            android:id="@+id/stroke_type_fill"
+            android:icon="@drawable/stroke_type_fill"
+            android:title="@string/stroke_type_fill" />
+        <item
+            android:id="@+id/stroke_type_stroke"
+            android:icon="@drawable/stroke_type_stroke"
+            android:title="@string/stroke_type_stroke" />
+    </group>
+</menu>

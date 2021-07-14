@@ -12,9 +12,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.AppCompatButton
 import androidx.cardview.widget.CardView
 import androidx.core.content.ContextCompat
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.lifecycleScope
 import com.mipapadakis.canvas.tools.DeviceDimensions
 import com.mipapadakis.canvas.ui.*
 import com.mipapadakis.canvas.ui.create_canvas.CreateCanvasFragment
@@ -100,17 +98,13 @@ class CanvasActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_canvas)
-        //hideSystemUI() //TODO 00000000000000000000000000000000000000000000000000000000000000000000
+        //hideSystemUI() //TODO?
         toast = Toast(this)
         devicePixelWidth = DeviceDimensions.getWidth(this)
         devicePixelHeight = DeviceDimensions.getHeight(this)
         canvasViewModel = ViewModelProvider(this).get(CanvasViewModel::class.java)
         layoutCanvas = findViewById(R.id.canvas_layout)
         canvasIV = CanvasImageView(this)
-
-//        drawingView = DrawingView(this)
-//        drawingView.setBrushSize(10f)
-
 
         //Receive intent from MainActivity:
         when {
@@ -139,21 +133,15 @@ class CanvasActivity : AppCompatActivity() {
                 layoutCanvas.addView(canvasIV)
             }
         }
-        //TODO set pngBackground resource as background for canvasIV //////////////////////////////////////////////////
 
         //Handle background touches:
         layoutCanvas.setOnTouchListener(MyTouchListener(object : MyTouchListener.MultiTouchListener {
-            //TODO
             override fun on1PointerTap(event: MotionEvent) { toggleToolbarVisibility() }
             override fun on2PointerDoubleTap(event: MotionEvent) {
                 Log.i("CanvasTouchListener", "Background on2PointerDoubleTap")
                 canvasIV.on2PointerDoubleTap(event)
             }
-            override fun on1PointerLongPress(event: MotionEvent) {
-                Log.i("CanvasTouchListener", "Background on1PointerLongPress")
-                //TODO: set canvasIV center to event position
-                toggleToolbarVisibility()
-            }
+            override fun on1PointerLongPress(event: MotionEvent) { toggleToolbarVisibility() }
             override fun on3PointerTap(event: MotionEvent) {
                 Log.i("CanvasTouchListener", "Background on3PointerTap")
                 canvasIV.on3PointerTap(event)
@@ -201,26 +189,6 @@ class CanvasActivity : AppCompatActivity() {
         canvasIV.onAttachedToWindowInitializer(canvasWidth, canvasHeight)
     }
 
-    // https://stackoverflow.com/a/64828067/11535380
-    @SuppressLint("InlinedApi")
-    private fun hideSystemUI() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            window.setDecorFitsSystemWindows(false)
-            window.insetsController?.let {
-                it.hide(WindowInsets.Type.statusBars() or WindowInsets.Type.navigationBars())
-                it.systemBarsBehavior = WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
-            }
-        } else {
-            @Suppress("DEPRECATION")
-            window.decorView.systemUiVisibility = (View.SYSTEM_UI_FLAG_FULLSCREEN
-                    or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                    or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
-                    or View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                    or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                    or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION)
-        }
-    }
-
     private fun setToolbar() {
         toolbarOuterCardView = findViewById(R.id.toolbar_outer_card)
         toolbarInnerCardView = findViewById(R.id.toolbar_inner_card) //TODO: Its background color is the same as the brush color.
@@ -239,7 +207,6 @@ class CanvasActivity : AppCompatActivity() {
         var dX = 0f
         var dY = 0f
         toolbarVisibilityImageView.setOnTouchListener { v, event ->
-
             when (event.action) {
                 MotionEvent.ACTION_DOWN -> {
                     longPressed = false
@@ -354,13 +321,6 @@ class CanvasActivity : AppCompatActivity() {
             toolBrushLayout.visibility = View.VISIBLE
     }
 
-    private fun inViewInBounds(view: View, x: Int, y: Int): Boolean {
-        view.getDrawingRect(outRect)
-        view.getLocationOnScreen(location)
-        outRect.offset(location[0], location[1])
-        return outRect.contains(x, y)
-    }
-
     private fun setupToolbarMenus() {
         addPopMenuTools()
         addPopMenuCanvas()
@@ -413,12 +373,12 @@ class CanvasActivity : AppCompatActivity() {
         //SHAPE
         addPopMenuColor(toolShapeColorBtn)
         addPopMenuShapeType()
+        addPopMenuStrokeType()
         toolShapeStrokeSizeBtn.setOnClickListener {
             numberPicker("Shape Stroke Size", "Choose number of pixels:", CanvasViewModel.shapePaint.strokeWidth.toInt()){
                 CanvasViewModel.shapePaint.strokeWidth = it.toFloat()
             }
         }
-        //TODO stroke type
         toolShapeOpacityBtn.setOnClickListener {
             numberPicker("Shape Opacity", "Choose percentage:", CanvasViewModel.shapePaint.alpha*100/255){
                 CanvasViewModel.shapePaint.alpha = it*255/100
@@ -440,6 +400,9 @@ class CanvasActivity : AppCompatActivity() {
         addPopMenuTransformFlip()
         //todo crop
 
+        //SAVE
+
+        //SETTINGS
     }
 
     private fun addPopMenuColor(btn: ImageButton){
@@ -462,24 +425,6 @@ class CanvasActivity : AppCompatActivity() {
             }
             paletteMenu.show()
         }
-    }
-
-    private fun numberPicker(title: String, message: String, currentValue: Int, positive: (number: Int) -> Unit){
-        val numberPicker = NumberPicker(this)
-        numberPicker.minValue = 1
-        numberPicker.maxValue = 100
-        numberPicker.value = currentValue
-
-        val builder: android.app.AlertDialog.Builder = android.app.AlertDialog.Builder(this)
-        builder.setView(numberPicker)
-        builder.setTitle(title)
-        builder.setMessage(message)
-        builder.setPositiveButton("OK") { _, _ ->
-            positive(numberPicker.value)
-        }
-        builder.setNegativeButton( "CANCEL") { _, _ ->}
-        builder.create()
-        builder.show()
     }
 
 
@@ -522,6 +467,24 @@ class CanvasActivity : AppCompatActivity() {
             menu.show()
         }
     }
+
+    private fun addPopMenuStrokeType() {
+        toolShapeStrokeTypeBtn.setOnClickListener {
+            val menu = PopupMenu(this, toolShapeStrokeTypeBtn)
+            menu.menuInflater.inflate(R.menu.stroke_types, menu.menu)
+            menu.setOnMenuItemClickListener {
+                when (it.itemId) {
+                    R.id.stroke_type_fill -> { CanvasViewModel.shapePaint.style = Paint.Style.FILL }
+                    R.id.stroke_type_stroke -> { CanvasViewModel.shapePaint.style = Paint.Style.FILL_AND_STROKE }
+                    else -> {}
+                }
+                toolbarToolBtn.setImageResource(CanvasViewModel.shapeType)
+                true
+            }
+            menu.show()
+        }
+    }
+
     private fun addPopMenuTransformFlip(){
         toolCanvasTransformFlipBtn.setOnClickListener {
             val menu = PopupMenu(this, toolCanvasTransformFlipBtn)
@@ -624,6 +587,30 @@ class CanvasActivity : AppCompatActivity() {
         }
     }
 
+    private fun numberPicker(title: String, message: String, currentValue: Int, positive: (number: Int) -> Unit){
+        val numberPicker = NumberPicker(this)
+        numberPicker.minValue = 1
+        numberPicker.maxValue = 100
+        numberPicker.value = currentValue
+
+        val builder: android.app.AlertDialog.Builder = android.app.AlertDialog.Builder(this)
+        builder.setView(numberPicker)
+        builder.setTitle(title)
+        builder.setMessage(message)
+        builder.setPositiveButton("OK") { _, _ ->
+            positive(numberPicker.value)
+        }
+        builder.setNegativeButton( "CANCEL") { _, _ ->}
+        builder.create()
+        builder.show()
+    }
+
+    private fun inViewInBounds(view: View, x: Int, y: Int): Boolean {
+        view.getDrawingRect(outRect)
+        view.getLocationOnScreen(location)
+        outRect.offset(location[0], location[1])
+        return outRect.contains(x, y)
+    }
 
     private fun toggleToolbarVisibility(){
         if(toolbarButtonLayout.visibility == View.VISIBLE) hideToolbars()
@@ -669,5 +656,25 @@ class CanvasActivity : AppCompatActivity() {
         toast.cancel()
         toast = Toast.makeText(this, text, toast.duration)
         toast.show()
+    }
+
+    // https://stackoverflow.com/a/64828067/11535380
+    @SuppressLint("InlinedApi")
+    private fun hideSystemUI() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            window.setDecorFitsSystemWindows(false)
+            window.insetsController?.let {
+                it.hide(WindowInsets.Type.statusBars() or WindowInsets.Type.navigationBars())
+                it.systemBarsBehavior = WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+            }
+        } else {
+            @Suppress("DEPRECATION")
+            window.decorView.systemUiVisibility = (View.SYSTEM_UI_FLAG_FULLSCREEN
+                    or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                    or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+                    or View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                    or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                    or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION)
+        }
     }
 }

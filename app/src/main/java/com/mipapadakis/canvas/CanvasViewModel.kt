@@ -96,7 +96,7 @@ class CanvasViewModel: ViewModel() {
             strokeJoin = Paint.Join.ROUND
             strokeCap = Paint.Cap.ROUND //BUTT
             strokeWidth = 20F
-            style = Paint.Style.FILL
+            style = Paint.Style.FILL //STROKE //FILL
             pathEffect = DashPathEffect(floatArrayOf(10f,5f), 3f) //null, CornerPathEffect(10f)
             //pathEffect = CornerPathEffect(10F)
             isDither = true

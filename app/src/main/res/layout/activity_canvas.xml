@@ -62,7 +62,7 @@
                         android:layout_width="@dimen/toolbar_button_size"
                         android:layout_height="@dimen/toolbar_button_size"
                         android:src="@drawable/baseline_color_lens_black_36"
-                        android:contentDescription="@string/toolbar_button" />-->
+                        android:contentDescription="@string/toolbar_button" /> -->
 
                     <ImageButton
                         android:id="@+id/toolbar_button_tool"

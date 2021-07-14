@@ -419,8 +419,8 @@ class CreateCanvasFragment : Fragment() {
     private fun setKeyboardVisibilityListener(root: View) {
         val parentView = (activity?.findViewById<View>(android.R.id.content)
                 as ViewGroup).getChildAt(0)
-        parentView.viewTreeObserver.addOnGlobalLayoutListener(object :
-                ViewTreeObserver.OnGlobalLayoutListener {
+        parentView.viewTreeObserver.addOnGlobalLayoutListener(
+            object : ViewTreeObserver.OnGlobalLayoutListener {
             private var alreadyOpen = false
             private val defaultKeyboardHeightDP = 100
             private val EstimatedKeyboardDP = defaultKeyboardHeightDP +
