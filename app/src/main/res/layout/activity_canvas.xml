@@ -86,7 +86,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
                     android:layout_gravity="center_vertical"
-                    android:src="@drawable/baseline_visibility_off_black_36"
+                    android:src="@drawable/baseline_visibility_black_36"
                     android:contentDescription="@string/toolbar_button" />
             </LinearLayout>
         </androidx.cardview.widget.CardView>
@@ -392,40 +392,6 @@
                             android:contentDescription="@string/bottom_toolbar_button" />
                     </LinearLayout>
 
-                    <!--////////////////////////////////////LAYERS///////////////////////////////////-->
-                    <LinearLayout
-                        android:id="@+id/canvas_layers_properties"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="center_horizontal"
-                        android:orientation="horizontal">
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:paddingHorizontal="15dp"
-                            android:layout_gravity="center"
-                            android:gravity="center"
-                            android:textSize="14sp"
-                            android:textStyle="bold"
-                            android:text="Layer\nproperties:"/>
-
-                        <ImageButton
-                            android:id="@+id/property_layers_add"
-                            android:layout_width="@dimen/toolbar_button_size"
-                            android:layout_height="@dimen/toolbar_button_size"
-                            android:padding="12dp"
-                            android:scaleType="fitXY"
-                            android:src="@drawable/add_layer"
-                            android:contentDescription="@string/bottom_toolbar_button" />
-
-                        <ImageButton
-                            android:id="@+id/property_layers_list"
-                            android:layout_width="@dimen/toolbar_button_size"
-                            android:layout_height="@dimen/toolbar_button_size"
-                            android:src="@drawable/baseline_layers_black_36"
-                            android:contentDescription="@string/bottom_toolbar_button" />
-                    </LinearLayout>
-
                     <!--//////////////////////////////////TRANSFORM//////////////////////////////////-->
                     <LinearLayout
                         android:id="@+id/canvas_transform_properties"
@@ -467,6 +433,65 @@
                     <!--////////////////////////////////////XXXXX////////////////////////////////////-->
                 </LinearLayout>
             </HorizontalScrollView>
+
+
+            <!--////////////////////////////////////LAYERS///////////////////////////////////-->
+            <LinearLayout
+                android:id="@+id/canvas_layers_properties"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:orientation="horizontal"
+                android:visibility="gone">
+                <!--
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:paddingHorizontal="15dp"
+                    android:layout_gravity="center"
+                    android:gravity="center"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:text="Layer\nproperties:"/>
+                    -->
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:orientation="vertical">
+                    <ImageButton
+                        android:id="@+id/property_layers_add"
+                        android:layout_width="@dimen/toolbar_button_size"
+                        android:layout_height="@dimen/toolbar_button_size"
+                        android:padding="12dp"
+                        android:scaleType="fitXY"
+                        android:src="@drawable/add_layer"
+                        android:contentDescription="@string/bottom_toolbar_button" />
+                    <ImageButton
+                        android:id="@+id/property_layers_check_all"
+                        android:layout_width="@dimen/toolbar_button_size"
+                        android:layout_height="wrap_content"
+                        android:background="@android:color/transparent"
+                        android:src="@drawable/baseline_checklist_black_18"
+                        android:contentDescription="@string/bottom_toolbar_button"
+                        android:visibility="gone"/>
+                </LinearLayout>
+
+                <!-- <ImageButton
+                    android:id="@+id/property_layers_list"
+                    android:layout_width="@dimen/toolbar_button_size"
+                    android:layout_height="@dimen/toolbar_button_size"
+                    android:src="@drawable/baseline_layers_black_36"
+                    android:contentDescription="@string/bottom_toolbar_button"/> -->
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/layer_recycler_view"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:focusableInTouchMode="true"/>
+            </LinearLayout>
         </androidx.cardview.widget.CardView>
     </androidx.cardview.widget.CardView>
 </RelativeLayout>

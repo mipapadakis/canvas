@@ -72,5 +72,12 @@
     <string name="transform_flip_horizontally">Horizontally</string>
     <string name="stroke_type_stroke">Stroke</string>
     <string name="stroke_type_fill">Fill</string>
+    <string name="layer_card_view_description">Layer card view description</string>
+    <string name="layer_option_duplicate">Duplicate</string>
+    <string name="layer_option_clear">Clear</string>
+    <string name="layer_option_opacity">Opacity</string>
+    <string name="layer_option_delete">Delete</string>
+    <string name="layer_option_merge">Merge</string>
+    <string name="layer_option_bring_to_front">To Front</string>
 
 </resources>

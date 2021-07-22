@@ -2,6 +2,7 @@ package com.mipapadakis.canvas
 
 import android.content.Context
 import android.content.SharedPreferences
+import android.graphics.Color
 
 const val TMP_PREFERENCES_KEY = "TEMP_PREFERENCES"
 
@@ -10,6 +11,10 @@ const val TMP_PREFERENCES_KEY = "TEMP_PREFERENCES"
  * */
 class CanvasPreferences {
     companion object{
+        const val FULL_ALPHA = 1f
+        const val MEDIUM_ALPHA = 0.6f
+        const val LOW_ALPHA = 0.3f
+
         const val SIZE_TINY = 1f
         const val SIZE_SMALL = 3f
         const val SIZE_NORMAL = 5f
@@ -18,6 +23,7 @@ class CanvasPreferences {
 
         var startingColorId = R.color.green
         var startingBrushSize = SIZE_NORMAL
+        var startingCanvasColor = Color.WHITE
 
 
         /** Create shared-preferences for this project. */

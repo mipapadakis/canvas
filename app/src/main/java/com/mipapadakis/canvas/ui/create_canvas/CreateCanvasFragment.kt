@@ -31,7 +31,8 @@ import com.mipapadakis.canvas.R
 
 private const val CODE_IMAGE_PICK = 1000
 private const val CODE_PERMISSION = 1001
-
+const val MAX_WIDTH = 2048
+const val MAX_HEIGHT = 2048
 
 class CreateCanvasFragment : Fragment() {
     private lateinit var createCanvasViewModel: CreateCanvasViewModel
@@ -133,7 +134,7 @@ class CreateCanvasFragment : Fragment() {
                     val inPixels = inchToPixels(createCanvasViewModel.unitInches[WIDTH], createCanvasViewModel.unitInches[HEIGHT], createCanvasViewModel.dpi)!!
                     startCanvasIntent(inPixels[WIDTH], inPixels[HEIGHT])
                 }
-                else -> showToast("Wrong Input!\n Pixel dimensions must be between 1 and 4096.")
+                else -> showToast("Wrong Input!\n Pixel dimensions must be between 1 and $MAX_WIDTH.")
             }
         }
 
@@ -268,8 +269,8 @@ class CreateCanvasFragment : Fragment() {
             val input = if(it == null || it.isEmpty() || !it.toString().isDigitsOnly() || it.toString().toInt()<=0){
                 if(!it.toString().isDigitsOnly()) createCanvasViewModel.unitPixels[WIDTH]
                 else 1
-            } else if(it.toString().toInt() > 4096){
-                4096
+            } else if(it.toString().toInt() > MAX_WIDTH){
+                MAX_WIDTH
             } else it.toString().toInt()
             createCanvasViewModel.unitPixels[WIDTH] = input
             beginChange()
@@ -281,8 +282,8 @@ class CreateCanvasFragment : Fragment() {
             val input = if(it == null || it.isEmpty() || !it.toString().isDigitsOnly() || it.toString().toInt()<=0){
                 if(!it.toString().isDigitsOnly()) createCanvasViewModel.unitPixels[HEIGHT]
                 else 1
-            } else if(it.toString().toInt() > 4096){
-                4096
+            } else if(it.toString().toInt() > MAX_HEIGHT){
+                MAX_HEIGHT
             } else it.toString().toInt()
             createCanvasViewModel.unitPixels[HEIGHT] = input
             beginChange()
@@ -351,14 +352,14 @@ class CreateCanvasFragment : Fragment() {
         }
     }
 
-    //Returns null if pixels outside (0,4096]
+    //Returns null if pixels outside (0,2048]
     private fun inchToPixels(width: Double, height: Double, dpi: Int): ArrayList<Int>?{
         val pixels: ArrayList<Int> = arrayListOf((width * dpi).toInt(), (height * dpi).toInt())
-        if(pixels[WIDTH]<=0 || pixels[WIDTH]>4096 || pixels[HEIGHT]<=0 || pixels[HEIGHT]>4096)
+        if(pixels[WIDTH]<=0 || pixels[WIDTH]> MAX_WIDTH || pixels[HEIGHT]<=0 || pixels[HEIGHT]> MAX_HEIGHT)
             return null
         return pixels
     }
-    //Returns null if pixels outside (0,4096]
+    //Returns null if pixels outside (0,2048]
     private fun mmToPixels(width: Double, height: Double, dpi: Int)
     = inchToPixels(mmToInch(width), mmToInch(height), dpi)
     private fun mmToInch(mm: Double): Double = mm/25.4
@@ -461,8 +462,8 @@ class CreateCanvasFragment : Fragment() {
         paint.color = Color.BLACK
         paint.isAntiAlias = true
         if(width>0 && height>0) {
-            val scaledWidth = (width * canvas.width / 4096)
-            val scaledHeight = (height * canvas.height / 4096)
+            val scaledWidth = (width * canvas.width / MAX_WIDTH)
+            val scaledHeight = (height * canvas.height / MAX_HEIGHT)
             val centerOfCanvas = Point(canvas.width / 2, canvas.height / 2)
             val left: Int
             val top: Int

@@ -13,9 +13,17 @@ import androidx.appcompat.widget.AppCompatButton
 import androidx.cardview.widget.CardView
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModelProvider
+import androidx.recyclerview.widget.DefaultItemAnimator
+import androidx.recyclerview.widget.ItemTouchHelper
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import com.mipapadakis.canvas.model.CvImage
+import com.mipapadakis.canvas.model.layer.CvLayer
 import com.mipapadakis.canvas.tools.DeviceDimensions
 import com.mipapadakis.canvas.ui.*
 import com.mipapadakis.canvas.ui.create_canvas.CreateCanvasFragment
+import com.mipapadakis.canvas.ui.gallery.RecyclerViewTouchListener
+import com.mipapadakis.canvas.ui.toolbar.menu.LayerListAdapter
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
@@ -28,13 +36,10 @@ private const val DIMENSION_HEIGHT_INTENT_KEY = CreateCanvasFragment.DIMENSION_H
 private const val WIDTH = CreateCanvasFragment.WIDTH
 private const val HEIGHT = CreateCanvasFragment.HEIGHT
 
-private const val FULL_ALPHA = 1f
-private const val MEDIUM_ALPHA = 0.6f
-private const val LOW_ALPHA = 0.3f
-
 @SuppressLint("ClickableViewAccessibility")
 class CanvasActivity : AppCompatActivity() {
     private lateinit var canvasViewModel: CanvasViewModel
+    private lateinit var layerRecyclerView: RecyclerView
     private var devicePixelWidth: Int = 0
     private var devicePixelHeight: Int = 0
     private var canvasWidth = 540
@@ -85,7 +90,7 @@ class CanvasActivity : AppCompatActivity() {
     private lateinit var toolTextFontSizeBtn: AppCompatButton
     private lateinit var toolCanvasLayersLayout: LinearLayout
     private lateinit var toolCanvasLayersAddBtn: ImageButton
-    private lateinit var toolCanvasLayersListBtn: ImageButton
+    //private lateinit var toolCanvasLayersListBtn: ImageButton
     private lateinit var toolCanvasTransformLayout: LinearLayout
     private lateinit var toolCanvasTransformCropBtn: AppCompatButton
     private lateinit var toolCanvasTransformFlipBtn: AppCompatButton
@@ -113,7 +118,7 @@ class CanvasActivity : AppCompatActivity() {
                 val uri = intent.getStringExtra(IMPORT_IMAGE_INTENT_KEY)
                 //Initialize canvasWidth and canvasHeight:
                 if(uri!=null) getImageDimensionsFromUri(Uri.parse(uri))
-                showToast("canvasWidth=$canvasWidth, canvasHeight=$canvasHeight")
+                //showToast("canvasWidth=$canvasWidth, canvasHeight=$canvasHeight")
                 val layoutParamsCanvas = RelativeLayout.LayoutParams(canvasWidth, canvasHeight)
                 layoutParamsCanvas.addRule(RelativeLayout.BELOW)
                 canvasIV.layoutParams = layoutParamsCanvas
@@ -154,6 +159,50 @@ class CanvasActivity : AppCompatActivity() {
         setToolbar()
         setBottomToolbar()
         setupToolbarMenus()
+
+        layerRecyclerView = findViewById(R.id.layer_recycler_view)
+        layerRecyclerView.layoutManager = LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
+        layerRecyclerView.itemAnimator = DefaultItemAnimator()
+        layerRecyclerView.adapter = LayerListAdapter(canvasIV, resources)
+        getItemTouchHelper().attachToRecyclerView(layerRecyclerView)
+//        layerRecyclerView.addOnItemTouchListener(
+//            RecyclerViewTouchListener(this, layerRecyclerView, object : RecyclerViewTouchListener.ClickListener {
+//                override fun onItemClick(view: View?, position: Int) {
+//                    //showToast("Click at position $position")
+//                    //(layerRecyclerView.adapter as LayerListAdapter).deselectAll()
+//                    //(if(view != null) layerRecyclerView.findContainingViewHolder(view) as LayerListAdapter.ItemViewHolder else null)?.select()
+//                    //cvImage.setTopLayer(position)
+//                }
+//                override fun onLongClick(view: View?, position: Int) { showToast("Long click at position $position") }
+//                override fun onBackgroundClick() { showToast("Background click") }
+//            })
+//        )
+    }
+
+    private fun getItemTouchHelper(): ItemTouchHelper {
+        return ItemTouchHelper(object : ItemTouchHelper.SimpleCallback(ItemTouchHelper.LEFT + ItemTouchHelper.RIGHT, 0) {
+            override fun onMove(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder, target: RecyclerView.ViewHolder): Boolean {
+                if(layerRecyclerView.adapter is LayerListAdapter)
+                    (layerRecyclerView.adapter as LayerListAdapter).onItemMove( viewHolder.adapterPosition, target.adapterPosition )
+                return true
+            }
+            override fun onSelectedChanged(viewHolder: RecyclerView.ViewHolder?, actionState: Int) {
+                if (actionState != ItemTouchHelper.ACTION_STATE_IDLE) {
+                    if (viewHolder is LayerListAdapter.ItemTouchHelperViewHolder) {
+                        (viewHolder as LayerListAdapter.ItemTouchHelperViewHolder).onItemSelected()
+                    }
+                }
+                super.onSelectedChanged(viewHolder, actionState)
+            }
+            override fun clearView(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder) {
+                super.clearView(recyclerView, viewHolder)
+                if (viewHolder is LayerListAdapter.ItemTouchHelperViewHolder) {
+                    (viewHolder as LayerListAdapter.ItemTouchHelperViewHolder).onItemDropped()
+                }
+            }
+            override fun isLongPressDragEnabled(): Boolean { return true }
+            override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {}
+        })
     }
 
     /** Create a temp cv file. */
@@ -224,11 +273,9 @@ class CanvasActivity : AppCompatActivity() {
                                 @Suppress("DEPRECATION")
                                 vibrator.vibrate(70)
                             }
-//                            val location = IntArray(2)
-//                            toolbarVisibilityImageView.getLocationOnScreen(location)
                             dX = toolbarOuterCardView.x - event.rawX
                             dY = toolbarOuterCardView.y - event.rawY
-                            toolbarOuterCardView.alpha = MEDIUM_ALPHA
+                            toolbarOuterCardView.alpha = CanvasPreferences.MEDIUM_ALPHA
                         }
                     }
                     timer?.start()
@@ -237,10 +284,10 @@ class CanvasActivity : AppCompatActivity() {
                     timer?.cancel()
                     if (!longPressed && inViewInBounds(v, event.rawX.toInt(), event.rawY.toInt())) {
                         toggleToolbarVisibility()
-                    } else toolbarOuterCardView.alpha = FULL_ALPHA
+                    } else toolbarOuterCardView.alpha = CanvasPreferences.FULL_ALPHA
                 }
                 MotionEvent.ACTION_CANCEL -> {
-                    toolbarOuterCardView.alpha = FULL_ALPHA
+                    toolbarOuterCardView.alpha = CanvasPreferences.FULL_ALPHA
                 }
                 MotionEvent.ACTION_MOVE -> {
                     timer?.cancel()
@@ -303,7 +350,7 @@ class CanvasActivity : AppCompatActivity() {
         toolTextFontSizeBtn = findViewById(R.id.property_text_font_size)
         toolCanvasLayersLayout = findViewById(R.id.canvas_layers_properties)
         toolCanvasLayersAddBtn = findViewById(R.id.property_layers_add)
-        toolCanvasLayersListBtn = findViewById(R.id.property_layers_list)
+        //toolCanvasLayersListBtn = findViewById(R.id.property_layers_list)
         toolCanvasTransformLayout = findViewById(R.id.canvas_transform_properties)
         toolCanvasTransformCropBtn = findViewById(R.id.property_transform_crop)
         toolCanvasTransformFlipBtn = findViewById(R.id.property_transform_flip)
@@ -393,8 +440,13 @@ class CanvasActivity : AppCompatActivity() {
         }
 
         //LAYERS
+        toolCanvasLayersAddBtn.setOnClickListener {
+            CanvasViewModel.cvImage.value?.addStartingColorLayer()
+            layerRecyclerView.adapter?.notifyDataSetChanged()
+            canvasIV.setForegroundLayer(0)
+        }
         //todo add/copy/delete new layer
-        //todo choose layer
+        //todo choose layer, merge layers
 
         //TRANSFORM
         addPopMenuTransformFlip()
@@ -510,6 +562,7 @@ class CanvasActivity : AppCompatActivity() {
                         hideProperties()
                         showBottomToolbar()
                         toolCanvasLayersLayout.visibility = View.VISIBLE
+                        layerRecyclerView.adapter?.notifyDataSetChanged()
                     }
                     R.id.canvas_transform-> {
                         hideProperties()
@@ -619,7 +672,7 @@ class CanvasActivity : AppCompatActivity() {
 
     private fun showToolBars() {
         //val drawableOff = getDrawableFromId(R.drawable.baseline_visibility_off_black_36)
-        toolbarVisibilityImageView.setImageResource(R.drawable.baseline_visibility_off_black_36)
+        toolbarVisibilityImageView.setImageResource(R.drawable.baseline_visibility_black_36)
         toolbarButtonLayout.visibility = View.VISIBLE
         if(hasVisibleProperties()) showBottomToolbar()
 
@@ -631,7 +684,7 @@ class CanvasActivity : AppCompatActivity() {
                 .start()
     }
     private fun hideToolbars() {
-        val drawableOn = getDrawableFromId(R.drawable.baseline_visibility_black_36)
+        val drawableOn = getDrawableFromId(R.drawable.baseline_visibility_off_black_36)
         toolbarVisibilityImageView.setImageDrawable(drawableOn)
         toolbarButtonLayout.visibility = View.GONE
         hideBottomToolbar()

@@ -17,7 +17,7 @@ class GalleryViewModel : ViewModel() {
         _text.value = text
     }
 
-    private val _images = MutableLiveData<List<CvImage>>()
+    private val _images = MutableLiveData<List<CvImage>>() //List of cv files
     val images: LiveData<List<CvImage>> = _images
 
     fun setImages(list: List<CvImage>){

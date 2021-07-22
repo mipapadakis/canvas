@@ -5,6 +5,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.mipapadakis.canvas.model.CvImage
 import kotlinx.coroutines.launch
 
 
@@ -42,6 +43,10 @@ class CanvasViewModel: ViewModel() {
 
 //        const val PAINT_MIN_SIZE = 1f
 //        const val PAINT_MAX_SIZE = 100f
+
+        private val _cvImage = MutableLiveData<CvImage>()
+        val cvImage: LiveData<CvImage> = _cvImage
+        fun setCvImage(cvImage: CvImage){ _cvImage.value = cvImage}
 
         ///////////////////////////////////////////Tools////////////////////////////////////////////
         var tool = TOOL_BRUSH

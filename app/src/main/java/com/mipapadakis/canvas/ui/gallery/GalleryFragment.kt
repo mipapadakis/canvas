@@ -47,9 +47,8 @@ class GalleryFragment : Fragment() {
                 createCvImage("image 5", R.drawable.baseline_create_black_48))
         galleryViewModel.setImages(imageList)
 
-        val mLayoutManager: RecyclerView.LayoutManager = LinearLayoutManager(context)
         recyclerView = root.findViewById(R.id.recycler_view)
-        recyclerView.layoutManager = mLayoutManager
+        recyclerView.layoutManager = LinearLayoutManager(context)
         recyclerView.itemAnimator = DefaultItemAnimator()
         recyclerView.adapter = CvImageAdapter(galleryViewModel.images, this)
         recyclerView.addOnItemTouchListener(
@@ -70,9 +69,9 @@ class GalleryFragment : Fragment() {
         return root
     }
 
-    private fun createCvImage(title: String, drawableId: Int): CvImage{
-        val cvImage = CvImage(title, Bitmap.createBitmap(BitmapFactory.decodeResource(context?.resources, drawableId)))
-        return cvImage
+    private fun createCvImage(title: String, drawableId: Int): CvImage {
+        val bmp = Bitmap.createBitmap(BitmapFactory.decodeResource(context?.resources, drawableId))
+        return CvImage(title, bmp, resources)
     }
 
     override fun onAttach(context: Context) {

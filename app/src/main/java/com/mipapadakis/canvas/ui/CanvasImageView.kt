@@ -9,7 +9,6 @@ import android.widget.RelativeLayout
 import androidx.appcompat.widget.AppCompatImageView
 import androidx.core.graphics.drawable.toBitmap
 import com.mipapadakis.canvas.CanvasViewModel
-import com.mipapadakis.canvas.R
 import com.mipapadakis.canvas.model.CvImage
 import com.mipapadakis.canvas.tools.DeviceDimensions
 import java.util.*
@@ -50,9 +49,8 @@ class CanvasImageView(context: Context?) : AppCompatImageView(context!!), MyTouc
     private var prevPoint = Point() //Coords of last position of pointer, for MODE_DRAW
     private var currentPath = Path()
     private lateinit var firstBitmap: Bitmap //Caches the extraBitmap while the user is drawing
-    private lateinit var backgroundBitmap: Bitmap //This has the png_backgound_pattern painted on it
-    private lateinit var foregroundBitmap: Bitmap //This has all the user-created drawings on it.
-    private lateinit var foregroundCanvas: Canvas
+    lateinit var foregroundBitmap: Bitmap //This has all the user-created drawings on it.
+    lateinit var foregroundCanvas: Canvas
     private lateinit var visibleBitmap: Bitmap //Merges the background and foreground bitmaps together
     private lateinit var visibleCanvas: Canvas
 
@@ -81,49 +79,41 @@ class CanvasImageView(context: Context?) : AppCompatImageView(context!!), MyTouc
         startingWidth = width
         startingHeight = height
         setPositionToCenter()
+        cvImage = CvImage(width, height, resources)
+        CanvasViewModel.setCvImage(cvImage)
+        cvImage.addStartingColorLayer()
         visibleBitmap = drawable.toBitmap()
-        foregroundBitmap = Bitmap.createBitmap(visibleBitmap)
-        createBackgroundBitmap()
-        addActionToHistory(ACTION_DRAW)
-        //cvImage = CvImage(drawable.toBitmap()) //TODO CvImage
-    }
-
-    private fun createBackgroundBitmap(){
-        backgroundBitmap = Bitmap.createBitmap(startingWidth, startingHeight, Bitmap.Config.ARGB_8888)
-        val backgroundPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-            isAntiAlias = false
-            color = 0xFFFFFFFF.toInt()
-            alpha = 255
-            strokeJoin = Paint.Join.ROUND
-            strokeCap = Paint.Cap.ROUND //BUTT
-            strokeWidth = 20F
-            style = Paint.Style.FILL_AND_STROKE
-        }
-        val pngBackgroundPattern = BitmapFactory.decodeResource(getResources(), R.drawable.png_background_pattern)
-        backgroundPaint.shader = BitmapShader( pngBackgroundPattern, Shader.TileMode.REPEAT, Shader.TileMode.REPEAT)
-        val backgroundCanvas = Canvas(backgroundBitmap)
-        backgroundCanvas.drawRect(0f, 0f, backgroundBitmap.width-1f, backgroundBitmap.height-1f, backgroundPaint)
+        visibleCanvas = Canvas(visibleBitmap)
+        foregroundBitmap = cvImage[0].bitmap
+        foregroundCanvas = Canvas(foregroundBitmap)
         invalidate()
+        addActionToHistory(ACTION_DRAW)
     }
 
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
         super.onSizeChanged(w, h, oldw, oldh)
 
-        visibleBitmap.recycle()
-        foregroundBitmap.recycle()
-        visibleBitmap = Bitmap.createBitmap(startingWidth, startingHeight, Bitmap.Config.ARGB_8888)
-        foregroundBitmap = Bitmap.createBitmap(visibleBitmap)
-        visibleCanvas = Canvas(visibleBitmap)
-        foregroundCanvas = Canvas(foregroundBitmap)
-        foregroundCanvas.drawColor(Color.WHITE)
+//        visibleBitmap.recycle()
+//        foregroundBitmap.recycle()
+//        visibleBitmap = Bitmap.createBitmap(startingWidth, startingHeight, Bitmap.Config.ARGB_8888)
+//        foregroundBitmap = Bitmap.createBitmap(visibleBitmap)
+//        visibleCanvas = Canvas(visibleBitmap)
+//        foregroundCanvas = Canvas(foregroundBitmap)
+//        foregroundCanvas.drawColor(Color.WHITE)
         //if(firstTime){ firstTime = false }
     }
 
     override fun onDraw(canvas: Canvas) {
         //Combine the background with the foreground into the visibleBitmap:
-        visibleCanvas.drawBitmap(backgroundBitmap)
-        visibleCanvas.drawBitmap(foregroundBitmap)
+        visibleBitmap = cvImage.getTotalImage(true)
+        //visibleCanvas.drawBitmap(foregroundBitmap)
         canvas.drawBitmap(visibleBitmap)
+    }
+
+    fun setForegroundLayer(layerIndex: Int){
+        foregroundBitmap = CanvasViewModel.cvImage.value?.get(layerIndex)?.bitmap ?: return
+        foregroundCanvas = Canvas(foregroundBitmap)
+        invalidate()
     }
 
     override fun on1PointerTap(event: MotionEvent) { Log.i("CanvasTouchListener", "on1PointerTap") }

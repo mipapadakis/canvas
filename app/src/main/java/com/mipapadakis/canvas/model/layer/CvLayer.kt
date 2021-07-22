@@ -1,6 +1,8 @@
 package com.mipapadakis.canvas.model.layer
 
+import android.content.res.Resources
 import android.graphics.*
+import com.mipapadakis.canvas.model.CvImage
 import com.mipapadakis.canvas.model.layer.shape.CvShape
 
 /** This represents a layer of the canvas, also containing its own shapes.
@@ -9,12 +11,13 @@ import com.mipapadakis.canvas.model.layer.shape.CvShape
  * */
 class CvLayer(var bitmap: Bitmap){
     var shapes: ArrayList<CvShape> = ArrayList()
+    val width = bitmap.width
+    val height = bitmap.height
     var visible = true
 
     constructor(cvLayer: CvLayer): this(Bitmap.createBitmap(cvLayer.bitmap)){
         shapes = ArrayList(cvLayer.shapes)
     }
-
     fun setVisible(){ visible = true } //TODO
     fun setInvisible(){ visible = false } //TODO
     fun isVisible() = visible //TODO
