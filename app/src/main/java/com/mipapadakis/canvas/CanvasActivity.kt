@@ -12,17 +12,13 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.AppCompatButton
 import androidx.cardview.widget.CardView
 import androidx.core.content.ContextCompat
-import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.DefaultItemAnimator
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.mipapadakis.canvas.model.CvImage
-import com.mipapadakis.canvas.model.layer.CvLayer
 import com.mipapadakis.canvas.tools.DeviceDimensions
 import com.mipapadakis.canvas.ui.*
 import com.mipapadakis.canvas.ui.create_canvas.CreateCanvasFragment
-import com.mipapadakis.canvas.ui.gallery.RecyclerViewTouchListener
 import com.mipapadakis.canvas.ui.toolbar.menu.LayerListAdapter
 import java.io.File
 import java.text.SimpleDateFormat
@@ -54,11 +50,11 @@ class CanvasActivity : AppCompatActivity() {
     //Toolbar
     private lateinit var toolbarOuterCardView: CardView
     private lateinit var toolbarInnerCardView: CardView
-    private lateinit var toolbarVisibilityImageView: ImageView
+    private lateinit var toolbarMoveImageView: ImageView
     private lateinit var toolbarButtonLayout: LinearLayout
     private lateinit var toolbarUndoBtn: ImageButton
     private lateinit var toolbarRedoBtn: ImageButton
-    //private lateinit var toolbarPaletteBtn: ImageButton
+    private lateinit var toolbarLayerBtn: ImageButton
     private lateinit var toolbarToolBtn: ImageButton
     private lateinit var toolbarCanvasBtn: ImageButton
     private lateinit var bottomToolbarOuterCardView: CardView
@@ -107,9 +103,13 @@ class CanvasActivity : AppCompatActivity() {
         toast = Toast(this)
         devicePixelWidth = DeviceDimensions.getWidth(this)
         devicePixelHeight = DeviceDimensions.getHeight(this)
-        canvasViewModel = ViewModelProvider(this).get(CanvasViewModel::class.java)
+        //canvasViewModel = ViewModelProvider(this).get(CanvasViewModel::class.java)
+        CanvasViewModel.resetAttributes()
         layoutCanvas = findViewById(R.id.canvas_layout)
-        canvasIV = CanvasImageView(this)
+        layerRecyclerView = findViewById(R.id.layer_recycler_view)
+        canvasIV = CanvasImageView(this){
+            layerRecyclerView.adapter?.notifyDataSetChanged()
+        }
 
         //Receive intent from MainActivity:
         when {
@@ -119,6 +119,7 @@ class CanvasActivity : AppCompatActivity() {
                 //Initialize canvasWidth and canvasHeight:
                 if(uri!=null) getImageDimensionsFromUri(Uri.parse(uri))
                 //showToast("canvasWidth=$canvasWidth, canvasHeight=$canvasHeight")
+                Log.i("CanvasDimensions", "canvasWidth=$canvasWidth, canvasHeight=$canvasHeight")
                 val layoutParamsCanvas = RelativeLayout.LayoutParams(canvasWidth, canvasHeight)
                 layoutParamsCanvas.addRule(RelativeLayout.BELOW)
                 canvasIV.layoutParams = layoutParamsCanvas
@@ -133,7 +134,7 @@ class CanvasActivity : AppCompatActivity() {
                 canvasIV.layoutParams = layoutParamsCanvas
                 val bitmap = Bitmap.createBitmap(canvasWidth, canvasHeight, Bitmap.Config.ARGB_8888)
                 val canvas = Canvas(bitmap)
-                canvas.drawColor(Color.WHITE)
+                canvas.drawColor(CanvasPreferences.startingCanvasColor)
                 canvasIV.setImageBitmap(bitmap)
                 layoutCanvas.addView(canvasIV)
             }
@@ -160,21 +161,17 @@ class CanvasActivity : AppCompatActivity() {
         setBottomToolbar()
         setupToolbarMenus()
 
-        layerRecyclerView = findViewById(R.id.layer_recycler_view)
+        //Create recyclerView with the list of layers.
         layerRecyclerView.layoutManager = LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
         layerRecyclerView.itemAnimator = DefaultItemAnimator()
         layerRecyclerView.adapter = LayerListAdapter(canvasIV, resources)
         getItemTouchHelper().attachToRecyclerView(layerRecyclerView)
 //        layerRecyclerView.addOnItemTouchListener(
 //            RecyclerViewTouchListener(this, layerRecyclerView, object : RecyclerViewTouchListener.ClickListener {
-//                override fun onItemClick(view: View?, position: Int) {
-//                    //showToast("Click at position $position")
-//                    //(layerRecyclerView.adapter as LayerListAdapter).deselectAll()
-//                    //(if(view != null) layerRecyclerView.findContainingViewHolder(view) as LayerListAdapter.ItemViewHolder else null)?.select()
-//                    //cvImage.setTopLayer(position)
-//                }
-//                override fun onLongClick(view: View?, position: Int) { showToast("Long click at position $position") }
-//                override fun onBackgroundClick() { showToast("Background click") }
+//                override fun onItemClick(view: View?, position: Int) {}
+//                override fun onLongClick(view: View?, position: Int) {}
+//                override fun onDoubleClick(view: View?, position: Int) {}
+//                override fun onBackgroundClick() {}
 //            })
 //        )
     }
@@ -194,7 +191,7 @@ class CanvasActivity : AppCompatActivity() {
                 }
                 super.onSelectedChanged(viewHolder, actionState)
             }
-            override fun clearView(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder) {
+            override fun clearView(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder){
                 super.clearView(recyclerView, viewHolder)
                 if (viewHolder is LayerListAdapter.ItemTouchHelperViewHolder) {
                     (viewHolder as LayerListAdapter.ItemTouchHelperViewHolder).onItemDropped()
@@ -240,22 +237,23 @@ class CanvasActivity : AppCompatActivity() {
 
     private fun setToolbar() {
         toolbarOuterCardView = findViewById(R.id.toolbar_outer_card)
-        toolbarInnerCardView = findViewById(R.id.toolbar_inner_card) //TODO: Its background color is the same as the brush color.
-        toolbarVisibilityImageView = findViewById(R.id.toolbar_visibility) //TODO: OnClick, hide/show the toolbarButtonLayout. OnLongPress, drag the toolbar.
+        toolbarInnerCardView = findViewById(R.id.toolbar_inner_card)
+        toolbarMoveImageView = findViewById(R.id.toolbar_move) //OnClick, hide/show the toolbarButtonLayout. OnLongPress, drag the toolbar.
         toolbarButtonLayout = findViewById(R.id.toolbar_buttons)
-        toolbarUndoBtn = findViewById(R.id.toolbar_button_undo) //TODO action stack.
+        toolbarUndoBtn = findViewById(R.id.toolbar_button_undo)
         toolbarRedoBtn = findViewById(R.id.toolbar_button_redo)
-        //toolbarPaletteBtn = findViewById(R.id.toolbar_button_palette) //TODO menu of colors (onColorPick, change background color of toolbarInnerCardView)
+        toolbarLayerBtn = findViewById(R.id.toolbar_button_layers)
         toolbarToolBtn = findViewById(R.id.toolbar_button_tool) //TODO menu & options for each tool
-        toolbarCanvasBtn = findViewById(R.id.toolbar_button_options) //TODO menu. Contains canvas global options.
+        toolbarCanvasBtn = findViewById(R.id.toolbar_button_options) //TODO canvas menu. Contains canvas global options.
         bottomToolbarOuterCardView = findViewById(R.id.bottom_toolbar_outer_card)
         bottomToolbarInnerCardView = findViewById(R.id.bottom_toolbar_inner_card)
+        //TODO menu of colors (onColorPick, change background color of toolbarInnerCardView)
 
         var timer: CountDownTimer? = null
         var longPressed = false
         var dX = 0f
         var dY = 0f
-        toolbarVisibilityImageView.setOnTouchListener { v, event ->
+        toolbarMoveImageView.setOnTouchListener { v, event ->
             when (event.action) {
                 MotionEvent.ACTION_DOWN -> {
                     longPressed = false
@@ -314,6 +312,12 @@ class CanvasActivity : AppCompatActivity() {
         }
         toolbarUndoBtn.setOnClickListener { if(!canvasIV.undo()) showToast("can't undo") }
         toolbarRedoBtn.setOnClickListener { if(!canvasIV.redo()) showToast("can't redo") }
+        toolbarLayerBtn.setOnClickListener {
+            hideProperties()
+            showBottomToolbar()
+            toolCanvasLayersLayout.visibility = View.VISIBLE
+            layerRecyclerView.adapter?.notifyDataSetChanged()
+        }
 
         CanvasViewModel.toolbarColor.observe(this, {
             toolbarInnerCardView.setCardBackgroundColor(CanvasViewModel.paint.color)
@@ -441,12 +445,10 @@ class CanvasActivity : AppCompatActivity() {
 
         //LAYERS
         toolCanvasLayersAddBtn.setOnClickListener {
-            CanvasViewModel.cvImage.value?.addStartingColorLayer()
-            layerRecyclerView.adapter?.notifyDataSetChanged()
-            canvasIV.setForegroundLayer(0)
+            CanvasViewModel.cvImage.newLayer()
+            canvasIV.invalidate()
+            canvasIV.addActionToHistory(CanvasImageView.ACTION_LAYER_ADD)
         }
-        //todo add/copy/delete new layer
-        //todo choose layer, merge layers
 
         //TRANSFORM
         addPopMenuTransformFlip()
@@ -481,19 +483,19 @@ class CanvasActivity : AppCompatActivity() {
 
 
     /** Don't need this, since I'm using the drawable IDs as key identifiers.
-     *  For example, CanvasViewModel.SHAPE_TYPE_LINE == R.drawable.baseline_show_chart_black_36.
+     *  For example, CanvasViewModel.SHAPE_TYPE_LINE == R.drawable.baseline_show_chart_black_24.
      * private fun getCurrentShapeId(): Int{
         return when (CanvasViewModel.shapeType) {
-            CanvasViewModel.SHAPE_TYPE_LINE -> { R.drawable.baseline_show_chart_black_36 }
-            CanvasViewModel.SHAPE_TYPE_SQUARE -> { R.drawable.baseline_check_box_outline_blank_black_36 }
-            CanvasViewModel.SHAPE_TYPE_RECTANGLE -> { R.drawable.baseline_crop_16_9_black_36 }
-            CanvasViewModel.SHAPE_TYPE_CIRCLE -> { R.drawable.baseline_panorama_fish_eye_black_36 }
+            CanvasViewModel.SHAPE_TYPE_LINE -> { R.drawable.baseline_show_chart_black_24 }
+            CanvasViewModel.SHAPE_TYPE_SQUARE -> { R.drawable.baseline_check_box_outline_blank_black_24 }
+            CanvasViewModel.SHAPE_TYPE_RECTANGLE -> { R.drawable.baseline_crop_16_9_black_24 }
+            CanvasViewModel.SHAPE_TYPE_CIRCLE -> { R.drawable.baseline_panorama_fish_eye_black_24 }
             CanvasViewModel.SHAPE_TYPE_OVAL -> { R.drawable.oval }
-            CanvasViewModel.SHAPE_TYPE_POLYGON -> { R.drawable.baseline_star_outline_black_36 }
-            CanvasViewModel.SHAPE_TYPE_TRIANGLE -> { R.drawable.baseline_change_history_black_36 }
-            CanvasViewModel.SHAPE_TYPE_ARROW -> { R.drawable.baseline_east_black_36 }
-            CanvasViewModel.SHAPE_TYPE_CALLOUT -> { R.drawable.baseline_chat_bubble_outline_black_36 }
-            else -> {R.drawable.baseline_show_chart_black_36}
+            CanvasViewModel.SHAPE_TYPE_POLYGON -> { R.drawable.baseline_star_outline_black_24 }
+            CanvasViewModel.SHAPE_TYPE_TRIANGLE -> { R.drawable.baseline_change_history_black_24 }
+            CanvasViewModel.SHAPE_TYPE_ARROW -> { R.drawable.baseline_east_black_24 }
+            CanvasViewModel.SHAPE_TYPE_CALLOUT -> { R.drawable.baseline_chat_bubble_outline_black_24 }
+            else -> {R.drawable.baseline_show_chart_black_24}
         }
     }*/
     private fun addPopMenuShapeType(){
@@ -558,12 +560,6 @@ class CanvasActivity : AppCompatActivity() {
             canvasMenu.menuInflater.inflate(R.menu.canvas, canvasMenu.menu)
             canvasMenu.setOnMenuItemClickListener {
                 when (it.itemId) {
-                    R.id.canvas_layers -> {
-                        hideProperties()
-                        showBottomToolbar()
-                        toolCanvasLayersLayout.visibility = View.VISIBLE
-                        layerRecyclerView.adapter?.notifyDataSetChanged()
-                    }
                     R.id.canvas_transform-> {
                         hideProperties()
                         showBottomToolbar()
@@ -600,22 +596,22 @@ class CanvasActivity : AppCompatActivity() {
                     R.id.tool_brush -> {
                         CanvasViewModel.tool = CanvasViewModel.TOOL_BRUSH
                         toolBrushLayout.visibility = View.VISIBLE
-                        toolbarToolBtn.setImageResource(R.drawable.baseline_brush_black_36)
+                        toolbarToolBtn.setImageResource(R.drawable.baseline_brush_black_24)
                     }
                     R.id.tool_eraser -> {
                         toolEraserLayout.visibility = View.VISIBLE
                         CanvasViewModel.tool = CanvasViewModel.TOOL_ERASER
-                        toolbarToolBtn.setImageResource(R.drawable.eraser) //TODO
+                        toolbarToolBtn.setImageResource(R.drawable.eraser)
                     }
                     R.id.tool_bucket -> {
                         toolBucketLayout.visibility = View.VISIBLE
                         CanvasViewModel.tool = CanvasViewModel.TOOL_BUCKET
-                        toolbarToolBtn.setImageResource(R.drawable.baseline_format_color_fill_black_36)
+                        toolbarToolBtn.setImageResource(R.drawable.baseline_format_color_fill_black_24)
                     }
                     R.id.tool_eyedropper -> {
                         hideBottomToolbar()
                         CanvasViewModel.tool = CanvasViewModel.TOOL_EYEDROPPER
-                        toolbarToolBtn.setImageResource(R.drawable.baseline_colorize_black_36)
+                        toolbarToolBtn.setImageResource(R.drawable.baseline_colorize_black_24)
                     }
                     R.id.tool_select -> {
                         toolSelectLayout.visibility = View.VISIBLE
@@ -630,7 +626,7 @@ class CanvasActivity : AppCompatActivity() {
                     R.id.tool_text -> {
                         toolTextLayout.visibility = View.VISIBLE
                         CanvasViewModel.tool = CanvasViewModel.TOOL_TEXT
-                        toolbarToolBtn.setImageResource(R.drawable.baseline_title_black_36)
+                        toolbarToolBtn.setImageResource(R.drawable.baseline_title_black_24)
                     }
                     else -> {}
                 }
@@ -671,8 +667,8 @@ class CanvasActivity : AppCompatActivity() {
     }
 
     private fun showToolBars() {
-        //val drawableOff = getDrawableFromId(R.drawable.baseline_visibility_off_black_36)
-        toolbarVisibilityImageView.setImageResource(R.drawable.baseline_visibility_black_36)
+        //val drawableOff = getDrawableFromId(R.drawable.baseline_visibility_off_black_24)
+        toolbarMoveImageView.setImageResource(R.drawable.baseline_open_with_black_24)
         toolbarButtonLayout.visibility = View.VISIBLE
         if(hasVisibleProperties()) showBottomToolbar()
 
@@ -684,8 +680,8 @@ class CanvasActivity : AppCompatActivity() {
                 .start()
     }
     private fun hideToolbars() {
-        val drawableOn = getDrawableFromId(R.drawable.baseline_visibility_off_black_36)
-        toolbarVisibilityImageView.setImageDrawable(drawableOn)
+        val drawableOn = getDrawableFromId(R.drawable.baseline_visibility_black_24)
+        toolbarMoveImageView.setImageDrawable(drawableOn)
         toolbarButtonLayout.visibility = View.GONE
         hideBottomToolbar()
     }

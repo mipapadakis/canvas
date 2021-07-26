@@ -4,9 +4,9 @@ import android.graphics.*
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import com.mipapadakis.canvas.model.CvImage
-import kotlinx.coroutines.launch
+import com.mipapadakis.canvas.ui.CanvasImageView
+import java.util.*
 
 
 /** Store here the current tool and its options.*/
@@ -44,15 +44,17 @@ class CanvasViewModel: ViewModel() {
 //        const val PAINT_MIN_SIZE = 1f
 //        const val PAINT_MAX_SIZE = 100f
 
-        private val _cvImage = MutableLiveData<CvImage>()
-        val cvImage: LiveData<CvImage> = _cvImage
-        fun setCvImage(cvImage: CvImage){ _cvImage.value = cvImage}
+
+        ////////////////////////////////////////Properties://///////////////////////////////////////
+        var cvImage = CvImage(0,0)
+        var history = ArrayList<CanvasImageView.Action>()
+        var historyIndex = 0
+        private val _toolbarColor = MutableLiveData<Int>().apply { value = CanvasPreferences.startingColorId}
+        val toolbarColor: LiveData<Int> = _toolbarColor
+
 
         ///////////////////////////////////////////Tools////////////////////////////////////////////
         var tool = TOOL_BRUSH
-
-        ////////////////////////////////////////Properties://///////////////////////////////////////
-
         //Brush
         val paint = Paint().apply {
             isAntiAlias = true
@@ -64,9 +66,8 @@ class CanvasViewModel: ViewModel() {
             style = Paint.Style.STROKE
             isDither = true
         }
-
         //Eraser
-        val eraserPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        val eraserPaint = Paint().apply {
             isAntiAlias = false
             color = Color.TRANSPARENT
             alpha = 255
@@ -74,9 +75,8 @@ class CanvasViewModel: ViewModel() {
             strokeCap = Paint.Cap.ROUND //BUTT
             strokeWidth = 20F
             style = Paint.Style.STROKE
-            xfermode = PorterDuffXfermode(PorterDuff.Mode.DST_OUT)
+            xfermode = PorterDuffXfermode(PorterDuff.Mode.DST_IN)
         }
-
         //Bucket
         val bucketPaint = Paint().apply {
             color = CanvasPreferences.startingColorId
@@ -87,11 +87,9 @@ class CanvasViewModel: ViewModel() {
             style = Paint.Style.STROKE
             isDither = true
         }
-
         //Select
         var selectType = SELECT_TYPE_RECTANGULAR
         var selectMethod = SELECT_METHOD_NEW
-
         //Shape
         var shapeType = SHAPE_TYPE_LINE
         val shapePaint= Paint().apply {
@@ -106,10 +104,11 @@ class CanvasViewModel: ViewModel() {
             //pathEffect = CornerPathEffect(10F)
             isDither = true
         }
-
         //Text
         var textFont = 0 //TODO
         var textFontSize = 12
+
+        //////////////////////////////////////////Methods://////////////////////////////////////////
 
         fun setPaintColor(color: Int){
             paint.color = color
@@ -118,19 +117,58 @@ class CanvasViewModel: ViewModel() {
             _toolbarColor.value = color
         }
 
-        private val _toolbarColor = MutableLiveData<Int>().apply { value = CanvasPreferences.startingColorId}
-        val toolbarColor: LiveData<Int> = _toolbarColor
+        fun resetAttributes(){
+            history = ArrayList<CanvasImageView.Action>()
+            historyIndex = 0
+            tool = TOOL_BRUSH
+            paint.apply {
+                isAntiAlias = true
+                color = CanvasPreferences.startingColorId
+                alpha = 255
+                strokeJoin = Paint.Join.ROUND
+                strokeCap = Paint.Cap.ROUND //BUTT
+                strokeWidth = 20F
+                style = Paint.Style.STROKE
+                isDither = true
+            }
+            eraserPaint.apply {
+                isAntiAlias = false
+                color = Color.TRANSPARENT
+                alpha = 255
+                strokeJoin = Paint.Join.ROUND
+                strokeCap = Paint.Cap.ROUND //BUTT
+                strokeWidth = 20F
+                style = Paint.Style.STROKE
+                xfermode = PorterDuffXfermode(PorterDuff.Mode.DST_OUT)
+            }
+            bucketPaint.apply {
+                color = CanvasPreferences.startingColorId
+                alpha = 255
+                strokeJoin = Paint.Join.ROUND
+                strokeCap = Paint.Cap.ROUND //BUTT
+                strokeWidth = 20F
+                style = Paint.Style.STROKE
+                isDither = true
+            }
+            selectType = SELECT_TYPE_RECTANGULAR
+            selectMethod = SELECT_METHOD_NEW
+            shapeType = SHAPE_TYPE_LINE
+            shapePaint.apply {
+                isAntiAlias = true
+                color = paint.color
+                alpha = 255
+                strokeJoin = Paint.Join.ROUND
+                strokeCap = Paint.Cap.ROUND //BUTT
+                strokeWidth = 20F
+                style = Paint.Style.FILL //STROKE //FILL
+                pathEffect = DashPathEffect(floatArrayOf(10f,5f), 3f) //null, CornerPathEffect(10f)
+                //pathEffect = CornerPathEffect(10F)
+                isDither = true
+            }
+            textFont = 0
+            textFontSize = 12
+            _toolbarColor.apply { value = CanvasPreferences.startingColorId}
+        }
     }
-
     //var colorID = CanvasPreferences.startingColorId
-
-//    fun setColor(color: Int){  this.color = color }
-//    fun getColor() = color
-
-    //val brushSize = CanvasPreferences.startingBrushSize
-
-//    private val _colorId = MutableLiveData<Int>().apply { value = R.color.black }
-//    val colorId: LiveData<Int> = _colorId
-//    fun setColor(id: Int){  _colorId.value = id }
-//    fun getCanvasColor() = CanvasColor(colorId.value ?: 0)
 }

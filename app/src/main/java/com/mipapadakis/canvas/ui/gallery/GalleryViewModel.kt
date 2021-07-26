@@ -3,7 +3,6 @@ package com.mipapadakis.canvas.ui.gallery
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.mipapadakis.canvas.R
 import com.mipapadakis.canvas.model.CvImage
 
 class GalleryViewModel : ViewModel() {

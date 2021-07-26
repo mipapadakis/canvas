@@ -27,6 +27,7 @@ import com.google.android.material.slider.Slider
 import com.mipapadakis.canvas.CanvasActivity
 import com.mipapadakis.canvas.InterfaceMainActivity
 import com.mipapadakis.canvas.R
+import java.lang.Exception
 
 
 private const val CODE_IMAGE_PICK = 1000
@@ -418,38 +419,40 @@ class CreateCanvasFragment : Fragment() {
 
     //By https://stackoverflow.com/users/4233197/hiren-patel
     private fun setKeyboardVisibilityListener(root: View) {
-        val parentView = (activity?.findViewById<View>(android.R.id.content)
-                as ViewGroup).getChildAt(0)
-        parentView.viewTreeObserver.addOnGlobalLayoutListener(
-            object : ViewTreeObserver.OnGlobalLayoutListener {
-            private var alreadyOpen = false
-            private val defaultKeyboardHeightDP = 100
-            private val EstimatedKeyboardDP = defaultKeyboardHeightDP +
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) 48 else 0
-            private val rect: Rect = Rect()
-            override fun onGlobalLayout() {
-                val estimatedKeyboardHeight = TypedValue.applyDimension(
-                        TypedValue.COMPLEX_UNIT_DIP,
-                        EstimatedKeyboardDP.toFloat(),
-                        parentView.resources.displayMetrics
-                ).toInt()
-                parentView.getWindowVisibleDisplayFrame(rect)
-                val heightDiff: Int = parentView.rootView.height - (rect.bottom - rect.top)
-                val isShown = heightDiff >= estimatedKeyboardHeight
-                if (isShown == alreadyOpen) {
-                    //Log.i("Keyboard state", "Ignoring global layout change...")
-                    return
-                }
-                alreadyOpen = isShown
-                if (!isShown) {
-                    root.findViewById<EditText>(R.id.custom_pixel_input_width).clearFocus()
-                    root.findViewById<EditText>(R.id.custom_pixel_input_height).clearFocus()
-                    root.findViewById<EditText>(R.id.custom_dpi_input_height).clearFocus()
-                    root.findViewById<EditText>(R.id.custom_dpi_input_width).clearFocus()
-                    root.findViewById<EditText>(R.id.custom_dpi_input).clearFocus()
-                }
-            }
-        })
+        try {
+            val parentView = (activity?.findViewById<View>(android.R.id.content) as ViewGroup).getChildAt(0)
+            parentView.viewTreeObserver.addOnGlobalLayoutListener(
+                object : ViewTreeObserver.OnGlobalLayoutListener {
+                    private var alreadyOpen = false
+                    private val defaultKeyboardHeightDP = 100
+                    private val EstimatedKeyboardDP = defaultKeyboardHeightDP +
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) 48 else 0
+                    private val rect: Rect = Rect()
+                    override fun onGlobalLayout() {
+                        val estimatedKeyboardHeight = TypedValue.applyDimension(
+                            TypedValue.COMPLEX_UNIT_DIP,
+                            EstimatedKeyboardDP.toFloat(),
+                            parentView.resources.displayMetrics
+                        ).toInt()
+                        parentView.getWindowVisibleDisplayFrame(rect)
+                        val heightDiff: Int = parentView.rootView.height - (rect.bottom - rect.top)
+                        val isShown = heightDiff >= estimatedKeyboardHeight
+                        if (isShown == alreadyOpen) {
+                            //Log.i("Keyboard state", "Ignoring global layout change...")
+                            return
+                        }
+                        alreadyOpen = isShown
+                        if (!isShown) {
+                            root.findViewById<EditText>(R.id.custom_pixel_input_width).clearFocus()
+                            root.findViewById<EditText>(R.id.custom_pixel_input_height).clearFocus()
+                            root.findViewById<EditText>(R.id.custom_dpi_input_height).clearFocus()
+                            root.findViewById<EditText>(R.id.custom_dpi_input_width).clearFocus()
+                            root.findViewById<EditText>(R.id.custom_dpi_input).clearFocus()
+                        }
+                    }
+                })
+        }
+        catch (e: Exception){}
     }
 
     private fun drawRectangle(imageView: ImageView, width: Int, height: Int, matchBounds: Boolean){

@@ -1,20 +1,15 @@
 package com.mipapadakis.canvas.ui.gallery
 
 import android.content.Context
-import android.graphics.Rect
-import android.util.Log
 import android.view.GestureDetector
 import android.view.GestureDetector.SimpleOnGestureListener
 import android.view.MotionEvent
 import android.view.View
-import android.widget.Toast
 import androidx.recyclerview.widget.RecyclerView
 
-class RecyclerViewTouchListener(val context: Context?, recycleView: RecyclerView, private val clickListener: ClickListener?): RecyclerView.OnItemTouchListener {
+class RecyclerViewTouchListener(val context: Context?, recycleView: RecyclerView, val clickListener: ClickListener?): RecyclerView.OnItemTouchListener {
     private val gestureDetector: GestureDetector = GestureDetector(context, object : SimpleOnGestureListener() {
-        override fun onSingleTapUp(e: MotionEvent): Boolean {
-            return true
-        }
+        override fun onSingleTapUp(e: MotionEvent): Boolean { return true }
 
         override fun onLongPress(e: MotionEvent) {
             val child: View? = recycleView.findChildViewUnder(e.x, e.y)
@@ -22,6 +17,16 @@ class RecyclerViewTouchListener(val context: Context?, recycleView: RecyclerView
                 val position = recycleView.getChildAdapterPosition(child)
                 clickListener.onLongClick(child, position)
             }
+        }
+
+        override fun onDoubleTap(e: MotionEvent): Boolean {
+            val child: View? = recycleView.findChildViewUnder(e.x, e.y)
+            if (child != null && clickListener != null) {
+                val position = recycleView.getChildAdapterPosition(child)
+                clickListener.onDoubleClick(child, position)
+                return true
+            }
+            return false
         }
     })
 
@@ -46,7 +51,7 @@ class RecyclerViewTouchListener(val context: Context?, recycleView: RecyclerView
     interface ClickListener {
         fun onItemClick(view: View?, position: Int)
         fun onLongClick(view: View?, position: Int)
+        fun onDoubleClick(view: View?, position: Int)
         fun onBackgroundClick()
     }
-
 }

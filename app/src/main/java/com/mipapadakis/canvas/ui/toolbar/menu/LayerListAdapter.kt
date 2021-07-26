@@ -4,13 +4,8 @@ import android.content.res.Resources
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Color
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
-import android.widget.ImageButton
-import android.widget.ImageView
-import android.widget.PopupMenu
-import android.widget.Toast
+import android.view.*
+import android.widget.*
 import androidx.cardview.widget.CardView
 import androidx.recyclerview.widget.RecyclerView
 import com.mipapadakis.canvas.CanvasPreferences
@@ -19,6 +14,8 @@ import com.mipapadakis.canvas.R
 import com.mipapadakis.canvas.model.CvImage
 import com.mipapadakis.canvas.model.layer.CvLayer
 import com.mipapadakis.canvas.ui.CanvasImageView
+import com.mipapadakis.canvas.ui.DoubleTapListener
+
 
 class LayerListAdapter(val canvasIV: CanvasImageView, val resources: Resources): RecyclerView.Adapter<LayerListAdapter.ItemViewHolder>() {
     private var mRecyclerView: RecyclerView? = null
@@ -36,89 +33,154 @@ class LayerListAdapter(val canvasIV: CanvasImageView, val resources: Resources):
     }
 
     override fun onBindViewHolder(holder: ItemViewHolder, position: Int) {
-        val layer = CanvasViewModel.cvImage.value?.get(position) ?: return
+        val layer = CanvasViewModel.cvImage[position]
         if(position == itemCount - 1) {
             holder.hide()
             return
         }
         holder.show()
-        holder.layerImage.setImageBitmap(layer.bitmap)
+        holder.layerImage.setImageBitmap(layer.getBitmapWithOpacity())
+        holder.layerTitleTextView.text = layer.title
         holder.deselect()
-        holder.layerMenuButton
-        holder.layerVisibilityButton
-        holder.layerImage.setOnClickListener {
-            if(holder.isSelected) holder.deselect() else holder.select()
-        }
+        holder.layerImage.setOnClickListener(object : DoubleTapListener(){
+            override fun onSingleTap() {
+                if(holder.isSelected) holder.deselect() else holder.select()
+            }
+            override fun onDoubleTap() {
+                CanvasViewModel.cvImage.setTopLayer(layer)
+                canvasIV.invalidate()
+                canvasIV.addActionToHistory(CanvasImageView.ACTION_LAYER_MOVE)
+            }
+        })
         holder.layerVisibilityButton.setOnClickListener {
             layer.visible = !layer.visible
             if(layer.isVisible()) holder.layerVisibilityButton.setImageResource(R.drawable.baseline_visibility_black_18)
             else holder.layerVisibilityButton.setImageResource(R.drawable.baseline_visibility_off_black_18)
+            canvasIV.invalidate()
         }
         addPopMenuLayerOptions(layer, holder.layerMenuButton)
-        /*TODO
-           Option 1: clicking on a layer sets it as "selected" (NOT bringing it to front). You can
-           select multiple layers, and use the menu of one of them to "Merge". As for the  drag &
-           reorder, long pressing a layer and dragging it to the start of the list will bring that
-           layer to the front.
-           Option 2: drag & reorder only using the *holder.layerReorderButton*. Long press on item will
-           activate the multiple-select mode, for handling groups of layers. Also, while
-           multiple-select mode is on, the "property_layers_check_all" button will appear.
-        */
     }
 
-    override fun getItemCount() = CanvasViewModel.cvImage.value?.size ?: 0
+    override fun getItemCount() = CanvasViewModel.cvImage.size
 
     private fun addPopMenuLayerOptions(layer: CvLayer, btn: ImageButton){
         btn.setOnClickListener {
             val paletteMenu = PopupMenu(btn.context, btn)
             paletteMenu.menuInflater.inflate(R.menu.layer_options, paletteMenu.menu)
-            paletteMenu.setOnMenuItemClickListener {
-                when (it.itemId) {
+            paletteMenu.setOnMenuItemClickListener { menuItem ->
+                when (menuItem.itemId) {
                     R.id.layer_option_to_front -> {
-                        CanvasViewModel.cvImage.value?.setTopLayer(layer)
-                        canvasIV.setForegroundLayer(0)
-                        notifyDataSetChanged()
+                        CanvasViewModel.cvImage.setTopLayer(layer) //TODO move ALL selected layers?
+                        canvasIV.invalidate()
+                        canvasIV.addActionToHistory(CanvasImageView.ACTION_LAYER_MOVE)
                     }
                     R.id.layer_option_merge -> {
                         val selectedLayers = getSelectedLayers()
                         if(selectedLayers.size<2) showToast("Select at least two layers to merge.")
-                        else{
-                            /*TODO merge layers (according to their position in the list),
-                               notifyDataSetChanged, if any of them is at position 0 then canvasIV.setForegroundLayer(0)*/
+                        else{ // merge layers (according to their position in the list):
+                            val bmp = Bitmap.createBitmap(selectedLayers[0].width, selectedLayers[0].height, Bitmap.Config.ARGB_8888)
+                            val canvas = Canvas(bmp)
+                            //Find index of first selected layer of the cvImage.
+                            val firstSelectedLayerIndex = CanvasViewModel.cvImage.indexOf(selectedLayers[0])
+                            //Remove selected layers from the cvImage
+                            CanvasViewModel.cvImage.removeAll(selectedLayers)
+                            //Create merged Bitmap:
+                            for(i in selectedLayers.size-1 downTo 0)
+                                canvas.drawBitmap(selectedLayers[i].getBitmapWithOpacity(), 0f, 0f, null)
+                            //Add a new layer with the merged Bitmap to the position of the first selected layer
+                            CanvasViewModel.cvImage.addLayer(firstSelectedLayerIndex, bmp)
+                            canvasIV.addActionToHistory(CanvasImageView.ACTION_LAYER_MERGE)
                         }
                     }
                     R.id.layer_option_duplicate -> {
-                        //TODO show message if more than one selected. Create duplicates of ALL selected layers
+                        val selectedLayers = getSelectedLayers()
+                        var currentLayer: CvLayer
+                        var i = 0
+                        //Create duplicates of ALL selected layers
+                        while(i < CanvasViewModel.cvImage.lastIndex+selectedLayers.lastIndex){
+                            currentLayer = CanvasViewModel.cvImage[i]
+                            if(selectedLayers.contains(currentLayer)){ //create a duplicate after the original
+                                CanvasViewModel.cvImage.add(i+1, CvLayer(currentLayer.title + " copy", currentLayer))
+                                i+=2 //Avoid the duplicate
+                            }
+                            else i++
+                        }
+                        deselectAll()
+                        canvasIV.addActionToHistory(CanvasImageView.ACTION_LAYER_DUPLICATE)
                     }
                     R.id.layer_option_opacity -> {
-                        //TODO show numberPicker dialog, then set opacity to ALL selected layers
+                        val selectedLayers = getSelectedLayers()
+                        if(selectedLayers.size==1){
+                            numberPicker("Layer Opacity", "Choose percentage:",
+                                selectedLayers[0].getOpacityPercentage()){
+                                if(it==selectedLayers[0].getOpacityPercentage()) return@numberPicker
+                                selectedLayers[0].setOpacityPercentage(it)
+                                canvasIV.invalidate()
+                                canvasIV.addActionToHistory(CanvasImageView.ACTION_LAYER_OPACITY)
+                            }
+                        }
+                        else{
+                            numberPicker("Layers Opacity", "Choose percentage (for ALL selected layers):", 100){
+                                for(l in selectedLayers) l.setOpacityPercentage(it)
+                                canvasIV.invalidate()
+                                canvasIV.addActionToHistory(CanvasImageView.ACTION_LAYER_OPACITY)
+                            }
+                        }
+                        //TODO debug undo
                     }
                     R.id.layer_option_clear -> {
-                        //TODO set layer's bitmaps to transparent
+                        val selectedLayers = getSelectedLayers()
+                        for(l in selectedLayers) l.clearCanvas()
+                        canvasIV.addActionToHistory(CanvasImageView.ACTION_LAYER_CLEAR)
                     }
                     R.id.layer_option_delete -> {
-                        /*TODO delete layers. If any of them is at foreground, make foreground the
-                           first non-selected layer. If that doesn't exist, create a new empty layer.*/
+                        CanvasViewModel.cvImage.removeAll(getSelectedLayers())
+                        if(CanvasViewModel.cvImage.size<2) CanvasViewModel.cvImage.newLayer()
+                        canvasIV.addActionToHistory(CanvasImageView.ACTION_LAYER_DELETE)
                     }
                     else -> {}
                 }
+                canvasIV.invalidate()
                 true
             }
             paletteMenu.show()
         }
     }
 
+    private fun numberPicker(title: String, message: String, currentValue: Int, positive: (number: Int) -> Unit){
+        val numberPicker = NumberPicker(getContext())
+        numberPicker.minValue = 1
+        numberPicker.maxValue = 100
+        numberPicker.value = currentValue
+
+        val builder: android.app.AlertDialog.Builder = android.app.AlertDialog.Builder(getContext())
+        builder.setView(numberPicker)
+        builder.setTitle(title)
+        builder.setMessage(message)
+        builder.setPositiveButton("OK") { _, _ ->
+            positive(numberPicker.value)
+        }
+        builder.setNegativeButton( "CANCEL") { _, _ ->}
+        builder.create()
+        builder.show()
+    }
+
     private fun getViewHolder(position: Int): ItemViewHolder?{
         return mRecyclerView?.findViewHolderForAdapterPosition(position) as ItemViewHolder?
     }
 
-    fun getSelectedLayers(): ArrayList<CvLayer>{
-        return ArrayList() //TODO
+    private fun getSelectedLayers(): ArrayList<CvLayer>{
+        val selectedLayers = ArrayList<CvLayer>()
+        var isSelected: Boolean
+        for(i in itemCount-1 downTo 0){
+            isSelected = getViewHolder(i)?.isSelected ?: false
+            if(isSelected) selectedLayers.add(0, CanvasViewModel.cvImage[i])
+        }
+        return selectedLayers
     }
 
     private fun deselectAll(){
-        val layers = CanvasViewModel.cvImage.value
-        if(layers!=null) for(i in layers.indices) getViewHolder(i)?.deselect()
+        for(i in CanvasViewModel.cvImage.indices) getViewHolder(i)?.deselect()
     }
 
     private fun Bitmap.withPngGrid(): Bitmap{
@@ -134,7 +196,7 @@ class LayerListAdapter(val canvasIV: CanvasImageView, val resources: Resources):
         var layerImage: ImageView
         var layerVisibilityButton: ImageButton
         var layerMenuButton: ImageButton
-        var layerReorderButton: ImageButton
+        var layerTitleTextView: TextView
         var isSelected = false
 
         init {
@@ -143,8 +205,8 @@ class LayerListAdapter(val canvasIV: CanvasImageView, val resources: Resources):
             //innerCardView = itemView.findViewById(R.id.layer_inner_card)
             layerImage = itemView.findViewById(R.id.layer_image)
             layerVisibilityButton = itemView.findViewById(R.id.layer_visibility)
-            layerReorderButton = itemView.findViewById(R.id.layer_reorder)
             layerMenuButton = itemView.findViewById(R.id.layer_menu)
+            layerTitleTextView = itemView.findViewById(R.id.layer_title)
         }
 
         fun hide(){
@@ -173,7 +235,8 @@ class LayerListAdapter(val canvasIV: CanvasImageView, val resources: Resources):
         override fun onItemSelected() { outerCardView.alpha = CanvasPreferences.MEDIUM_ALPHA }
         override fun onItemDropped() {
             outerCardView.alpha = CanvasPreferences.FULL_ALPHA
-            canvasIV.setForegroundLayer(0) //In case the layer was dropped at the start of the list.
+            canvasIV.invalidate()
+            canvasIV.addActionToHistory(CanvasImageView.ACTION_LAYER_MOVE)
         }
     }
 
@@ -193,14 +256,10 @@ class LayerListAdapter(val canvasIV: CanvasImageView, val resources: Resources):
     }
 
     private fun swapItems(fromPosition: Int, toPosition: Int){
-        CanvasViewModel.cvImage.value?.swapLayers(fromPosition, toPosition)
-        //TODO update canvas layers
+        CanvasViewModel.cvImage.swapLayers(fromPosition, toPosition)
     }
 
-    interface ItemTouchHelperViewHolder {
-        fun onItemSelected()
-        fun onItemDropped()
-    }
+    private fun getContext() = mRecyclerView?.context
 
     @Suppress("SameParameterValue")
     private fun showToast(text: String){
@@ -211,4 +270,10 @@ class LayerListAdapter(val canvasIV: CanvasImageView, val resources: Resources):
         toast = Toast.makeText(context, text, toast.duration)
         toast.show()
     }
+
+    interface ItemTouchHelperViewHolder {
+        fun onItemSelected()
+        fun onItemDropped()
+    }
 }
+

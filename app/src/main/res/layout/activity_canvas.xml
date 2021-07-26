@@ -14,6 +14,8 @@
         android:id="@+id/toolbar_outer_card"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:clickable="true"
+        android:focusable="true"
         app:cardCornerRadius="8dp"
         app:cardElevation="6dp"
         app:cardPreventCornerOverlap="true"
@@ -25,6 +27,8 @@
             android:id="@+id/toolbar_inner_card"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:clickable="true"
+            android:focusable="true"
             app:cardCornerRadius="4dp"
             app:cardPreventCornerOverlap="true"
             app:cardUseCompatPadding="true"
@@ -33,12 +37,16 @@
             <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal">
+                android:orientation="horizontal"
+                android:clickable="true"
+                android:focusable="true">
 
                 <LinearLayout
                     android:id="@+id/toolbar_buttons"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:clickable="true"
+                    android:focusable="true"
                     android:orientation="horizontal"
                     android:visibility="visible">
 
@@ -46,47 +54,47 @@
                         android:id="@+id/toolbar_button_undo"
                         android:layout_width="@dimen/toolbar_button_size"
                         android:layout_height="@dimen/toolbar_button_size"
-                        android:src="@drawable/baseline_undo_black_36"
+                        android:src="@drawable/baseline_undo_black_24"
                         android:contentDescription="@string/toolbar_button"/>
 
                     <ImageButton
                         android:id="@+id/toolbar_button_redo"
                         android:layout_width="@dimen/toolbar_button_size"
                         android:layout_height="@dimen/toolbar_button_size"
-                        android:src="@drawable/baseline_redo_black_36"
+                        android:src="@drawable/baseline_redo_black_24"
                         android:contentDescription="@string/toolbar_button" />
-
-                    <!--
-                    <ImageButton
-                        android:id="@+id/toolbar_button_palette"
-                        android:layout_width="@dimen/toolbar_button_size"
-                        android:layout_height="@dimen/toolbar_button_size"
-                        android:src="@drawable/baseline_color_lens_black_36"
-                        android:contentDescription="@string/toolbar_button" /> -->
 
                     <ImageButton
                         android:id="@+id/toolbar_button_tool"
                         android:layout_width="@dimen/toolbar_button_size"
                         android:layout_height="@dimen/toolbar_button_size"
-                        android:src="@drawable/baseline_brush_black_36"
+                        android:src="@drawable/baseline_brush_black_24"
                         android:padding="12dp"
                         android:scaleType="fitXY"
+                        android:contentDescription="@string/toolbar_button" />
+
+                    <ImageButton
+                        android:id="@+id/toolbar_button_layers"
+                        android:layout_width="@dimen/toolbar_button_size"
+                        android:layout_height="@dimen/toolbar_button_size"
+                        android:src="@drawable/baseline_layers_black_24"
                         android:contentDescription="@string/toolbar_button" />
 
                     <ImageButton
                         android:id="@+id/toolbar_button_options"
                         android:layout_width="@dimen/toolbar_button_size"
                         android:layout_height="@dimen/toolbar_button_size"
-                        android:src="@drawable/baseline_settings_black_36"
+                        android:src="@drawable/baseline_settings_black_24"
                         android:contentDescription="@string/toolbar_button" />
                 </LinearLayout>
 
                 <ImageView
-                    android:id="@+id/toolbar_visibility"
+                    android:id="@+id/toolbar_move"
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
                     android:layout_gravity="center_vertical"
-                    android:src="@drawable/baseline_visibility_black_36"
+                    android:src="@drawable/baseline_open_with_black_24"
+                    android:paddingHorizontal="2dp"
                     android:contentDescription="@string/toolbar_button" />
             </LinearLayout>
         </androidx.cardview.widget.CardView>
@@ -97,6 +105,8 @@
         android:id="@+id/bottom_toolbar_outer_card"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:clickable="true"
+        android:focusable="true"
         android:layout_alignParentBottom="true"
         app:cardCornerRadius="8dp"
         app:cardElevation="6dp"
@@ -109,6 +119,8 @@
             android:id="@+id/bottom_toolbar_inner_card"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:clickable="true"
+            android:focusable="true"
             app:cardBackgroundColor="@color/green"
             app:cardPreventCornerOverlap="true"
             app:cardUseCompatPadding="true"
@@ -121,7 +133,9 @@
                 <LinearLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical">
+                    android:orientation="vertical"
+                    android:clickable="true"
+                    android:focusable="true">
 
                     <!--////////////////////////////////////BRUSH////////////////////////////////////-->
                     <LinearLayout
@@ -136,7 +150,7 @@
                             android:paddingHorizontal="15dp"
                             android:layout_gravity="center"
                             android:gravity="center"
-                            android:textSize="14sp"
+                            android:textSize="12sp"
                             android:textStyle="bold"
                             android:text="Brush\nproperties:"/>
 
@@ -144,14 +158,14 @@
                             android:id="@+id/property_brush_color"
                             android:layout_width="@dimen/toolbar_button_size"
                             android:layout_height="@dimen/toolbar_button_size"
-                            android:src="@drawable/baseline_color_lens_black_36"
+                            android:src="@drawable/baseline_color_lens_black_24"
                             android:contentDescription="@string/bottom_toolbar_button" />
 
                         <androidx.appcompat.widget.AppCompatButton
                             android:id="@+id/property_brush_size"
                             android:layout_width="@dimen/toolbar_button_size"
                             android:layout_height="@dimen/toolbar_button_size"
-                            android:textSize="12sp"
+                            android:textSize="10sp"
                             android:text="size"
                             android:scaleType="centerCrop"
                             android:layout_gravity="center"
@@ -161,7 +175,7 @@
                             android:id="@+id/property_brush_type"
                             android:layout_width="@dimen/toolbar_button_size"
                             android:layout_height="@dimen/toolbar_button_size"
-                            android:textSize="12sp"
+                            android:textSize="10sp"
                             android:text="type"
                             android:scaleType="centerCrop"
                             android:layout_gravity="center"
@@ -169,9 +183,9 @@
 
                         <androidx.appcompat.widget.AppCompatButton
                             android:id="@+id/property_brush_opacity"
-                            android:layout_width="74dp"
+                            android:layout_width="70dp"
                             android:layout_height="@dimen/toolbar_button_size"
-                            android:textSize="12sp"
+                            android:textSize="10sp"
                             android:text="opacity"
                             android:scaleType="centerCrop"
                             android:layout_gravity="center"
@@ -191,7 +205,7 @@
                             android:paddingHorizontal="15dp"
                             android:layout_gravity="center"
                             android:gravity="center"
-                            android:textSize="14sp"
+                            android:textSize="12sp"
                             android:textStyle="bold"
                             android:text="Eraser\nproperties:"/>
 
@@ -199,7 +213,7 @@
                             android:id="@+id/property_eraser_size"
                             android:layout_width="@dimen/toolbar_button_size"
                             android:layout_height="@dimen/toolbar_button_size"
-                            android:textSize="12sp"
+                            android:textSize="10sp"
                             android:text="size"
                             android:scaleType="centerCrop"
                             android:layout_gravity="center"
@@ -207,9 +221,9 @@
 
                         <androidx.appcompat.widget.AppCompatButton
                             android:id="@+id/property_eraser_opacity"
-                            android:layout_width="74dp"
+                            android:layout_width="70dp"
                             android:layout_height="@dimen/toolbar_button_size"
-                            android:textSize="12sp"
+                            android:textSize="10sp"
                             android:text="opacity"
                             android:scaleType="centerCrop"
                             android:layout_gravity="center"
@@ -229,7 +243,7 @@
                             android:paddingHorizontal="15dp"
                             android:layout_gravity="center"
                             android:gravity="center"
-                            android:textSize="14sp"
+                            android:textSize="12sp"
                             android:textStyle="bold"
                             android:text="Bucket\nproperties:"/>
 
@@ -237,14 +251,14 @@
                             android:id="@+id/property_bucket_color"
                             android:layout_width="@dimen/toolbar_button_size"
                             android:layout_height="@dimen/toolbar_button_size"
-                            android:src="@drawable/baseline_color_lens_black_36"
+                            android:src="@drawable/baseline_color_lens_black_24"
                             android:contentDescription="@string/bottom_toolbar_button" />
 
                         <androidx.appcompat.widget.AppCompatButton
                             android:id="@+id/property_bucket_opacity"
-                            android:layout_width="74dp"
+                            android:layout_width="70dp"
                             android:layout_height="@dimen/toolbar_button_size"
-                            android:textSize="12sp"
+                            android:textSize="10sp"
                             android:text="opacity"
                             android:scaleType="centerCrop"
                             android:layout_gravity="center"
@@ -264,7 +278,7 @@
                             android:paddingHorizontal="15dp"
                             android:layout_gravity="center"
                             android:gravity="center"
-                            android:textSize="14sp"
+                            android:textSize="12sp"
                             android:textStyle="bold"
                             android:text="Selection\nproperties:"/>
 
@@ -272,7 +286,7 @@
                             android:id="@+id/property_select_type"
                             android:layout_width="@dimen/toolbar_button_size"
                             android:layout_height="@dimen/toolbar_button_size"
-                            android:textSize="12sp"
+                            android:textSize="10sp"
                             android:text="type"
                             android:scaleType="centerCrop"
                             android:layout_gravity="center"
@@ -280,9 +294,9 @@
 
                         <androidx.appcompat.widget.AppCompatButton
                             android:id="@+id/property_select_method"
-                            android:layout_width="74dp"
+                            android:layout_width="70dp"
                             android:layout_height="@dimen/toolbar_button_size"
-                            android:textSize="12sp"
+                            android:textSize="10sp"
                             android:text="method"
                             android:scaleType="centerCrop"
                             android:layout_gravity="center"
@@ -302,7 +316,7 @@
                             android:paddingHorizontal="15dp"
                             android:layout_gravity="center"
                             android:gravity="center"
-                            android:textSize="14sp"
+                            android:textSize="12sp"
                             android:textStyle="bold"
                             android:text="Shape\nproperties:"/>
 
@@ -310,14 +324,14 @@
                             android:id="@+id/property_shape_color"
                             android:layout_width="@dimen/toolbar_button_size"
                             android:layout_height="@dimen/toolbar_button_size"
-                            android:src="@drawable/baseline_color_lens_black_36"
+                            android:src="@drawable/baseline_color_lens_black_24"
                             android:contentDescription="@string/bottom_toolbar_button" />
 
                         <androidx.appcompat.widget.AppCompatButton
                             android:id="@+id/property_shape_type"
-                            android:layout_width="74dp"
+                            android:layout_width="@dimen/toolbar_button_size"
                             android:layout_height="@dimen/toolbar_button_size"
-                            android:textSize="12sp"
+                            android:textSize="10sp"
                             android:text="type"
                             android:scaleType="centerCrop"
                             android:layout_gravity="center"
@@ -325,9 +339,9 @@
 
                         <androidx.appcompat.widget.AppCompatButton
                             android:id="@+id/property_shape_stroke_size"
-                            android:layout_width="74dp"
+                            android:layout_width="70dp"
                             android:layout_height="@dimen/toolbar_button_size"
-                            android:textSize="12sp"
+                            android:textSize="10sp"
                             android:text="stroke size"
                             android:scaleType="centerCrop"
                             android:layout_gravity="center"
@@ -335,9 +349,9 @@
 
                         <androidx.appcompat.widget.AppCompatButton
                             android:id="@+id/property_shape_stroke_type"
-                            android:layout_width="74dp"
+                            android:layout_width="70dp"
                             android:layout_height="@dimen/toolbar_button_size"
-                            android:textSize="12sp"
+                            android:textSize="10sp"
                             android:text="stroke type"
                             android:scaleType="centerCrop"
                             android:layout_gravity="center"
@@ -345,9 +359,9 @@
 
                         <androidx.appcompat.widget.AppCompatButton
                             android:id="@+id/property_shape_opacity"
-                            android:layout_width="74dp"
+                            android:layout_width="70dp"
                             android:layout_height="@dimen/toolbar_button_size"
-                            android:textSize="12sp"
+                            android:textSize="10sp"
                             android:text="opacity"
                             android:scaleType="centerCrop"
                             android:layout_gravity="center"
@@ -367,7 +381,7 @@
                             android:paddingHorizontal="15dp"
                             android:layout_gravity="center"
                             android:gravity="center"
-                            android:textSize="14sp"
+                            android:textSize="12sp"
                             android:textStyle="bold"
                             android:text="Text\nproperties:"/>
 
@@ -375,7 +389,7 @@
                             android:id="@+id/property_text_font"
                             android:layout_width="@dimen/toolbar_button_size"
                             android:layout_height="@dimen/toolbar_button_size"
-                            android:textSize="12sp"
+                            android:textSize="10sp"
                             android:text="font"
                             android:scaleType="centerCrop"
                             android:layout_gravity="center"
@@ -385,7 +399,7 @@
                             android:id="@+id/property_text_font_size"
                             android:layout_width="@dimen/toolbar_button_size"
                             android:layout_height="@dimen/toolbar_button_size"
-                            android:textSize="12sp"
+                            android:textSize="10sp"
                             android:text="font size"
                             android:scaleType="centerCrop"
                             android:layout_gravity="center"
@@ -405,7 +419,7 @@
                             android:paddingHorizontal="15dp"
                             android:layout_gravity="center"
                             android:gravity="center"
-                            android:textSize="14sp"
+                            android:textSize="12sp"
                             android:textStyle="bold"
                             android:text="Transform\nproperties:"/>
 
@@ -413,7 +427,7 @@
                             android:id="@+id/property_transform_crop"
                             android:layout_width="@dimen/toolbar_button_size"
                             android:layout_height="@dimen/toolbar_button_size"
-                            android:textSize="12sp"
+                            android:textSize="10sp"
                             android:text="crop"
                             android:scaleType="centerCrop"
                             android:layout_gravity="center"
@@ -423,7 +437,7 @@
                             android:id="@+id/property_transform_flip"
                             android:layout_width="@dimen/toolbar_button_size"
                             android:layout_height="@dimen/toolbar_button_size"
-                            android:textSize="12sp"
+                            android:textSize="10sp"
                             android:text="flip"
                             android:scaleType="centerCrop"
                             android:layout_gravity="center"
@@ -440,26 +454,30 @@
                 android:id="@+id/canvas_layers_properties"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:clickable="true"
+                android:focusable="true"
                 android:layout_gravity="center_horizontal"
                 android:orientation="horizontal"
                 android:visibility="gone">
-                <!--
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:paddingHorizontal="15dp"
-                    android:layout_gravity="center"
-                    android:gravity="center"
-                    android:textSize="14sp"
-                    android:textStyle="bold"
-                    android:text="Layer\nproperties:"/>
-                    -->
 
                 <LinearLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:clickable="true"
+                    android:focusable="true"
                     android:layout_gravity="center_vertical"
+                    android:gravity="center_horizontal"
                     android:orientation="vertical">
+                    <!--
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:paddingHorizontal="15dp"
+                        android:layout_gravity="center"
+                        android:gravity="center"
+                        android:textSize="12sp"
+                        android:textStyle="bold"
+                        android:text="Layers:"/>-->
                     <ImageButton
                         android:id="@+id/property_layers_add"
                         android:layout_width="@dimen/toolbar_button_size"

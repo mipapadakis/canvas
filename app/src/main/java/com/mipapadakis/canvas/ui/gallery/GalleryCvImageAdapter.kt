@@ -6,14 +6,12 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.cardview.widget.CardView
-import androidx.core.graphics.drawable.toIcon
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LiveData
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.button.MaterialButton
 import com.mipapadakis.canvas.R
 import com.mipapadakis.canvas.model.CvImage
-import java.util.*
 
 class CvImageAdapter(liveDataToObserve: LiveData<List<CvImage>>, lifecycleOwner: LifecycleOwner): RecyclerView.Adapter<ItemViewHolder>() {
     private lateinit var imageList: List<CvImage>

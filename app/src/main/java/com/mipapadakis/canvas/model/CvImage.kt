@@ -2,86 +2,82 @@ package com.mipapadakis.canvas.model
 
 import android.content.res.Resources
 import android.graphics.*
-import com.mipapadakis.canvas.CanvasPreferences
 import com.mipapadakis.canvas.CanvasViewModel
 import com.mipapadakis.canvas.R
 import com.mipapadakis.canvas.model.layer.CvLayer
 import java.util.*
-import kotlin.collections.ArrayList
 
-/** This represents the user's painting, containing all its properties (title, layers)
- * @property background: represents the background of our canvas, with the png_background_pattern.png drawn on it.
- * @property title: A user-generated title for the image file.
- * @property layers: Contains all the layers of this CvImage. Their hierarchy is represented by
- * their position in the list, with the top layer located at position 0.
- * */
+/**This represents the canvas' list of layers that the user has created.*/
 
-class CvImage(var title: String, val width: Int, val height: Int, resources: Resources): ArrayList<CvLayer>() {
-    private val pngGridBitmap = createBackgroundBitmap(width, height, resources)
+class CvImage(var title: String, var width: Int, var height: Int): ArrayList<CvLayer>() {
+    var layerNameIndex = 0
 
-    constructor(width: Int, height: Int, resources: Resources):
-            this("image", width, height, resources)
-    constructor(title: String, bmp: Bitmap, resources: Resources): this(title, bmp.width, bmp.height, resources){
+    constructor(width: Int, height: Int): this("image", width, height)
+    constructor(title: String, bmp: Bitmap): this(title, bmp.width, bmp.height){
         addLayer(0, bmp)
     }
-    constructor(bmp: Bitmap, resources: Resources): this("image", bmp.width, bmp.height, resources){
+    constructor(bmp: Bitmap): this("image", bmp.width, bmp.height){
         addLayer(0, bmp)
     }
-
-    init {
-        //First add the background layer, which contains the pngGridBitmap.
-        add(CvLayer(pngGridBitmap)) // This layer must always remain at the end of the list!
+    constructor(cvImage: CvImage): this(cvImage.title, cvImage.width, cvImage.height){
+        for(layer in cvImage) add(CvLayer(layer.title, layer))
     }
 
+    fun setCvImage(cvImage: CvImage){
+        title = cvImage.title
+        width = cvImage.width
+        height = cvImage.height
+        clear()
+        for(layer in cvImage) {
+            add(CvLayer(layer.title, layer))
+            last().setOpacityPercentage(layer.getOpacityPercentage())
+        }
+        //addAll(cvImage)
+    }
     fun layerCount() = size
     fun getPngGridLayer() = last()
     /** Create a new layer.*/
-    fun newLayer(){ add(0, CvLayer(Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888))) }
-    fun newLayer(width:Int, height: Int, backgroundColor: Int){
+    fun newLayer(){ newLayer(Color.TRANSPARENT) }
+    fun newLayer(backgroundColor: Int){
         val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
         if(backgroundColor!=Color.TRANSPARENT){
             val canvas = Canvas(bitmap)
             canvas.drawColor(backgroundColor)
         }
-        add(0, CvLayer(bitmap))
+        add(0, CvLayer(getUniqueLayerName(), bitmap))
     }
     /** Add an existing layer.*/
-    fun addLayer(index: Int, bmp: Bitmap){ add(index, CvLayer(bmp)) }
+    fun addLayer(index: Int, bmp: Bitmap){ add(index, CvLayer(getUniqueLayerName(), bmp)) }
     fun addLayer(index: Int, cvLayer: CvLayer){ add(index, cvLayer) }
     /** Remove a layer.*/
     fun removeLayer(layer: CvLayer){ remove(layer) }
     fun removeLayer(layerIndex: Int){ removeAt(layerIndex) }
     /** Set top layer.*/
     fun setTopLayer(layer: CvLayer){
-        remove(layer)
-        add(0, layer)
-    }
-    fun setTopLayer(layerIndex: Int){
-        val layer = CvLayer(get(layerIndex))
-        removeAt(layerIndex)
+        removeLayer(layer)
         add(0, layer)
     }
     fun getTopLayer() = get(0)
+
+    fun getUniqueLayerName(): String {return "Layer ${CanvasViewModel.cvImage.layerNameIndex++}"}
 
     fun swapLayers(fromPosition: Int, toPosition: Int){
         Collections.swap(this, fromPosition, toPosition)
     }
 
-    fun addStartingColorLayer(): CvLayer{ //Add a layer containing a white canvas to start drawing.
-        val bmp = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
-        val canvas = Canvas(bmp)
-        canvas.drawColor(CanvasPreferences.startingCanvasColor)
-        addLayer(0, CvLayer(bmp))
-        return get(0)
+    // This layer is supposed to be in the background and must always remain at the end of the list!
+    fun addPngGridLayer(resources: Resources){
+        add(CvLayer(getUniqueLayerName(), createBackgroundBitmap(width, height, resources)))
     }
 
-    /**Merges all layers into a total bitmap.
+    /**Merges all layers into one bitmap.
      * @param withPngGrid: if set to true, use pngGrid as a background to represent transparency.*/
     fun getTotalImage(withPngGrid: Boolean): Bitmap{
         val bmp = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(bmp)
-        for(i in (if(withPngGrid) layerCount()-1 else layerCount()-2) downTo 0)
-            canvas.drawBitmap(get(i).bitmap, 0f, 0f, null)
+        for(i in (if(withPngGrid) layerCount()-1 else layerCount()-2) downTo 0) {
+            if(get(i).isVisible()) canvas.drawBitmap(get(i).getBitmapWithOpacity(), 0f, 0f, null)
+        }
         return bmp
     }
 

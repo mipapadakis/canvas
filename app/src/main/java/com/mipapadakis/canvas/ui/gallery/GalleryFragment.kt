@@ -61,6 +61,10 @@ class GalleryFragment : Fragment() {
                         showToast("Long click at position $position")
                     }
 
+                    override fun onDoubleClick(view: View?, position: Int) {
+                        showToast("Double click at position $position")
+                    }
+
                     override fun onBackgroundClick() {
                         showToast("Background click")
                     }
@@ -71,7 +75,9 @@ class GalleryFragment : Fragment() {
 
     private fun createCvImage(title: String, drawableId: Int): CvImage {
         val bmp = Bitmap.createBitmap(BitmapFactory.decodeResource(context?.resources, drawableId))
-        return CvImage(title, bmp, resources)
+        val cvImage = CvImage(title, bmp)
+        cvImage.addPngGridLayer(resources)
+        return cvImage
     }
 
     override fun onAttach(context: Context) {
