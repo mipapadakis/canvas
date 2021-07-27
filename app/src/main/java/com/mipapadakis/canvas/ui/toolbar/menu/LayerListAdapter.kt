@@ -41,21 +41,24 @@ class LayerListAdapter(val canvasIV: CanvasImageView, val resources: Resources):
         holder.show()
         holder.layerImage.setImageBitmap(layer.getBitmapWithOpacity())
         holder.layerTitleTextView.text = layer.title
-        holder.deselect()
+        if(layer.isSelected()) holder.select() else holder.deselect()
+        holder.visibilityIndicator.visibility = if(layer.isVisible()) View.GONE else View.VISIBLE
         holder.layerImage.setOnClickListener(object : DoubleTapListener(){
             override fun onSingleTap() {
-                if(holder.isSelected) holder.deselect() else holder.select()
+                layer.selected = !layer.selected
+                if(layer.isSelected()) holder.select() else holder.deselect()
             }
             override fun onDoubleTap() {
                 CanvasViewModel.cvImage.setTopLayer(layer)
+                deselectAll()
                 canvasIV.invalidate()
                 canvasIV.addActionToHistory(CanvasImageView.ACTION_LAYER_MOVE)
             }
         })
         holder.layerVisibilityButton.setOnClickListener {
-            layer.visible = !layer.visible
-            if(layer.isVisible()) holder.layerVisibilityButton.setImageResource(R.drawable.baseline_visibility_black_18)
-            else holder.layerVisibilityButton.setImageResource(R.drawable.baseline_visibility_off_black_18)
+            layer.visible = !layer.isVisible()
+            if(layer.isVisible()) holder.visibilityIndicator.visibility = View.GONE
+            else holder.visibilityIndicator.visibility = View.VISIBLE
             canvasIV.invalidate()
         }
         addPopMenuLayerOptions(layer, holder.layerMenuButton)
@@ -171,16 +174,18 @@ class LayerListAdapter(val canvasIV: CanvasImageView, val resources: Resources):
 
     private fun getSelectedLayers(): ArrayList<CvLayer>{
         val selectedLayers = ArrayList<CvLayer>()
-        var isSelected: Boolean
-        for(i in itemCount-1 downTo 0){
-            isSelected = getViewHolder(i)?.isSelected ?: false
-            if(isSelected) selectedLayers.add(0, CanvasViewModel.cvImage[i])
+        for(i in 0 until itemCount){
+            if(CanvasViewModel.cvImage[i].isSelected())
+                selectedLayers.add(CanvasViewModel.cvImage[i])
         }
         return selectedLayers
     }
 
     private fun deselectAll(){
-        for(i in CanvasViewModel.cvImage.indices) getViewHolder(i)?.deselect()
+        for(i in CanvasViewModel.cvImage.indices) {
+            CanvasViewModel.cvImage[i].selected = false
+            getViewHolder(i)?.deselect()
+        }
     }
 
     private fun Bitmap.withPngGrid(): Bitmap{
@@ -194,19 +199,21 @@ class LayerListAdapter(val canvasIV: CanvasImageView, val resources: Resources):
         var outerCardView: CardView
         //var innerCardView: CardView
         var layerImage: ImageView
+        var visibilityIndicator: ImageView
         var layerVisibilityButton: ImageButton
         var layerMenuButton: ImageButton
         var layerTitleTextView: TextView
-        var isSelected = false
 
         init {
             super.itemView
             outerCardView = itemView.findViewById(R.id.layer_outer_card)
             //innerCardView = itemView.findViewById(R.id.layer_inner_card)
             layerImage = itemView.findViewById(R.id.layer_image)
+            visibilityIndicator = itemView.findViewById(R.id.layer_visibility_indicator)
             layerVisibilityButton = itemView.findViewById(R.id.layer_visibility)
             layerMenuButton = itemView.findViewById(R.id.layer_menu)
             layerTitleTextView = itemView.findViewById(R.id.layer_title)
+            visibilityIndicator.visibility = View.GONE
         }
 
         fun hide(){
@@ -219,14 +226,12 @@ class LayerListAdapter(val canvasIV: CanvasImageView, val resources: Resources):
         }
 
         fun select(){
-            isSelected = true
             outerCardView.setCardBackgroundColor(Color.WHITE)
             layerMenuButton.visibility = View.VISIBLE
             layerVisibilityButton.visibility = View.VISIBLE
         }
 
         fun deselect(){
-            isSelected = false
             outerCardView.setCardBackgroundColor(Color.TRANSPARENT)
             layerMenuButton.visibility = View.GONE
             layerVisibilityButton.visibility = View.GONE

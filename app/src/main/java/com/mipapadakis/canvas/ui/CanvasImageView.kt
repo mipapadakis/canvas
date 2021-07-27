@@ -257,7 +257,7 @@ class CanvasImageView(context: Context?, val notifyDataSetChanged: () -> Unit) :
                 val yInBounds = if(event.y.toInt()<0) 0
                 else if(event.y.toInt()>=foregroundBitmap.height) foregroundBitmap.height-1
                 else event.y.toInt()
-                CanvasViewModel.setPaintColor(foregroundBitmap.getPixel(xInBounds, yInBounds))
+                CanvasViewModel.setPaintColor(cvImage.getTotalImage(true).getPixel(xInBounds, yInBounds))
             }
             CanvasViewModel.TOOL_SHAPE -> {
                 //TODO: make them resizable?

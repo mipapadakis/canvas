@@ -1,13 +1,18 @@
 package com.mipapadakis.canvas
 
 import android.annotation.SuppressLint
+import android.app.Activity
 import android.content.Context
 import android.graphics.*
 import android.net.Uri
 import android.os.*
+import android.text.InputFilter
+import android.text.TextUtils
 import android.util.Log
 import android.view.*
+import android.view.inputmethod.InputMethodManager
 import android.widget.*
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.AppCompatButton
 import androidx.cardview.widget.CardView
@@ -34,19 +39,19 @@ private const val HEIGHT = CreateCanvasFragment.HEIGHT
 
 @SuppressLint("ClickableViewAccessibility")
 class CanvasActivity : AppCompatActivity() {
-    private lateinit var canvasViewModel: CanvasViewModel
-    private lateinit var layerRecyclerView: RecyclerView
     private var devicePixelWidth: Int = 0
     private var devicePixelHeight: Int = 0
+    private lateinit var toast: Toast
     private var canvasWidth = 540
     private var canvasHeight = 984
-    private lateinit var toast: Toast
+    private var safeToExit = false
     private var outRect = Rect()
     private var location = IntArray(2)
 
-    ////////////////////////////////////////////Views///////////////////////////////////////////////
+    ////////////////////////////////////////////Views///////////////////////////////////////////////x
     private lateinit var layoutCanvas: RelativeLayout
     private lateinit var canvasIV: CanvasImageView
+    private lateinit var layerRecyclerView: RecyclerView
     //Toolbar
     private lateinit var toolbarOuterCardView: CardView
     private lateinit var toolbarInnerCardView: CardView
@@ -86,13 +91,11 @@ class CanvasActivity : AppCompatActivity() {
     private lateinit var toolTextFontSizeBtn: AppCompatButton
     private lateinit var toolCanvasLayersLayout: LinearLayout
     private lateinit var toolCanvasLayersAddBtn: ImageButton
-    //private lateinit var toolCanvasLayersListBtn: ImageButton
     private lateinit var toolCanvasTransformLayout: LinearLayout
     private lateinit var toolCanvasTransformCropBtn: AppCompatButton
     private lateinit var toolCanvasTransformFlipBtn: AppCompatButton
-    //TODO toolCanvasSaveLayout
-    //TODO toolCanvasSettingsLayout
-
+//    private lateinit var toolCanvasSettingsBtn: AppCompatButton //TODO
+//    private lateinit var toolCanvasSaveBtn: AppCompatButton //TODO
 
 
     @SuppressLint("ClickableViewAccessibility")
@@ -127,8 +130,8 @@ class CanvasActivity : AppCompatActivity() {
                 layoutCanvas.addView(canvasIV)
             }
             else -> {
-                canvasWidth = intent.getIntExtra(DIMENSION_WIDTH_INTENT_KEY, 540)
-                canvasHeight = intent.getIntExtra(DIMENSION_HEIGHT_INTENT_KEY, 984)
+                canvasWidth = intent.getIntExtra(DIMENSION_WIDTH_INTENT_KEY, canvasWidth)
+                canvasHeight = intent.getIntExtra(DIMENSION_HEIGHT_INTENT_KEY, canvasHeight)
                 val layoutParamsCanvas = RelativeLayout.LayoutParams(canvasWidth, canvasHeight)
                 layoutParamsCanvas.addRule(RelativeLayout.BELOW)
                 canvasIV.layoutParams = layoutParamsCanvas
@@ -314,9 +317,9 @@ class CanvasActivity : AppCompatActivity() {
         toolbarRedoBtn.setOnClickListener { if(!canvasIV.redo()) showToast("can't redo") }
         toolbarLayerBtn.setOnClickListener {
             hideProperties()
-            showBottomToolbar()
-            toolCanvasLayersLayout.visibility = View.VISIBLE
             layerRecyclerView.adapter?.notifyDataSetChanged()
+            toolCanvasLayersLayout.visibility = View.VISIBLE
+            showBottomToolbar()
         }
 
         CanvasViewModel.toolbarColor.observe(this, {
@@ -546,7 +549,7 @@ class CanvasActivity : AppCompatActivity() {
             menu.setOnMenuItemClickListener {
                 when (it.itemId) {
                     R.id.flip_vertically -> { canvasIV.flipVertically() }
-                    R.id.flip_horizontally-> { canvasIV.flipHorizontally() }
+                    R.id.flip_horizontally -> { canvasIV.flipHorizontally() }
                 }
                 true
             }
@@ -567,10 +570,12 @@ class CanvasActivity : AppCompatActivity() {
                     }
                     R.id.canvas_save -> {
                         hideProperties()
-                        showToast("Save!")
+                        hideBottomToolbar()
+                        showSaveCanvasDialog(false)
                     }
-                    R.id.canvas_settings -> {
+                    R.id.canvas_settings -> { //TODO
                         hideProperties()
+                        hideBottomToolbar()
                         showToast("Settings!")
                     }
                     else -> {
@@ -630,6 +635,7 @@ class CanvasActivity : AppCompatActivity() {
                     }
                     else -> {}
                 }
+                avoidTopAndBottomToolbarOverlap()
                 true
             }
             toolsMenu.show()
@@ -654,6 +660,138 @@ class CanvasActivity : AppCompatActivity() {
         builder.show()
     }
 
+
+    private fun showSaveCanvasDialog(askBeforeExit: Boolean){
+        val layoutInflaterAndroid = LayoutInflater.from(this)
+        val view: View = layoutInflaterAndroid.inflate(R.layout.input_dialog, null)
+        val alertDialogBuilderUserInput: AlertDialog.Builder = AlertDialog.Builder(this)
+        alertDialogBuilderUserInput.setView(view)
+        val inputTitle = view.findViewById<EditText>(R.id.input_title)
+        val dialogTitle = view.findViewById<TextView>(R.id.dialog_title)
+        val dialogSubtitle = view.findViewById<TextView>(R.id.dialog_subtitle)
+        val fileTypeCanvas = view.findViewById<RadioButton>(R.id.dialog_fileType_canvas)
+        val fileTypePng = view.findViewById<RadioButton>(R.id.dialog_fileType_png)
+        val fileTypeJpeg = view.findViewById<RadioButton>(R.id.dialog_fileType_jpeg)
+        val fileTypeBitmap = view.findViewById<RadioButton>(R.id.dialog_fileType_bitmap)
+
+        val titleText = getString(R.string.save_canvas_title) + if(askBeforeExit) "?" else ""
+        dialogTitle.text = titleText
+        dialogSubtitle.text = getString(R.string.save_canvas_subtitle)
+        inputTitle.setText(CanvasViewModel.cvImage.title)
+
+        alertDialogBuilderUserInput
+            .setIcon(R.drawable.baseline_save_black_24)
+            //.setCancelable(false)
+            .setPositiveButton(  "save" ) { _, _ -> }
+            .setNegativeButton( if(askBeforeExit) "Exit without saving" else "cancel" ) { dialogBox, _ ->
+                hideKeyboard(inputTitle)
+                dialogBox.cancel()
+                if(askBeforeExit){
+                    safeToExit = true
+                    onBackPressed()
+                }
+            }
+        val alertDialog = alertDialogBuilderUserInput.create()
+        alertDialog.show()
+        alertDialog.setCanceledOnTouchOutside(false)
+
+        //Filter out the special characters ?:"*|/\<>
+        val filter = InputFilter { source, start, end, _, _, _ ->
+            for (i in start until end) {
+                if (source!=null && ("?:\"*|/\\<>").contains(source[i])) {
+                    showToast(getString(R.string.wrong_filename_warning))
+                    return@InputFilter source.subSequence(start,i)
+                }
+            }
+            null
+        }
+        //Focus the title, open soft keyboard.
+        inputTitle.filters = arrayOf(filter)
+        inputTitle.focusAndShowKeyboard()
+        //toggleKeyboard(inputTitle, true)
+
+        alertDialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(View.OnClickListener {
+            if (TextUtils.isEmpty(inputTitle.text.toString())) {
+                showToast("You need to enter a title!")
+                return@OnClickListener
+            }
+
+            CanvasViewModel.cvImage.title = inputTitle.text.toString()
+            when {
+                fileTypeCanvas.isChecked -> CanvasViewModel.cvImage.fileType = CanvasViewModel.FILETYPE_CANVAS
+                fileTypePng.isChecked -> CanvasViewModel.cvImage.fileType = CanvasViewModel.FILETYPE_PNG
+                fileTypeJpeg.isChecked -> CanvasViewModel.cvImage.fileType = CanvasViewModel.FILETYPE_JPEG
+                fileTypeBitmap.isChecked -> CanvasViewModel.cvImage.fileType = CanvasViewModel.FILETYPE_BITMAP
+            }
+            //Update undo history with the new title and filetype
+            for(action in CanvasViewModel.history){
+                action.actionCvImage.title = CanvasViewModel.cvImage.title
+                action.actionCvImage.fileType = CanvasViewModel.cvImage.fileType
+            }
+
+            //Save Canvas:
+            hideKeyboard(inputTitle)
+            alertDialog.dismiss()
+            saveCvImage()
+            if(askBeforeExit){
+                safeToExit = true
+                onBackPressed()
+            }
+        })
+        alertDialog.setOnDismissListener {
+            hideKeyboard(inputTitle)
+        }
+        alertDialog.setOnCancelListener {
+            hideKeyboard(inputTitle)
+        }
+    }
+
+    private fun saveCvImage(){
+        //TODO save .cv file (containing all data from the current cvImage)
+        showToast("Saved As \"${CanvasViewModel.cvImage.getFilenameWithExtension(this)}\"")
+    }
+
+    fun Context.hideKeyboard(view: View) {
+        val inputMethodManager = getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
+        inputMethodManager.hideSoftInputFromWindow(view.windowToken, 0)
+    }
+    //https://developer.squareup.com/blog/showing-the-android-keyboard-reliably/
+    fun View.focusAndShowKeyboard() {
+        fun View.showTheKeyboardNow() {
+            if (isFocused) {
+                post {
+                    val imm = context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                    imm.showSoftInput(this, InputMethodManager.SHOW_IMPLICIT)
+                }
+            }
+        }
+        requestFocus()
+        if (hasWindowFocus()) {
+            showTheKeyboardNow()
+        } else {
+            // We need to wait until the window gets focus.
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
+                viewTreeObserver.addOnWindowFocusChangeListener(
+                    object : ViewTreeObserver.OnWindowFocusChangeListener {
+                        override fun onWindowFocusChanged(hasFocus: Boolean) {
+                            // This notification will arrive just before the InputMethodManager gets set up.
+                            if (hasFocus) {
+                                this@focusAndShowKeyboard.showTheKeyboardNow()
+                                // It’s very important to remove this listener once we are done.
+                                viewTreeObserver.removeOnWindowFocusChangeListener(this)
+                            }
+                        }
+                    })
+            }
+        }
+    }
+
+//    private fun toggleKeyboard(view: View, show: Boolean) {
+//        val inputMethodManger: InputMethodManager = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
+//        if(show) inputMethodManger.toggleSoftInput(InputMethodManager.SHOW_FORCED, 0) //inputMethodManger.showSoftInput(view, 0)//
+//        else inputMethodManger.hideSoftInputFromWindow(view.windowToken, 0)
+//    }
+
     private fun inViewInBounds(view: View, x: Int, y: Int): Boolean {
         view.getDrawingRect(outRect)
         view.getLocationOnScreen(location)
@@ -670,15 +808,17 @@ class CanvasActivity : AppCompatActivity() {
         //val drawableOff = getDrawableFromId(R.drawable.baseline_visibility_off_black_24)
         toolbarMoveImageView.setImageResource(R.drawable.baseline_open_with_black_24)
         toolbarButtonLayout.visibility = View.VISIBLE
-        if(hasVisibleProperties()) showBottomToolbar()
+        if(hasVisibleProperties()) showBottomToolbar() else hideBottomToolbar()
+    }
 
-        //If they overlap, move the toolbar above the bottom menu.
+    private fun avoidTopAndBottomToolbarOverlap() {
         if (abs(bottomToolbarOuterCardView.y - toolbarOuterCardView.y) < bottomToolbarOuterCardView.height)
             toolbarOuterCardView.animate()
                 .y(bottomToolbarOuterCardView.y - toolbarOuterCardView.height - toolbarOuterCardView.paddingBottom)
                 .setDuration(0)
                 .start()
     }
+
     private fun hideToolbars() {
         val drawableOn = getDrawableFromId(R.drawable.baseline_visibility_black_24)
         toolbarMoveImageView.setImageDrawable(drawableOn)
@@ -693,7 +833,10 @@ class CanvasActivity : AppCompatActivity() {
         return false
     }
     private fun hideBottomToolbar(){ bottomToolbarOuterCardView.visibility = View.GONE }
-    private fun showBottomToolbar(){ bottomToolbarOuterCardView.visibility = View.VISIBLE }
+    private fun showBottomToolbar(){
+        bottomToolbarOuterCardView.visibility = View.VISIBLE
+        avoidTopAndBottomToolbarOverlap()
+    }
 
     fun getColorFromId(id: Int) = CanvasColor.getColorFromId(this, id)
     fun getDrawableFromId(id: Int) = ContextCompat.getDrawable(this, id)
@@ -705,6 +848,11 @@ class CanvasActivity : AppCompatActivity() {
         toast.cancel()
         toast = Toast.makeText(this, text, toast.duration)
         toast.show()
+    }
+
+    override fun onBackPressed() {
+        if(safeToExit) super.onBackPressed()
+        else showSaveCanvasDialog(true)
     }
 
     // https://stackoverflow.com/a/64828067/11535380

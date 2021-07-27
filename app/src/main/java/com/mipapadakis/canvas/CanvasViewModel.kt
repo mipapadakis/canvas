@@ -12,6 +12,11 @@ import java.util.*
 /** Store here the current tool and its options.*/
 class CanvasViewModel: ViewModel() {
     companion object{
+        const val FILETYPE_CANVAS = 0
+        const val FILETYPE_PNG = 1
+        const val FILETYPE_JPEG = 2
+        const val FILETYPE_BITMAP = 3
+
         //enum class toolCode { TOOL_BRUSH, TOOL_ERASER, TOOL_BUCKET, TOOL_EYEDROPPER, TOOL_SELECT, TOOL_SHAPE, TOOL_TEXT}
         const val TOOL_BRUSH = R.drawable.baseline_brush_black_36
         const val TOOL_ERASER = R.drawable.eraser

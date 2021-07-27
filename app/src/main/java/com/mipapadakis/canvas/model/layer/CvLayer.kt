@@ -14,16 +14,19 @@ class CvLayer(var title: String, private var bitmap: Bitmap){
     private var opacityPercent = 100
     val width = bitmap.width
     val height = bitmap.height
+    var selected = false
     var visible = true
 
     constructor(title: String, cvLayer: CvLayer): this(title, Bitmap.createBitmap(cvLayer.bitmap)){
         shapes = ArrayList(cvLayer.shapes)
         opacityPercent = cvLayer.opacityPercent
+        selected = cvLayer.selected
         visible = cvLayer.isVisible()
     }
     fun setVisible(){ visible = true }
     fun setInvisible(){ visible = false }
     fun isVisible() = visible
+    fun isSelected() = selected
 
     private fun getOpacity() = opacityPercent*255/100
     fun getOpacityPercentage() = opacityPercent

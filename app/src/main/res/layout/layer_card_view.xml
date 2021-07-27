@@ -26,14 +26,29 @@
             app:cardCornerRadius="8dp"
             app:cardPreventCornerOverlap="false"
             app:cardUseCompatPadding="false">
-
-            <ImageView
-                android:id="@+id/layer_image"
+            <FrameLayout
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:background="@drawable/png_background"
-                android:scaleType="fitCenter"
-                android:contentDescription="@string/layer_card_view_description" />
+                android:layout_height="match_parent">
+
+                <ImageView
+                    android:id="@+id/layer_image"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@drawable/png_background"
+                    android:scaleType="fitCenter"
+                    android:contentDescription="@string/layer_card_view_description" />
+
+                <ImageView
+                    android:id="@+id/layer_visibility_indicator"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:padding="12dp"
+                    android:alpha="0.5"
+                    android:src="@drawable/baseline_visibility_off_black_48"
+                    android:contentDescription="@string/layer_card_view_description"
+                    android:visibility="gone"/>
+
+            </FrameLayout>
         </androidx.cardview.widget.CardView>
 
         <ImageButton

@@ -1,7 +1,9 @@
 package com.mipapadakis.canvas.model
 
+import android.content.Context
 import android.content.res.Resources
 import android.graphics.*
+import android.provider.Settings.Global.getString
 import com.mipapadakis.canvas.CanvasViewModel
 import com.mipapadakis.canvas.R
 import com.mipapadakis.canvas.model.layer.CvLayer
@@ -10,13 +12,14 @@ import java.util.*
 /**This represents the canvas' list of layers that the user has created.*/
 
 class CvImage(var title: String, var width: Int, var height: Int): ArrayList<CvLayer>() {
+    var fileType = CanvasViewModel.FILETYPE_CANVAS
     var layerNameIndex = 0
 
-    constructor(width: Int, height: Int): this("image", width, height)
+    constructor(width: Int, height: Int): this("", width, height)
     constructor(title: String, bmp: Bitmap): this(title, bmp.width, bmp.height){
         addLayer(0, bmp)
     }
-    constructor(bmp: Bitmap): this("image", bmp.width, bmp.height){
+    constructor(bmp: Bitmap): this("", bmp.width, bmp.height){
         addLayer(0, bmp)
     }
     constructor(cvImage: CvImage): this(cvImage.title, cvImage.width, cvImage.height){
@@ -27,12 +30,9 @@ class CvImage(var title: String, var width: Int, var height: Int): ArrayList<CvL
         title = cvImage.title
         width = cvImage.width
         height = cvImage.height
+        fileType = cvImage.fileType
         clear()
-        for(layer in cvImage) {
-            add(CvLayer(layer.title, layer))
-            last().setOpacityPercentage(layer.getOpacityPercentage())
-        }
-        //addAll(cvImage)
+        for(layer in cvImage) add(CvLayer(layer.title, layer))
     }
     fun layerCount() = size
     fun getPngGridLayer() = last()
@@ -60,6 +60,16 @@ class CvImage(var title: String, var width: Int, var height: Int): ArrayList<CvL
     fun getTopLayer() = get(0)
 
     fun getUniqueLayerName(): String {return "Layer ${CanvasViewModel.cvImage.layerNameIndex++}"}
+    fun getFilenameWithExtension(context: Context): String{
+        return "${title}.${context.getString( 
+            when (fileType) {
+                CanvasViewModel.FILETYPE_CANVAS -> R.string.file_extension_canvas   //cv
+                CanvasViewModel.FILETYPE_PNG -> R.string.file_extension_png         //png
+                CanvasViewModel.FILETYPE_JPEG -> R.string.file_extension_jpeg       //jpeg
+                else -> R.string.file_extension_bitmap                              //bmp
+            }
+        )}"
+    }
 
     fun swapLayers(fromPosition: Int, toPosition: Int){
         Collections.swap(this, fromPosition, toPosition)

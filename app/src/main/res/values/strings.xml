@@ -43,7 +43,8 @@
     Tutorial:
         • Two-finger double click resizes canvas to fit the screen.
         • Triple-finger single click resets canvas to original size.
-        • Long Press on a button shows a dialog explaining its use.
+        • Long Press on a button shows a dialog explaining its use (in most cases).
+        • Double tapping on a layer brings it to the front, and deselects all selected layers.
     </string>
     <string name="toolbar_button">toolbar button</string>
     <string name="bottom_toolbar_button">bottom toolbar button</string>
@@ -79,5 +80,20 @@
     <string name="layer_option_delete">Delete</string>
     <string name="layer_option_merge">Merge</string>
     <string name="layer_option_bring_to_front">To Front</string>
+    <string name="cancel">Cancel</string>
+    <string name="save">Save</string>
+    <string name="title">Title</string>
+    <string name="save_canvas_title">Save Canvas</string>
+    <string name="file_type_jpeg">JPEG (.jpg)</string>
+    <string name="file_type_canvas">Canvas (.cv)</string>
+    <string name="file_type_png">PNG (.png)</string>
+    <string name="file_type_bitmap">Bitmap (.bmp)</string>
+    <string name="file_extension_jpeg">jpg</string>
+    <string name="file_extension_canvas">cv</string>
+    <string name="file_extension_png">png</string>
+    <string name="file_extension_bitmap">bmp</string>
+    <string name="canvas_placeholder_title">Image</string>
+    <string name="save_canvas_subtitle"><![CDATA[Choose title & format for your masterpiece!]]></string>
+    <string name="wrong_filename_warning"><![CDATA[Characters * \" ? : / | \\ < > are not allowed.]]></string>
 
 </resources>
