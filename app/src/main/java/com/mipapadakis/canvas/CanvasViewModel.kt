@@ -66,7 +66,7 @@ class CanvasViewModel: ViewModel() {
 
         ////////////////////////////////////////Properties://///////////////////////////////////////
         var cvImage = CvImage(0,0)
-        var history = ArrayList<CanvasImageView.Action>()
+        var history = ArrayList<CanvasImageView.Action>() //TODO if history.size too large, remove some of the initial actions
         var historyIndex = 0
         private val _toolbarColor = MutableLiveData<Int>().apply { value = CanvasPreferences.startingColorId}
         val toolbarColor: LiveData<Int> = _toolbarColor
@@ -138,17 +138,16 @@ class CanvasViewModel: ViewModel() {
             isDither = true
         }
         //Text
-        val textPaint = Paint().apply { //TODO
+        val textPaint = Paint().apply {
             color = CanvasPreferences.startingColorId
             alpha = 255
             strokeJoin = Paint.Join.ROUND
             strokeCap = Paint.Cap.ROUND //BUTT
-            strokeWidth = 20F
-            style = Paint.Style.STROKE
+            strokeWidth = 10f
+            textSize = 60f
+            style = Paint.Style.FILL
             isDither = true
         }
-        var textFont = 0 //TODO
-        var textFontSize = 12
 
         //////////////////////////////////////////Methods://////////////////////////////////////////
 
@@ -275,12 +274,11 @@ class CanvasViewModel: ViewModel() {
                 alpha = 255
                 strokeJoin = Paint.Join.ROUND
                 strokeCap = Paint.Cap.ROUND //BUTT
-                strokeWidth = 20F
-                style = Paint.Style.STROKE
+                strokeWidth = 10f
+                textSize = 60f
+                style = Paint.Style.FILL
                 isDither = true
             }
-            textFont = 0
-            textFontSize = 12
             _toolbarColor.apply { value = CanvasPreferences.startingColorId}
         }
     }

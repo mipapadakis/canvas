@@ -301,34 +301,39 @@ class CanvasImageView(context: Context?, val notifyDataSetChanged: () -> Unit) :
                 if (pointerUp) firstBitmap.recycle()
             }
             CanvasViewModel.TOOL_SELECT -> {}
+            CanvasViewModel.TOOL_TEXT -> {
+                clearForeground()
+                foregroundCanvas.drawBitmap(firstBitmap)
+                foregroundCanvas.drawText("example", event.x, event.y, CanvasViewModel.textPaint)
+            }
         }
         invalidate()
     }
 
-    //https://stackoverflow.com/a/28467745/11535380
-    fun drawOverlappingAreas(paint: Paint){
-        if(pathPoints.size==0) return
-        val path = Path()
-        val points = ArrayList<PointF>()
-        points.add(pathPoints[0])
-        points.add(pathPoints[0])
-        points.addAll(pathPoints)
-        points.add(pathPoints.last())
-        points.add(pathPoints.last())
-        var p1: PointF
-        var p2: PointF
-        var p3: PointF
-
-        for (i in 0 until pathPoints.size) {
-            p1 = points[i]
-            p2 = points[i+1]
-            p3 = points[i+2]
-            path.rewind()
-            path.moveTo((p1.x + p2.x) / 2.0f, (p1.y + p2.y) / 2.0f)
-            path.quadTo(p2.x, p2.y, (p2.x + p3.x) / 2.0f, (p2.y + p3.y) / 2.0f)
-            foregroundCanvas.drawPath(path, paint)
-        }
-    }
+//    //https://stackoverflow.com/a/28467745/11535380
+//    fun drawOverlappingAreas(paint: Paint){
+//        if(pathPoints.size==0) return
+//        val path = Path()
+//        val points = ArrayList<PointF>()
+//        points.add(pathPoints[0])
+//        points.add(pathPoints[0])
+//        points.addAll(pathPoints)
+//        points.add(pathPoints.last())
+//        points.add(pathPoints.last())
+//        var p1: PointF
+//        var p2: PointF
+//        var p3: PointF
+//
+//        for (i in 0 until pathPoints.size) {
+//            p1 = points[i]
+//            p2 = points[i+1]
+//            p3 = points[i+2]
+//            path.rewind()
+//            path.moveTo((p1.x + p2.x) / 2.0f, (p1.y + p2.y) / 2.0f)
+//            path.quadTo(p2.x, p2.y, (p2.x + p3.x) / 2.0f, (p2.y + p3.y) / 2.0f)
+//            foregroundCanvas.drawPath(path, paint)
+//        }
+//    }
 
     /** Returns a RectF containing the coordinates of a square, created by combining two points.*/
     private fun getSquareCoords(pointA: PointF, pointB: PointF): RectF{
@@ -477,8 +482,11 @@ class CanvasImageView(context: Context?, val notifyDataSetChanged: () -> Unit) :
         val flippedBmp = Bitmap.createBitmap(foregroundBitmap, 0, 0, width, height, matrix, true)
         clearForeground()
         foregroundCanvas.drawBitmap(flippedBmp)
+    }
+    fun writeText(text: String, x: Float, y: Float){
+        foregroundCanvas.drawText(text, x, y, CanvasViewModel.textPaint)
         invalidate()
-        addActionToHistory(ACTION_FLIP_HORIZONTALLY)
+        addActionToHistory(ACTION_DRAW)
     }
 
     fun undo(): Boolean{

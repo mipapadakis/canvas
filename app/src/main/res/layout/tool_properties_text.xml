@@ -36,13 +36,41 @@
             android:gravity="center"
             android:contentDescription="@string/bottom_toolbar_button" />
 
-        <ImageButton
+        <TextView
             android:id="@+id/property_text_font_btn"
-            android:layout_width="@dimen/toolbar_button_size"
+            android:layout_width="wrap_content"
             android:layout_height="@dimen/toolbar_button_size"
-            android:src="@drawable/baseline_title_black_48"
             android:background="@android:drawable/editbox_background"
-            android:padding="5dp"
+            android:paddingHorizontal="8dp"
+            android:text="roboto"
+            android:scrollbars = "vertical"
+            android:maxLines="1"
+            android:maxWidth="120dp"
+            android:scaleType="centerCrop"
+            android:layout_gravity="center"
+            android:gravity="center"
+            android:contentDescription="@string/bottom_toolbar_button" />
+
+        <ImageButton
+            android:id="@+id/property_text_bold_btn"
+            android:layout_width="@dimen/toolbar_button_size_small"
+            android:layout_height="@dimen/toolbar_button_size_small"
+            android:src="@drawable/bold_no_outline"
+            android:background="@android:color/transparent"
+            android:layout_marginHorizontal="4dp"
+            android:layout_marginTop="2dp"
+            android:layout_gravity="center"
+            android:scaleType="fitCenter"
+            android:contentDescription="@string/bottom_toolbar_button" />
+
+        <ImageButton
+            android:id="@+id/property_text_italics_btn"
+            android:layout_width="@dimen/toolbar_button_size_small"
+            android:layout_height="@dimen/toolbar_button_size_small"
+            android:src="@drawable/italic_no_outline"
+            android:background="@android:color/transparent"
+            android:layout_marginHorizontal="4dp"
+            android:layout_marginTop="2dp"
             android:layout_gravity="center"
             android:scaleType="fitCenter"
             android:contentDescription="@string/bottom_toolbar_button" />
@@ -54,9 +82,118 @@
     <include layout="@layout/edit_size"
         android:id="@+id/property_text_size_editor"
         android:visibility="gone"/>
-    <LinearLayout
+    <HorizontalScrollView
         android:id="@+id/property_text_font_editor"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"/> <!--TODO-->
+        android:paddingHorizontal="2dp">
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+            <TextView
+                android:id="@+id/font_1"
+                android:layout_width="wrap_content"
+                android:layout_height="@dimen/toolbar_button_size"
+                android:background="@android:drawable/editbox_background"
+                android:paddingHorizontal="8dp"
+                android:text="roboto"
+                android:maxLines="1"
+                android:scaleType="centerCrop"
+                android:layout_gravity="center"
+                android:gravity="center"
+                android:contentDescription="@string/bottom_toolbar_button" />
+            <TextView
+                android:id="@+id/font_2"
+                android:layout_width="wrap_content"
+                android:layout_height="@dimen/toolbar_button_size"
+                android:background="@android:drawable/editbox_background"
+                android:paddingHorizontal="8dp"
+                android:fontFamily="sans-serif"
+                android:text="sans-serif"
+                android:maxLines="1"
+                android:scaleType="centerCrop"
+                android:layout_gravity="center"
+                android:gravity="center"
+                android:contentDescription="@string/bottom_toolbar_button" />
+            <TextView
+                android:id="@+id/font_3"
+                android:layout_width="wrap_content"
+                android:layout_height="@dimen/toolbar_button_size"
+                android:background="@android:drawable/editbox_background"
+                android:paddingHorizontal="8dp"
+                android:fontFamily="serif"
+                android:text="serif"
+                android:maxLines="1"
+                android:scaleType="centerCrop"
+                android:layout_gravity="center"
+                android:gravity="center"
+                android:contentDescription="@string/bottom_toolbar_button" />
+            <TextView
+                android:id="@+id/font_4"
+                android:layout_width="wrap_content"
+                android:layout_height="@dimen/toolbar_button_size"
+                android:background="@android:drawable/editbox_background"
+                android:paddingHorizontal="8dp"
+                android:fontFamily="sans-serif-black"
+                android:text="black"
+                android:maxLines="1"
+                android:scaleType="centerCrop"
+                android:layout_gravity="center"
+                android:gravity="center"
+                android:contentDescription="@string/bottom_toolbar_button" />
+            <TextView
+                android:id="@+id/font_5"
+                android:layout_width="wrap_content"
+                android:layout_height="@dimen/toolbar_button_size"
+                android:background="@android:drawable/editbox_background"
+                android:paddingHorizontal="8dp"
+                android:fontFamily="sans-serif-condensed-medium"
+                android:text="condensed"
+                android:maxLines="1"
+                android:scaleType="centerCrop"
+                android:layout_gravity="center"
+                android:gravity="center"
+                android:contentDescription="@string/bottom_toolbar_button" />
+            <TextView
+                android:id="@+id/font_6"
+                android:layout_width="wrap_content"
+                android:layout_height="@dimen/toolbar_button_size"
+                android:background="@android:drawable/editbox_background"
+                android:paddingHorizontal="8dp"
+                android:fontFamily="monospace"
+                android:text="monospace"
+                android:maxLines="1"
+                android:scaleType="centerCrop"
+                android:layout_gravity="center"
+                android:gravity="center"
+                android:contentDescription="@string/bottom_toolbar_button" />
+            <TextView
+                android:id="@+id/font_7"
+                android:layout_width="wrap_content"
+                android:layout_height="@dimen/toolbar_button_size"
+                android:background="@android:drawable/editbox_background"
+                android:paddingHorizontal="8dp"
+                android:fontFamily="casual"
+                android:text="Casual"
+                android:maxLines="1"
+                android:scaleType="centerCrop"
+                android:layout_gravity="center"
+                android:gravity="center"
+                android:contentDescription="@string/bottom_toolbar_button" />
+            <TextView
+                android:id="@+id/font_8"
+                android:layout_width="wrap_content"
+                android:layout_height="@dimen/toolbar_button_size"
+                android:background="@android:drawable/editbox_background"
+                android:paddingHorizontal="8dp"
+                android:fontFamily="cursive"
+                android:text="cursive"
+                android:maxLines="1"
+                android:scaleType="centerCrop"
+                android:layout_gravity="center"
+                android:gravity="center"
+                android:contentDescription="@string/bottom_toolbar_button" />
+        </LinearLayout>
+    </HorizontalScrollView>
 </LinearLayout>
