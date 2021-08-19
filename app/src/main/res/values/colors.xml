@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="gray_1">#8A8A8A</color>
-    <color name="gray_2">#696969</color>
-    <color name="gray_3">#454545</color>
-    <color name="yellow_1">#FFB91E</color>
-    <color name="yellow_2">#FF9201</color>
-    <color name="yellow_3">#DC6414</color>
+    <color name="primary1">#466969</color>
+    <color name="primary2">#2F4F4F</color>
+    <color name="primary3">#1E3737</color>
+    <color name="secondary1">#ADC8C8</color>
+    <color name="secondary2">#85A5A5</color>
+    <color name="secondary3">#5F8181</color>
 
     <!--Basic Colors-->
     <color name="black">#000000</color>
@@ -34,13 +34,13 @@
     <color name="purple">#800080</color>
 
     <!--More Colors-->
+    <color name="darkSlateGray">#2F4F4F</color>
     <color name="darkSlateBlue">#483D8B</color>
     <color name="steelBlue">#4682B4</color>
     <color name="royalBlue">#4169E1</color>
     <color name="turquoise">#40E0D0</color>
     <color name="mediumSeaGreen">#3CB371</color>
     <color name="limeGreen">#32CD32</color>
-    <color name="darkSlateGray">#2F4F4F</color>
     <color name="seaGreen">#2E8B57</color>
     <color name="forestGreen">#228B22</color>
     <color name="lightSeaGreen">#20B2AA</color>

@@ -101,7 +101,7 @@ class CreateCanvasFragment : Fragment() {
         }
         createCanvasViewModel.importImagePreview.observe(viewLifecycleOwner, {
             if (it.isEmpty()) {
-                importedImagePreview?.setImageDrawable(ContextCompat.getDrawable(requireContext(), R.drawable.baseline_collections_black_24))
+                importedImagePreview?.setImageDrawable(ContextCompat.getDrawable(requireContext(), R.drawable.baseline_collections_black_48))
                 importDetails.text = resources.getString(R.string.create_canvas_import_details)
             } else {
                 importedImagePreview?.setImageURI(Uri.parse(it))
@@ -196,15 +196,15 @@ class CreateCanvasFragment : Fragment() {
     }
 
     private fun setPixelUnit(){
-        val deactivatedButtonColor = ContextCompat.getColor(requireContext(), R.color.gray_1)
-        pixelBtn.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.yellow_2))
+        val deactivatedButtonColor = ContextCompat.getColor(requireContext(), R.color.primary1)
+        pixelBtn.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.secondary2))
         mmBtn.setBackgroundColor(deactivatedButtonColor)
         inchBtn.setBackgroundColor(deactivatedButtonColor)
         pixelLayout.visibility = View.VISIBLE
         dpiLayout.visibility = View.GONE
     }
     private fun setMmUnit(root: View){
-        val deactivatedButtonColor = ContextCompat.getColor(requireContext(), R.color.gray_1)
+        val deactivatedButtonColor = ContextCompat.getColor(requireContext(), R.color.primary1)
         //If dpiWidth and dpiHeight values were previously inches, convert them to mm
         beginChange()
         root.findViewById<EditText>(R.id.custom_dpi_input_width).setText(
@@ -215,7 +215,7 @@ class CreateCanvasFragment : Fragment() {
         root.findViewById<TextView>(R.id.custom_dpi_width_unit).text = resources.getString(R.string.unit_millimeters)
         root.findViewById<TextView>(R.id.custom_dpi_height_unit).text = resources.getString(R.string.unit_millimeters)
         pixelBtn.setBackgroundColor(deactivatedButtonColor)
-        mmBtn.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.yellow_2))
+        mmBtn.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.secondary2))
         inchBtn.setBackgroundColor(deactivatedButtonColor)
         pixelLayout.visibility = View.GONE
         dpiLayout.visibility = View.VISIBLE
@@ -224,7 +224,7 @@ class CreateCanvasFragment : Fragment() {
         scrollToBottom()
     }
     private fun setInchUnit(root: View){
-        val deactivatedButtonColor = ContextCompat.getColor(requireContext(), R.color.gray_1)
+        val deactivatedButtonColor = ContextCompat.getColor(requireContext(), R.color.primary1)
         //If dpiWidth and dpiHeight values were previously millimeters, convert them to inches
         beginChange()
         root.findViewById<EditText>(R.id.custom_dpi_input_width).setText(
@@ -236,7 +236,7 @@ class CreateCanvasFragment : Fragment() {
         root.findViewById<TextView>(R.id.custom_dpi_height_unit).text = resources.getString(R.string.unit_inches)
         pixelBtn.setBackgroundColor(deactivatedButtonColor)
         mmBtn.setBackgroundColor(deactivatedButtonColor)
-        inchBtn.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.yellow_2))
+        inchBtn.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.secondary2))
         pixelLayout.visibility = View.GONE
         dpiLayout.visibility = View.VISIBLE
         createCanvasViewModel.lastDpiUnitUsed = createCanvasViewModel.UNIT_INCH

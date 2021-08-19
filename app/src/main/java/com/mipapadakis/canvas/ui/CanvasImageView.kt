@@ -1,9 +1,8 @@
 package com.mipapadakis.canvas.ui
 
+import android.R.attr.*
 import android.content.Context
 import android.graphics.*
-import android.os.Build
-import android.util.AttributeSet
 import android.util.Log
 import android.view.MotionEvent
 import android.view.animation.LinearInterpolator
@@ -13,8 +12,8 @@ import androidx.core.graphics.drawable.toBitmap
 import com.mipapadakis.canvas.CanvasViewModel
 import com.mipapadakis.canvas.model.CvImage
 import com.mipapadakis.canvas.tools.DeviceDimensions
-import java.lang.StringBuilder
 import java.util.*
+import kotlin.collections.ArrayList
 import kotlin.math.abs
 import kotlin.math.atan2
 import kotlin.math.min
@@ -46,9 +45,10 @@ class CanvasImageView(context: Context?, val notifyDataSetChanged: () -> Unit) :
     private var d = 0f
 
     //Cached coordinates/bitmaps:
-    private var firstPoint = Point()//Coords of position at on1PointerDown(), for MODE_DRAW
-    private var prevPoint = Point() //Coords of last position of pointer, for MODE_DRAW
+    private var firstPoint = PointF() //Coords of position at on1PointerDown(), for MODE_DRAW
+    private var prevPoint = PointF() //Coords of last position of pointer, for MODE_DRAW
     private var currentPath = Path()
+    private var pathPoints = ArrayList<PointF>()
     private lateinit var firstBitmap: Bitmap //Caches the extraBitmap while the user is drawing
     lateinit var foregroundBitmap: Bitmap //This has all the user-created drawings on it.
     lateinit var foregroundCanvas: Canvas
@@ -112,14 +112,18 @@ class CanvasImageView(context: Context?, val notifyDataSetChanged: () -> Unit) :
     }
 
     override fun onDraw(canvas: Canvas) {
-        //Make sure that we draw on the layer cvImage[0], in case the user changed the front layer
-        foregroundBitmap = cvImage[0].getBitmap()
-        foregroundCanvas = Canvas(foregroundBitmap) //TODO Avoid object allocations during draw/layout operations (preallocate and reuse instead)
         //Combine the background with the foreground into the visibleBitmap:
         visibleBitmap = cvImage.getTotalImage(true)
         //visibleCanvas.drawBitmap(foregroundBitmap)
         canvas.drawBitmap(visibleBitmap)
         notifyDataSetChanged() //so that LayerListAdapter reflects the changes in the layers
+    }
+
+    fun invalidateLayers(){
+        //Make sure that we draw on the layer cvImage[0], in case the user changed the front layer
+        foregroundBitmap = cvImage[0].getBitmap()
+        foregroundCanvas = Canvas(foregroundBitmap)
+        invalidate()
     }
 
     override fun on1PointerTap(event: MotionEvent) { Log.i("CanvasTouchListener", "on1PointerTap") }
@@ -148,14 +152,17 @@ class CanvasImageView(context: Context?, val notifyDataSetChanged: () -> Unit) :
     override fun on3PointerLongPress(event: MotionEvent) { Log.i("CanvasTouchListener", "on3PointerLongPress") }
     override fun on1PointerDown(event: MotionEvent) {
         if(firstPoint.isEmpty() || CanvasViewModel.shapeType != CanvasViewModel.SHAPE_TYPE_POLYGON)
-            firstPoint = Point(event)
+            firstPoint = PointF(event)
         firstBitmap = Bitmap.createBitmap(foregroundBitmap)
-        prevPoint = Point(event)
+        prevPoint = PointF(event)
+        pathPoints.clear()
+        pathPoints.add(PointF(event))
         currentPath.reset()
         currentPath.moveTo(event.x, event.y)
         if(CanvasViewModel.tool == CanvasViewModel.TOOL_EYEDROPPER) draw(event, false)
         setModeDraw()
     }
+
     override fun on2PointerDown(event: MotionEvent) {
         params = layoutParams as RelativeLayout.LayoutParams
         dx = event.rawX - params.leftMargin
@@ -176,6 +183,7 @@ class CanvasImageView(context: Context?, val notifyDataSetChanged: () -> Unit) :
                 else -> addActionToHistory(ACTION_DRAW)
             }
         }
+        pathPoints.clear()
         currentPath.reset()
         setModeNone()
     }
@@ -187,7 +195,7 @@ class CanvasImageView(context: Context?, val notifyDataSetChanged: () -> Unit) :
     //https://github.com/lau1944/Zoom-Drag-Rotate-ImageView/blob/branch/rotateimageview/src/main/java/com/easystudio/rotateimageview/RotateZoomImageView.java
     override fun onPointerMove(event: MotionEvent) {
         if (mode == MODE_DRAW && event.pointerCount == 1) {
-            if(Math.abs(event.x-prevPoint.x) >= touchTolerance || Math.abs(event.y-prevPoint.y) >= touchTolerance)
+            if(Math.abs(event.x-pathPoints.last().x) >= touchTolerance || Math.abs(event.y-pathPoints.last().y) >= touchTolerance)
                 draw(event, false)
             // else, pointer remains roughly at the same position => avoid drawing.
         }
@@ -211,7 +219,7 @@ class CanvasImageView(context: Context?, val notifyDataSetChanged: () -> Unit) :
             params.bottomMargin = params.topMargin + 10 * params.height
             layoutParams = params
         }
-        prevPoint = Point(event)
+        prevPoint = PointF(event)
     }
     override fun onCancelTouch(event: MotionEvent?) {
         if(event?.pointerCount==3)
@@ -225,19 +233,22 @@ class CanvasImageView(context: Context?, val notifyDataSetChanged: () -> Unit) :
     private fun draw(event: MotionEvent, pointerUp: Boolean) {
         foregroundBitmap = cvImage[0].getBitmap()
         foregroundCanvas = Canvas(foregroundBitmap)
+        pathPoints.add(PointF(event))
         when (CanvasViewModel.tool) {
             CanvasViewModel.TOOL_BRUSH -> {
                 clearForeground()
                 foregroundCanvas.drawBitmap(firstBitmap)
-                //https://developer.android.com/codelabs/advanced-android-kotlin-training-canvas#5
+                //drawOverlappingAreas(paint)
+//                //https://developer.android.com/codelabs/advanced-android-kotlin-training-canvas#5
                 currentPath.quadTo(prevPoint.x, prevPoint.y, (prevPoint.x + event.x) / 2, (prevPoint.y + event.y) / 2)
                 foregroundCanvas.drawPath(currentPath, paint)
             }
             CanvasViewModel.TOOL_ERASER -> {
                 clearForeground()
                 foregroundCanvas.drawBitmap(firstBitmap)
+                //drawOverlappingAreas(eraserPaint)
                 currentPath.quadTo(prevPoint.x, prevPoint.y, (prevPoint.x + event.x) / 2, (prevPoint.y + event.y) / 2)
-                foregroundCanvas.drawPath(currentPath, eraserPaint)
+                foregroundCanvas.drawPath(currentPath, CanvasViewModel.eraserPaint)
             }
             CanvasViewModel.TOOL_BUCKET -> {
                 val x = event.x.toInt()
@@ -260,7 +271,7 @@ class CanvasImageView(context: Context?, val notifyDataSetChanged: () -> Unit) :
                 CanvasViewModel.setPaintColor(cvImage.getTotalImage(true).getPixel(xInBounds, yInBounds))
             }
             CanvasViewModel.TOOL_SHAPE -> {
-                //TODO: make them resizable?
+                //TODO: make them resizable
                 clearForeground()
                 foregroundCanvas.drawBitmap(firstBitmap)
                 when(CanvasViewModel.shapeType){
@@ -271,19 +282,17 @@ class CanvasImageView(context: Context?, val notifyDataSetChanged: () -> Unit) :
                         foregroundCanvas.drawRect(firstPoint.x, firstPoint.y, event.x, event.y, CanvasViewModel.shapePaint)
                     }
                     CanvasViewModel.SHAPE_TYPE_SQUARE -> {
-                        foregroundCanvas.drawRect(getSquareCoords(firstPoint, Point(event)), CanvasViewModel.shapePaint)
+                        foregroundCanvas.drawRect(getSquareCoords(firstPoint, PointF(event)), CanvasViewModel.shapePaint)
                     }
                     CanvasViewModel.SHAPE_TYPE_OVAL -> {
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                            foregroundCanvas.drawOval(firstPoint.x, firstPoint.y, event.x, event.y, CanvasViewModel.shapePaint)
-                        }
+                        foregroundCanvas.drawOval(RectF(firstPoint.x, firstPoint.y, event.x, event.y), CanvasViewModel.shapePaint)
                     }
                     CanvasViewModel.SHAPE_TYPE_CIRCLE -> {
-                        foregroundCanvas.drawOval(getSquareCoords(firstPoint, Point(event)), CanvasViewModel.shapePaint)
+                        foregroundCanvas.drawOval(getSquareCoords(firstPoint, PointF(event)), CanvasViewModel.shapePaint)
                     }
                     CanvasViewModel.SHAPE_TYPE_POLYGON -> {
                         foregroundCanvas.drawLine(firstPoint.x, firstPoint.y, event.x, event.y, CanvasViewModel.shapePaint)
-                        if(pointerUp) firstPoint = Point(event)
+                        if(pointerUp) firstPoint = PointF(event)
                     }
                     CanvasViewModel.SHAPE_TYPE_TRIANGLE -> {} //TODO
                     CanvasViewModel.SHAPE_TYPE_ARROW -> {} //TODO
@@ -296,8 +305,33 @@ class CanvasImageView(context: Context?, val notifyDataSetChanged: () -> Unit) :
         invalidate()
     }
 
+    //https://stackoverflow.com/a/28467745/11535380
+    fun drawOverlappingAreas(paint: Paint){
+        if(pathPoints.size==0) return
+        val path = Path()
+        val points = ArrayList<PointF>()
+        points.add(pathPoints[0])
+        points.add(pathPoints[0])
+        points.addAll(pathPoints)
+        points.add(pathPoints.last())
+        points.add(pathPoints.last())
+        var p1: PointF
+        var p2: PointF
+        var p3: PointF
+
+        for (i in 0 until pathPoints.size) {
+            p1 = points[i]
+            p2 = points[i+1]
+            p3 = points[i+2]
+            path.rewind()
+            path.moveTo((p1.x + p2.x) / 2.0f, (p1.y + p2.y) / 2.0f)
+            path.quadTo(p2.x, p2.y, (p2.x + p3.x) / 2.0f, (p2.y + p3.y) / 2.0f)
+            foregroundCanvas.drawPath(path, paint)
+        }
+    }
+
     /** Returns a RectF containing the coordinates of a square, created by combining two points.*/
-    private fun getSquareCoords(pointA: Point, pointB: Point): RectF{
+    private fun getSquareCoords(pointA: PointF, pointB: PointF): RectF{
         val side = min(abs(pointA.x - pointB.x), abs(pointA.y - pointB.y))
         return if(pointB.x >= pointA.x && pointB.y >= pointA.y)
             RectF(pointA.x, pointA.y,pointA.x + side, pointA.y + side)
@@ -357,9 +391,9 @@ class CanvasImageView(context: Context?, val notifyDataSetChanged: () -> Unit) :
 
     fun setModeNone(){
         mode = MODE_NONE
-        currentPath = Path()
-        if(CanvasViewModel.shapeType != CanvasViewModel.SHAPE_TYPE_POLYGON) firstPoint.clear()
+        pathPoints.clear()
         prevPoint.clear()
+        if(CanvasViewModel.shapeType != CanvasViewModel.SHAPE_TYPE_POLYGON) firstPoint.clear()
     }
 
     fun setModeDraw(){
@@ -368,9 +402,9 @@ class CanvasImageView(context: Context?, val notifyDataSetChanged: () -> Unit) :
 
     fun setModePinch(){
         mode = MODE_PINCH
-        currentPath = Path()
-        firstPoint.clear()
+        pathPoints.clear()
         prevPoint.clear()
+        firstPoint.clear()
     }
 
     private fun setPositionToCenter(){
@@ -422,6 +456,8 @@ class CanvasImageView(context: Context?, val notifyDataSetChanged: () -> Unit) :
 
     private fun Canvas.drawBitmap(bmp: Bitmap){ this.drawBitmap(bmp, 0f, 0f, null) }
 
+    private fun getForegroundLayer() = cvImage[0]
+
     private fun clearForeground(){
         foregroundCanvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR)
     }
@@ -444,8 +480,6 @@ class CanvasImageView(context: Context?, val notifyDataSetChanged: () -> Unit) :
         invalidate()
         addActionToHistory(ACTION_FLIP_HORIZONTALLY)
     }
-
-    private fun getForegroundLayer() = cvImage[0]
 
     fun undo(): Boolean{
         if(history.size==1 || historyIndex==0) return false
@@ -475,28 +509,27 @@ class CanvasImageView(context: Context?, val notifyDataSetChanged: () -> Unit) :
     }
 
     fun showUndoHistory(msg: String){
-        return
-        val str = StringBuilder("$msg:")
-        var i: Int
-        for(action in history){
-            i = history.indexOf(action)
-            if(historyIndex==i) str.append("\n--> $i) ") else str.append("\n    $i) ")
-            str.append("${when(action.actionType){
-                ACTION_INITIALIZE -> "ACTION_INITIALIZE"
-                ACTION_DRAW -> "ACTION_DRAW"
-                ACTION_ERASE -> "ACTION_ERASE"
-                ACTION_FLIP_VERTICALLY -> "ACTION_FLIP_VERTICALLY"
-                ACTION_FLIP_HORIZONTALLY -> "ACTION_FLIP_HORIZONTALLY"
-                ACTION_CROP -> "ACTION_CROP"
-                ACTION_LAYER_ADD -> "ACTION_LAYER_ADD"
-                ACTION_LAYER_MERGE -> "ACTION_LAYER_MERGE"
-                ACTION_LAYER_DUPLICATE -> "ACTION_LAYER_DUPLICATE"
-                ACTION_LAYER_CLEAR -> "ACTION_LAYER_CLEAR"
-                ACTION_LAYER_DELETE -> "ACTION_LAYER_DELETE"
-                else -> "Other"
-            }}")
-        }
-        Log.d("CanvasUndoHistory", str.toString())
+//        val str = StringBuilder("$msg:")
+//        var i: Int
+//        for(action in history){
+//            i = history.indexOf(action)
+//            if(historyIndex==i) str.append("\n--> $i) ") else str.append("\n    $i) ")
+//            str.append("${when(action.actionType){
+//                ACTION_INITIALIZE -> "ACTION_INITIALIZE"
+//                ACTION_DRAW -> "ACTION_DRAW"
+//                ACTION_ERASE -> "ACTION_ERASE"
+//                ACTION_FLIP_VERTICALLY -> "ACTION_FLIP_VERTICALLY"
+//                ACTION_FLIP_HORIZONTALLY -> "ACTION_FLIP_HORIZONTALLY"
+//                ACTION_CROP -> "ACTION_CROP"
+//                ACTION_LAYER_ADD -> "ACTION_LAYER_ADD"
+//                ACTION_LAYER_MERGE -> "ACTION_LAYER_MERGE"
+//                ACTION_LAYER_DUPLICATE -> "ACTION_LAYER_DUPLICATE"
+//                ACTION_LAYER_CLEAR -> "ACTION_LAYER_CLEAR"
+//                ACTION_LAYER_DELETE -> "ACTION_LAYER_DELETE"
+//                else -> "Other"
+//            }}")
+//        }
+//        Log.d("CanvasUndoHistory", str.toString())
     }
 
     inner class Action( val actionType: Int, val actionCvImage: CvImage){
@@ -517,21 +550,34 @@ class CanvasImageView(context: Context?, val notifyDataSetChanged: () -> Unit) :
 //                else -> {}
 //            }
             cvImage.setCvImage(actionCvImage)
-            invalidate()
+            invalidateLayers()
         }
     }
 
-    inner class Point(var x: Float, var y: Float){
-        constructor(x: Int, y: Int): this(x.toFloat(), y.toFloat())
-        constructor(event: MotionEvent): this(event.x, event.y)
-        constructor(point: Point): this(point.x, point.y)
-        constructor(): this(-1f, -1f)
-        fun clear(){
-            x=-1f
-            y=-1f
-        }
-        fun isEqualTo(p: Point) = (x==p.x && y==p.y)
-        fun isEmpty() = (x == -1f && y == -1f)
+
+
+    fun PointF(event: MotionEvent) = PointF(event.x, event.y)
+    fun PointF(x: Int, y: Int) = PointF(x.toFloat(), y.toFloat())
+    fun PointF(p: PointF) = PointF(p.x, p.y)
+    fun PointF() = PointF(-1f, -1f)
+    fun PointF.isEqualTo(p: PointF) = (this.x==p.x && this.y==p.y)
+    fun PointF.isEmpty() = (this.x == -1f && this.y == -1f)
+    fun PointF.clear(){
+        this.x = -1f
+        this.y = -1f
     }
+
+//    inner class Point(var x: Float, var y: Float){
+//        constructor(x: Int, y: Int): this(x.toFloat(), y.toFloat())
+//        constructor(event: MotionEvent): this(event.x, event.y)
+//        constructor(point: Point): this(point.x, point.y)
+//        constructor(): this(-1f, -1f)
+//        fun clear(){
+//            x=-1f
+//            y=-1f
+//        }
+//        fun isEqualTo(p: Point) = (x==p.x && y==p.y)
+//        fun isEmpty() = (x == -1f && y == -1f)
+//    }
 }
 

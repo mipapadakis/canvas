@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:gravity="center"
+    android:clickable="true"
+    android:focusable="true">
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <ImageButton
+            android:id="@+id/property_shape_color_btn"
+            android:layout_width="@dimen/toolbar_button_size"
+            android:layout_height="@dimen/toolbar_button_size"
+            android:src="@drawable/baseline_color_lens_black_48"
+            android:background="@android:drawable/editbox_background"
+            android:padding="5dp"
+            android:scaleType="fitCenter"
+            android:contentDescription="@string/bottom_toolbar_button" />
+
+        <TextView
+            android:id="@+id/property_shape_size_btn"
+            android:layout_width="wrap_content"
+            android:layout_height="@dimen/toolbar_button_size"
+            android:background="@android:drawable/editbox_background"
+            android:text="100px"
+            android:maxLines="1"
+            android:scaleType="centerCrop"
+            android:layout_gravity="center"
+            android:gravity="center"
+            android:contentDescription="@string/bottom_toolbar_button" />
+
+        <ImageButton
+            android:id="@+id/property_shape_type_btn"
+            android:layout_width="@dimen/toolbar_button_size"
+            android:layout_height="@dimen/toolbar_button_size"
+            android:src="@drawable/baseline_show_chart_black_48"
+            android:background="@android:drawable/editbox_background"
+            android:padding="5dp"
+            android:scaleType="fitCenter"
+            android:contentDescription="@string/bottom_toolbar_button" />
+
+        <ImageButton
+            android:id="@+id/property_shape_fill_btn"
+            android:layout_width="@dimen/toolbar_button_size"
+            android:layout_height="@dimen/toolbar_button_size"
+            android:src="@drawable/stroke_type_stroke"
+            android:background="@android:drawable/editbox_background"
+            android:padding="5dp"
+            android:scaleType="fitCenter"
+            android:contentDescription="@string/bottom_toolbar_button" />
+    </LinearLayout>
+
+    <include layout="@layout/edit_color"
+        android:id="@+id/property_shape_color_editor"
+        android:visibility="gone"/>
+    <include layout="@layout/edit_size"
+        android:id="@+id/property_shape_size_editor"
+        android:visibility="gone"/>
+    <HorizontalScrollView
+        android:id="@+id/property_shape_type_editor"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:visibility="gone">
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <ImageButton
+                android:id="@+id/shape_type_line"
+                android:layout_width="@dimen/toolbar_button_size_large"
+                android:layout_height="@dimen/toolbar_button_size_large"
+                android:background="@android:drawable/editbox_background"
+                android:layout_margin="4dp"
+                android:src="@drawable/baseline_show_chart_black_48"
+                android:padding="5dp"
+                android:layout_gravity="center"
+                android:scaleType="fitCenter"
+                tools:ignore="ContentDescription" />
+
+            <ImageButton
+                android:id="@+id/shape_type_square"
+                android:layout_width="@dimen/toolbar_button_size_large"
+                android:layout_height="@dimen/toolbar_button_size_large"
+                android:background="@android:drawable/editbox_background"
+                android:layout_margin="4dp"
+                android:src="@drawable/baseline_check_box_outline_blank_black_48"
+                android:padding="5dp"
+                android:layout_gravity="center"
+                android:scaleType="fitCenter"
+                tools:ignore="ContentDescription" />
+
+            <ImageButton
+                android:id="@+id/shape_type_rectangle"
+                android:layout_width="@dimen/toolbar_button_size_large"
+                android:layout_height="@dimen/toolbar_button_size_large"
+                android:background="@android:drawable/editbox_background"
+                android:layout_margin="4dp"
+                android:src="@drawable/baseline_crop_16_9_black_48"
+                android:padding="5dp"
+                android:layout_gravity="center"
+                android:scaleType="fitCenter"
+                tools:ignore="ContentDescription" />
+
+            <ImageButton
+                android:id="@+id/shape_type_circle"
+                android:layout_width="@dimen/toolbar_button_size_large"
+                android:layout_height="@dimen/toolbar_button_size_large"
+                android:background="@android:drawable/editbox_background"
+                android:layout_margin="4dp"
+                android:src="@drawable/baseline_panorama_fish_eye_black_48"
+                android:padding="5dp"
+                android:layout_gravity="center"
+                android:scaleType="fitCenter"
+                tools:ignore="ContentDescription" />
+
+            <ImageButton
+                android:id="@+id/shape_type_oval"
+                android:layout_width="@dimen/toolbar_button_size_large"
+                android:layout_height="@dimen/toolbar_button_size_large"
+                android:background="@android:drawable/editbox_background"
+                android:layout_margin="4dp"
+                android:src="@drawable/oval"
+                android:padding="5dp"
+                android:layout_gravity="center"
+                android:scaleType="fitCenter"
+                tools:ignore="ContentDescription" />
+
+            <ImageButton
+                android:id="@+id/shape_type_polygon"
+                android:layout_width="@dimen/toolbar_button_size_large"
+                android:layout_height="@dimen/toolbar_button_size_large"
+                android:background="@android:drawable/editbox_background"
+                android:layout_margin="4dp"
+                android:src="@drawable/baseline_star_outline_black_48"
+                android:padding="5dp"
+                android:layout_gravity="center"
+                android:scaleType="fitCenter"
+                tools:ignore="ContentDescription" />
+
+            <!--
+            <ImageButton
+                android:id="@+id/shape_type_triangle"
+                android:layout_width="@dimen/toolbar_button_size_large"
+                android:layout_height="@dimen/toolbar_button_size_large"
+                android:background="@android:drawable/editbox_background"
+                android:layout_margin="4dp"
+                android:src="@drawable/baseline_change_history_black_48"
+                android:padding="5dp"
+                android:layout_gravity="center"
+                android:scaleType="fitCenter"
+                tools:ignore="ContentDescription" />
+
+            <ImageButton
+                android:id="@+id/shape_type_arrow"
+                android:layout_width="@dimen/toolbar_button_size_large"
+                android:layout_height="@dimen/toolbar_button_size_large"
+                android:background="@android:drawable/editbox_background"
+                android:layout_margin="4dp"
+                android:src="@drawable/baseline_east_black_48"
+                android:padding="5dp"
+                android:layout_gravity="center"
+                android:scaleType="fitCenter"
+                tools:ignore="ContentDescription" />
+
+            <ImageButton
+                android:id="@+id/shape_type_callout"
+                android:layout_width="@dimen/toolbar_button_size_large"
+                android:layout_height="@dimen/toolbar_button_size_large"
+                android:background="@android:drawable/editbox_background"
+                android:layout_margin="4dp"
+                android:src="@drawable/baseline_chat_bubble_outline_black_48"
+                android:padding="5dp"
+                android:layout_gravity="center"
+                android:scaleType="fitCenter"
+                tools:ignore="ContentDescription" />-->
+        </LinearLayout>
+    </HorizontalScrollView>
+</LinearLayout>

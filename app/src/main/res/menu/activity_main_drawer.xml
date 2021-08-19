@@ -2,32 +2,32 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     tools:showIn="navigation_view">
-
+    <!-- TODO icons look like shit -->
     <group
         android:id="@+id/nav_group_canvas"
         android:checkableBehavior="single">
         <item
             android:id="@+id/nav_gallery"
-            android:icon="@drawable/ic_menu_gallery"
+            android:icon="@drawable/baseline_collections_black_48"
             android:title="@string/menu_gallery" />
         <item
             android:id="@+id/nav_canvas"
-            android:icon="@drawable/baseline_brush_black_24"
+            android:icon="@drawable/baseline_brush_black_48"
             android:title="@string/menu_create" />
         <item
             android:id="@+id/nav_about"
-            android:icon="@drawable/baseline_info_black_24"
+            android:icon="@drawable/baseline_info_black_48"
             android:title="@string/menu_about" />
     </group>
 
     <group android:checkableBehavior="single">
         <item
             android:id="@+id/nav_feedback"
-            android:icon="@drawable/baseline_feedback_black_24"
+            android:icon="@drawable/baseline_feedback_black_48"
             android:title="@string/menu_feedback" />
         <item
             android:id="@+id/nav_rate"
-            android:icon="@drawable/baseline_star_outline_black_24"
+            android:icon="@drawable/baseline_star_outline_black_48"
             android:title="@string/menu_rate" />
     </group>
 </menu>

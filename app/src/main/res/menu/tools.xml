@@ -3,19 +3,19 @@
     <group>
         <item
             android:id="@+id/tool_brush"
-            android:icon="@drawable/baseline_brush_black_18"
+            android:icon="@drawable/baseline_brush_black_48"
             android:title="@string/tools_menu_brush" />
         <item
             android:id="@+id/tool_eraser"
-            android:icon="@drawable/eraser"
+            android:icon="@drawable/eraser_bold"
             android:title="@string/tools_menu_eraser"/>
         <item
             android:id="@+id/tool_bucket"
-            android:icon="@drawable/baseline_format_color_fill_black_18"
+            android:icon="@drawable/baseline_format_color_fill_black_48"
             android:title="@string/tools_menu_bucket" />
         <item
             android:id="@+id/tool_eyedropper"
-            android:icon="@drawable/baseline_colorize_black_24"
+            android:icon="@drawable/baseline_colorize_black_48"
             android:title="@string/tools_menu_eyedropper" />
         <item
             android:id="@+id/tool_select"
@@ -23,11 +23,11 @@
             android:title="@string/tools_menu_select" />
         <item
             android:id="@+id/tool_shape"
-            android:icon="@drawable/baseline_check_box_outline_blank_black_24"
+            android:icon="@drawable/baseline_check_box_outline_blank_black_48"
             android:title="@string/tools_menu_shape" />
         <item
             android:id="@+id/tool_text"
-            android:icon="@drawable/baseline_title_black_24"
+            android:icon="@drawable/baseline_title_black_48"
             android:title="@string/tools_menu_text" />
     </group>
 </menu>

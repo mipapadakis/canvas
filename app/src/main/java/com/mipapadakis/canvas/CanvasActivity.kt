@@ -14,7 +14,6 @@ import android.view.inputmethod.InputMethodManager
 import android.widget.*
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.widget.AppCompatButton
 import androidx.cardview.widget.CardView
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.DefaultItemAnimator
@@ -24,9 +23,8 @@ import androidx.recyclerview.widget.RecyclerView
 import com.mipapadakis.canvas.tools.DeviceDimensions
 import com.mipapadakis.canvas.ui.*
 import com.mipapadakis.canvas.ui.create_canvas.CreateCanvasFragment
-import com.mipapadakis.canvas.ui.toolbar.menu.LayerListAdapter
-import java.io.File
-import java.text.SimpleDateFormat
+import com.mipapadakis.canvas.ui.toolbar.bottom.*
+import com.mipapadakis.canvas.ui.toolbar.bottom.editors.LayerListAdapter
 import java.util.*
 import kotlin.math.abs
 
@@ -37,7 +35,7 @@ private const val DIMENSION_HEIGHT_INTENT_KEY = CreateCanvasFragment.DIMENSION_H
 private const val WIDTH = CreateCanvasFragment.WIDTH
 private const val HEIGHT = CreateCanvasFragment.HEIGHT
 
-@SuppressLint("ClickableViewAccessibility")
+@SuppressLint("ClickableViewAccessibility", "NotifyDataSetChanged")
 class CanvasActivity : AppCompatActivity() {
     private var devicePixelWidth: Int = 0
     private var devicePixelHeight: Int = 0
@@ -66,39 +64,18 @@ class CanvasActivity : AppCompatActivity() {
     private lateinit var bottomToolbarInnerCardView: CardView
     //Properties
     private lateinit var properties: Array<View>
-    private lateinit var toolBrushLayout: LinearLayout
-    private lateinit var toolBrushColorBtn: ImageButton
-    private lateinit var toolBrushSizeBtn: AppCompatButton
-    private lateinit var toolBrushTypeBtn: AppCompatButton
-    private lateinit var toolBrushOpacityBtn: AppCompatButton
-    private lateinit var toolEraserLayout: LinearLayout
-    private lateinit var toolEraserSizeBtn: AppCompatButton
-    private lateinit var toolEraserOpacityBtn: AppCompatButton
-    private lateinit var toolBucketLayout: LinearLayout
-    private lateinit var toolBucketColorBtn: ImageButton
-    private lateinit var toolBucketOpacityBtn: AppCompatButton
-    private lateinit var toolSelectLayout: LinearLayout
-    private lateinit var toolSelectTypeBtn: AppCompatButton
-    private lateinit var toolSelectMethodBtn: AppCompatButton
-    private lateinit var toolShapeLayout: LinearLayout
-    private lateinit var toolShapeColorBtn: ImageButton
-    private lateinit var toolShapeTypeBtn: AppCompatButton
-    private lateinit var toolShapeStrokeSizeBtn: AppCompatButton
-    private lateinit var toolShapeStrokeTypeBtn: AppCompatButton
-    private lateinit var toolShapeOpacityBtn: AppCompatButton
-    private lateinit var toolTextLayout: LinearLayout
-    private lateinit var toolTextFontBtn: AppCompatButton
-    private lateinit var toolTextFontSizeBtn: AppCompatButton
-    private lateinit var toolCanvasLayersLayout: LinearLayout
+    private lateinit var toolBrushLayout: View
+    private lateinit var toolEraserLayout: View
+    private lateinit var toolBucketLayout: View
+    private lateinit var toolSelectLayout: View
+    private lateinit var toolShapeLayout: View
+    private lateinit var toolTextLayout: View
+    private lateinit var toolCanvasLayersLayout: View
     private lateinit var toolCanvasLayersAddBtn: ImageButton
-    private lateinit var toolCanvasTransformLayout: LinearLayout
-    private lateinit var toolCanvasTransformCropBtn: AppCompatButton
-    private lateinit var toolCanvasTransformFlipBtn: AppCompatButton
+    private lateinit var toolCanvasTransformLayout: View
 //    private lateinit var toolCanvasSettingsBtn: AppCompatButton //TODO
 //    private lateinit var toolCanvasSaveBtn: AppCompatButton //TODO
 
-
-    @SuppressLint("ClickableViewAccessibility")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_canvas)
@@ -109,7 +86,8 @@ class CanvasActivity : AppCompatActivity() {
         //canvasViewModel = ViewModelProvider(this).get(CanvasViewModel::class.java)
         CanvasViewModel.resetAttributes()
         layoutCanvas = findViewById(R.id.canvas_layout)
-        layerRecyclerView = findViewById(R.id.layer_recycler_view)
+        toolCanvasLayersLayout = findViewById(R.id.canvas_layers_properties)
+        layerRecyclerView = toolCanvasLayersLayout.findViewById(R.id.property_layers_recycler_view)
         canvasIV = CanvasImageView(this){
             layerRecyclerView.adapter?.notifyDataSetChanged()
         }
@@ -162,7 +140,6 @@ class CanvasActivity : AppCompatActivity() {
         }))
         setToolbar()
         setBottomToolbar()
-        setupToolbarMenus()
 
         //Create recyclerView with the list of layers.
         layerRecyclerView.layoutManager = LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
@@ -205,24 +182,6 @@ class CanvasActivity : AppCompatActivity() {
         })
     }
 
-    /** Create a temp cv file. */
-    private fun createCvFile(fileName: String?): File {
-        @Suppress("DEPRECATION") val locale = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N)
-                resources.configuration.locales.get(0)
-            else resources.configuration.locale
-
-        //val folder = getDir(currentDate, MODE_PRIVATE) //Create directory
-        //https://developer.android.com/training/data-storage/app-specific#internal-create-cache
-        //Create temp file in cacheDir
-        return if(fileName==null || fileName.length<=3){
-            val sdf = SimpleDateFormat("dd/M/yyyy, hh:mm", locale)
-            val currentDate = sdf.format(Date())
-            File.createTempFile("Temp file ($currentDate)", ".cv", cacheDir)
-        } else File.createTempFile(fileName, ".cv", cacheDir) //Create temp file in cacheDir
-        //TODO: If user sets a name for this project, rename this file accordingly.
-        // if this is an existing project, don't create a new directory. Rather, must open the project's dir.
-    }
-
     private fun getImageDimensionsFromUri(uri: Uri) {
         val options = BitmapFactory.Options()
         options.inJustDecodeBounds = true
@@ -256,7 +215,7 @@ class CanvasActivity : AppCompatActivity() {
         var longPressed = false
         var dX = 0f
         var dY = 0f
-        toolbarMoveImageView.setOnTouchListener { v, event ->
+        toolbarMoveImageView.setOnTouchListener { v, event -> //TODO fix bounds
             when (event.action) {
                 MotionEvent.ACTION_DOWN -> {
                     longPressed = false
@@ -321,6 +280,8 @@ class CanvasActivity : AppCompatActivity() {
             toolCanvasLayersLayout.visibility = View.VISIBLE
             showBottomToolbar()
         }
+        addPopMenuTools()
+        addPopMenuCanvas()
 
         CanvasViewModel.toolbarColor.observe(this, {
             toolbarInnerCardView.setCardBackgroundColor(CanvasViewModel.paint.color)
@@ -333,34 +294,13 @@ class CanvasActivity : AppCompatActivity() {
 
     private fun setBottomToolbar() {
         toolBrushLayout = findViewById(R.id.tool_brush_properties)
-        toolBrushColorBtn = findViewById(R.id.property_brush_color)
-        toolBrushSizeBtn = findViewById(R.id.property_brush_size)
-        toolBrushTypeBtn = findViewById(R.id.property_brush_type)
-        toolBrushOpacityBtn = findViewById(R.id.property_brush_opacity)
         toolEraserLayout = findViewById(R.id.tool_eraser_properties)
-        toolEraserSizeBtn = findViewById(R.id.property_eraser_size)
-        toolEraserOpacityBtn = findViewById(R.id.property_eraser_opacity)
         toolBucketLayout = findViewById(R.id.tool_bucket_properties)
-        toolBucketColorBtn = findViewById(R.id.property_bucket_color)
-        toolBucketOpacityBtn = findViewById(R.id.property_bucket_opacity)
         toolSelectLayout = findViewById(R.id.tool_select_properties)
-        toolSelectTypeBtn = findViewById(R.id.property_select_type)
-        toolSelectMethodBtn = findViewById(R.id.property_select_method)
         toolShapeLayout = findViewById(R.id.tool_shape_properties)
-        toolShapeColorBtn = findViewById(R.id.property_shape_color)
-        toolShapeTypeBtn = findViewById(R.id.property_shape_type)
-        toolShapeStrokeSizeBtn = findViewById(R.id.property_shape_stroke_size)
-        toolShapeStrokeTypeBtn = findViewById(R.id.property_shape_stroke_type)
-        toolShapeOpacityBtn = findViewById(R.id.property_shape_opacity)
         toolTextLayout = findViewById(R.id.tool_text_properties)
-        toolTextFontBtn = findViewById(R.id.property_text_font)
-        toolTextFontSizeBtn = findViewById(R.id.property_text_font_size)
-        toolCanvasLayersLayout = findViewById(R.id.canvas_layers_properties)
-        toolCanvasLayersAddBtn = findViewById(R.id.property_layers_add)
-        //toolCanvasLayersListBtn = findViewById(R.id.property_layers_list)
+        toolCanvasLayersAddBtn = toolCanvasLayersLayout.findViewById(R.id.property_layers_add_btn)
         toolCanvasTransformLayout = findViewById(R.id.canvas_transform_properties)
-        toolCanvasTransformCropBtn = findViewById(R.id.property_transform_crop)
-        toolCanvasTransformFlipBtn = findViewById(R.id.property_transform_flip)
         properties = arrayOf(
             toolBrushLayout,
             toolEraserLayout,
@@ -373,188 +313,47 @@ class CanvasActivity : AppCompatActivity() {
         hideProperties()
         if(CanvasViewModel.tool == CanvasViewModel.TOOL_BRUSH)
             toolBrushLayout.visibility = View.VISIBLE
-    }
 
-    private fun setupToolbarMenus() {
-        addPopMenuTools()
-        addPopMenuCanvas()
-
-        /** PATTERN DRAWING:
-        val pngBackgroundPattern = BitmapFactory.decodeResource(getResources(), R.drawable.png_background_pattern)
-        val patternBmpShader = BitmapShader( pngBackgroundPattern, Shader.TileMode.REPEAT, Shader.TileMode.REPEAT)
-        paint.shader = patternBmpShader
-         * */
+        // setup Toolbar Menus
 
         //BRUSH
-        addPopMenuColor(toolBrushColorBtn)
-        toolBrushSizeBtn.setOnClickListener {
-            numberPicker("Brush Size", "Choose number of pixels:", CanvasViewModel.paint.strokeWidth.toInt()){
-                CanvasViewModel.paint.strokeWidth = it.toFloat()
-            }
-        }
-
-        //TODO brush type
-        toolBrushOpacityBtn.setOnClickListener {
-            numberPicker("Brush Opacity", "Choose percentage:", CanvasViewModel.paint.alpha*100/255){
-                CanvasViewModel.paint.alpha = it*255/100
-            }
-        }
+        BrushToolMenu(this, toolBrushLayout)
 
         //ERASER
-        toolEraserSizeBtn.setOnClickListener {
-            numberPicker("Eraser Size", "Choose number of pixels:", CanvasViewModel.eraserPaint.strokeWidth.toInt()){
-                CanvasViewModel.eraserPaint.strokeWidth = it.toFloat()
-            }
-        }
-        toolEraserOpacityBtn.setOnClickListener {
-            numberPicker("Eraser Opacity", "Choose percentage:", CanvasViewModel.eraserPaint.alpha*100/255){
-                CanvasViewModel.eraserPaint.alpha = it*255/100
-            }
-        }
+        EraserToolMenu(toolEraserLayout)
 
         //BUCKET
-        addPopMenuColor(toolBucketColorBtn)
-        toolBucketOpacityBtn.setOnClickListener {
-            numberPicker("Bucket Opacity", "Choose percentage:", CanvasViewModel.bucketPaint.alpha*100/255){
-                CanvasViewModel.bucketPaint.alpha = it*255/100
-            }
-        }
+        BucketToolMenu(this, toolBucketLayout)
 
         //SELECT
-        //TODO toolSelectTypeBtn
-        //TODO toolSelectMethodBtn
+        SelectToolMenu() //TODO
 
         //SHAPE
-        addPopMenuColor(toolShapeColorBtn)
-        addPopMenuShapeType()
-        addPopMenuStrokeType()
-        toolShapeStrokeSizeBtn.setOnClickListener {
-            numberPicker("Shape Stroke Size", "Choose number of pixels:", CanvasViewModel.shapePaint.strokeWidth.toInt()){
-                CanvasViewModel.shapePaint.strokeWidth = it.toFloat()
-            }
-        }
-        toolShapeOpacityBtn.setOnClickListener {
-            numberPicker("Shape Opacity", "Choose percentage:", CanvasViewModel.shapePaint.alpha*100/255){
-                CanvasViewModel.shapePaint.alpha = it*255/100
-            }
+        ShapeToolMenu(this, toolShapeLayout){
+            //OnShapeChanged:
+            toolbarToolBtn.setImageResource(CanvasViewModel.shapeType)
         }
 
         //TEXT
-        toolTextFontSizeBtn.setOnClickListener {
-            numberPicker("Font Size", "Choose pixel height:", CanvasViewModel.textFontSize){
-                CanvasViewModel.textFontSize = it
-            }
-        }
+        TextToolMenu(this, toolTextLayout)
 
         //LAYERS
         toolCanvasLayersAddBtn.setOnClickListener {
+            if(CanvasViewModel.cvImage.layerCount()>=15){
+                showToast("Try merging some of the existing layers first to save up memory.")
+                return@setOnClickListener
+            }
             CanvasViewModel.cvImage.newLayer()
-            canvasIV.invalidate()
+            canvasIV.invalidateLayers()
             canvasIV.addActionToHistory(CanvasImageView.ACTION_LAYER_ADD)
         }
 
         //TRANSFORM
-        addPopMenuTransformFlip()
-        //todo crop
+        TransformToolMenu(toolCanvasTransformLayout, canvasIV)
 
-        //SAVE
+        //SAVE?
 
-        //SETTINGS
-    }
-
-    private fun addPopMenuColor(btn: ImageButton){
-        btn.setOnClickListener {
-            val paletteMenu = PopupMenu(this, btn)
-            paletteMenu.menuInflater.inflate(R.menu.palette, paletteMenu.menu)
-            paletteMenu.setOnMenuItemClickListener {
-                when (it.itemId) {
-                    R.id.color_black -> { CanvasViewModel.setPaintColor(getColorFromId(R.color.black)) }
-                    R.id.color_red -> { CanvasViewModel.setPaintColor(getColorFromId( R.color.red)) }
-                    R.id.color_green -> { CanvasViewModel.setPaintColor(getColorFromId( R.color.green)) }
-                    R.id.color_blue -> { CanvasViewModel.setPaintColor(getColorFromId( R.color.blue)) }
-                    R.id.color_yellow -> { CanvasViewModel.setPaintColor(getColorFromId( R.color.yellow)) }
-                    R.id.color_purple -> { CanvasViewModel.setPaintColor(getColorFromId( R.color.purple)) }
-                    else -> {} //TODO palette
-                }
-                toolbarInnerCardView.setCardBackgroundColor(CanvasViewModel.paint.color)
-                bottomToolbarInnerCardView.setCardBackgroundColor(CanvasViewModel.paint.color)
-                true
-            }
-            paletteMenu.show()
-        }
-    }
-
-
-    /** Don't need this, since I'm using the drawable IDs as key identifiers.
-     *  For example, CanvasViewModel.SHAPE_TYPE_LINE == R.drawable.baseline_show_chart_black_24.
-     * private fun getCurrentShapeId(): Int{
-        return when (CanvasViewModel.shapeType) {
-            CanvasViewModel.SHAPE_TYPE_LINE -> { R.drawable.baseline_show_chart_black_24 }
-            CanvasViewModel.SHAPE_TYPE_SQUARE -> { R.drawable.baseline_check_box_outline_blank_black_24 }
-            CanvasViewModel.SHAPE_TYPE_RECTANGLE -> { R.drawable.baseline_crop_16_9_black_24 }
-            CanvasViewModel.SHAPE_TYPE_CIRCLE -> { R.drawable.baseline_panorama_fish_eye_black_24 }
-            CanvasViewModel.SHAPE_TYPE_OVAL -> { R.drawable.oval }
-            CanvasViewModel.SHAPE_TYPE_POLYGON -> { R.drawable.baseline_star_outline_black_24 }
-            CanvasViewModel.SHAPE_TYPE_TRIANGLE -> { R.drawable.baseline_change_history_black_24 }
-            CanvasViewModel.SHAPE_TYPE_ARROW -> { R.drawable.baseline_east_black_24 }
-            CanvasViewModel.SHAPE_TYPE_CALLOUT -> { R.drawable.baseline_chat_bubble_outline_black_24 }
-            else -> {R.drawable.baseline_show_chart_black_24}
-        }
-    }*/
-    private fun addPopMenuShapeType(){
-        toolShapeTypeBtn.setOnClickListener {
-            val menu = PopupMenu(this, toolShapeTypeBtn)
-            menu.menuInflater.inflate(R.menu.shapes, menu.menu)
-            menu.setOnMenuItemClickListener {
-                when (it.itemId) {
-                    R.id.shape_line -> {CanvasViewModel.shapeType = CanvasViewModel.SHAPE_TYPE_LINE}
-                    R.id.shape_square -> { CanvasViewModel.shapeType = CanvasViewModel.SHAPE_TYPE_SQUARE}
-                    R.id.shape_rectangle -> { CanvasViewModel.shapeType = CanvasViewModel.SHAPE_TYPE_RECTANGLE }
-                    R.id.shape_circle -> { CanvasViewModel.shapeType = CanvasViewModel.SHAPE_TYPE_CIRCLE }
-                    R.id.shape_oval -> { CanvasViewModel.shapeType = CanvasViewModel.SHAPE_TYPE_OVAL }
-                    R.id.shape_polygon -> { CanvasViewModel.shapeType = CanvasViewModel.SHAPE_TYPE_POLYGON }
-                    R.id.shape_triangle -> { CanvasViewModel.shapeType = CanvasViewModel.SHAPE_TYPE_TRIANGLE }
-                    R.id.shape_arrow -> { CanvasViewModel.shapeType = CanvasViewModel.SHAPE_TYPE_ARROW }
-                    R.id.shape_callout -> { CanvasViewModel.shapeType = CanvasViewModel.SHAPE_TYPE_CALLOUT }
-                    else -> {}
-                }
-                toolbarToolBtn.setImageResource(CanvasViewModel.shapeType)
-                true
-            }
-            menu.show()
-        }
-    }
-
-    private fun addPopMenuStrokeType() {
-        toolShapeStrokeTypeBtn.setOnClickListener {
-            val menu = PopupMenu(this, toolShapeStrokeTypeBtn)
-            menu.menuInflater.inflate(R.menu.stroke_types, menu.menu)
-            menu.setOnMenuItemClickListener {
-                when (it.itemId) {
-                    R.id.stroke_type_fill -> { CanvasViewModel.shapePaint.style = Paint.Style.FILL }
-                    R.id.stroke_type_stroke -> { CanvasViewModel.shapePaint.style = Paint.Style.FILL_AND_STROKE }
-                    else -> {}
-                }
-                toolbarToolBtn.setImageResource(CanvasViewModel.shapeType)
-                true
-            }
-            menu.show()
-        }
-    }
-
-    private fun addPopMenuTransformFlip(){
-        toolCanvasTransformFlipBtn.setOnClickListener {
-            val menu = PopupMenu(this, toolCanvasTransformFlipBtn)
-            menu.menuInflater.inflate(R.menu.transform_flip, menu.menu)
-            menu.setOnMenuItemClickListener {
-                when (it.itemId) {
-                    R.id.flip_vertically -> { canvasIV.flipVertically() }
-                    R.id.flip_horizontally -> { canvasIV.flipHorizontally() }
-                }
-                true
-            }
-            menu.show()
-        }
+        //SETTINGS?
     }
 
     private fun addPopMenuCanvas() {
@@ -601,22 +400,22 @@ class CanvasActivity : AppCompatActivity() {
                     R.id.tool_brush -> {
                         CanvasViewModel.tool = CanvasViewModel.TOOL_BRUSH
                         toolBrushLayout.visibility = View.VISIBLE
-                        toolbarToolBtn.setImageResource(R.drawable.baseline_brush_black_24)
+                        toolbarToolBtn.setImageResource(R.drawable.baseline_brush_black_48)
                     }
                     R.id.tool_eraser -> {
                         toolEraserLayout.visibility = View.VISIBLE
                         CanvasViewModel.tool = CanvasViewModel.TOOL_ERASER
-                        toolbarToolBtn.setImageResource(R.drawable.eraser)
+                        toolbarToolBtn.setImageResource(R.drawable.eraser_bold)
                     }
                     R.id.tool_bucket -> {
                         toolBucketLayout.visibility = View.VISIBLE
                         CanvasViewModel.tool = CanvasViewModel.TOOL_BUCKET
-                        toolbarToolBtn.setImageResource(R.drawable.baseline_format_color_fill_black_24)
+                        toolbarToolBtn.setImageResource(R.drawable.baseline_format_color_fill_black_48)
                     }
                     R.id.tool_eyedropper -> {
                         hideBottomToolbar()
                         CanvasViewModel.tool = CanvasViewModel.TOOL_EYEDROPPER
-                        toolbarToolBtn.setImageResource(R.drawable.baseline_colorize_black_24)
+                        toolbarToolBtn.setImageResource(R.drawable.baseline_colorize_black_48)
                     }
                     R.id.tool_select -> {
                         toolSelectLayout.visibility = View.VISIBLE
@@ -631,7 +430,7 @@ class CanvasActivity : AppCompatActivity() {
                     R.id.tool_text -> {
                         toolTextLayout.visibility = View.VISIBLE
                         CanvasViewModel.tool = CanvasViewModel.TOOL_TEXT
-                        toolbarToolBtn.setImageResource(R.drawable.baseline_title_black_24)
+                        toolbarToolBtn.setImageResource(R.drawable.baseline_title_black_48)
                     }
                     else -> {}
                 }
@@ -640,24 +439,6 @@ class CanvasActivity : AppCompatActivity() {
             }
             toolsMenu.show()
         }
-    }
-
-    private fun numberPicker(title: String, message: String, currentValue: Int, positive: (number: Int) -> Unit){
-        val numberPicker = NumberPicker(this)
-        numberPicker.minValue = 1
-        numberPicker.maxValue = 100
-        numberPicker.value = currentValue
-
-        val builder: android.app.AlertDialog.Builder = android.app.AlertDialog.Builder(this)
-        builder.setView(numberPicker)
-        builder.setTitle(title)
-        builder.setMessage(message)
-        builder.setPositiveButton("OK") { _, _ ->
-            positive(numberPicker.value)
-        }
-        builder.setNegativeButton( "CANCEL") { _, _ ->}
-        builder.create()
-        builder.show()
     }
 
 
@@ -680,7 +461,7 @@ class CanvasActivity : AppCompatActivity() {
         inputTitle.setText(CanvasViewModel.cvImage.title)
 
         alertDialogBuilderUserInput
-            .setIcon(R.drawable.baseline_save_black_24)
+            .setIcon(R.drawable.baseline_save_black_48)
             //.setCancelable(false)
             .setPositiveButton(  "save" ) { _, _ -> }
             .setNegativeButton( if(askBeforeExit) "Exit without saving" else "cancel" ) { dialogBox, _ ->
@@ -698,7 +479,7 @@ class CanvasActivity : AppCompatActivity() {
         //Filter out the special characters ?:"*|/\<>
         val filter = InputFilter { source, start, end, _, _, _ ->
             for (i in start until end) {
-                if (source!=null && ("?:\"*|/\\<>").contains(source[i])) {
+                if (source!=null && ("?:.\"*|/\\<>").contains(source[i])) {
                     showToast(getString(R.string.wrong_filename_warning))
                     return@InputFilter source.subSequence(start,i)
                 }
@@ -806,7 +587,7 @@ class CanvasActivity : AppCompatActivity() {
 
     private fun showToolBars() {
         //val drawableOff = getDrawableFromId(R.drawable.baseline_visibility_off_black_24)
-        toolbarMoveImageView.setImageResource(R.drawable.baseline_open_with_black_24)
+        toolbarMoveImageView.setImageResource(R.drawable.baseline_open_with_black_48)
         toolbarButtonLayout.visibility = View.VISIBLE
         if(hasVisibleProperties()) showBottomToolbar() else hideBottomToolbar()
     }
@@ -820,7 +601,7 @@ class CanvasActivity : AppCompatActivity() {
     }
 
     private fun hideToolbars() {
-        val drawableOn = getDrawableFromId(R.drawable.baseline_visibility_black_24)
+        val drawableOn = getDrawableFromId(R.drawable.baseline_visibility_black_48)
         toolbarMoveImageView.setImageDrawable(drawableOn)
         toolbarButtonLayout.visibility = View.GONE
         hideBottomToolbar()

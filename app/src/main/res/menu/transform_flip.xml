@@ -3,11 +3,11 @@
     <group>
         <item
             android:id="@+id/flip_vertically"
-            android:icon="@drawable/baseline_brush_black_18"
+            android:icon="@drawable/baseline_brush_black_48"
             android:title="@string/transform_flip_vertically" />
         <item
             android:id="@+id/flip_horizontally"
-            android:icon="@drawable/baseline_brush_black_18"
+            android:icon="@drawable/baseline_brush_black_48"
             android:title="@string/transform_flip_horizontally" />
     </group>
 </menu>

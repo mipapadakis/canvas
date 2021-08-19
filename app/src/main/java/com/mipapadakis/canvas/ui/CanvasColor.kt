@@ -1,6 +1,7 @@
 package com.mipapadakis.canvas.ui
 
 import android.content.Context
+import android.graphics.Color
 import androidx.core.content.ContextCompat
 import com.mipapadakis.canvas.R
 
@@ -209,6 +210,9 @@ class CanvasColor(val colorID: Int){
         fun getColorNameFromId(id: Int): String{
             for(c in colorNameAndIdList) if(c.id == id) return c.name
             return "Transparent" //;)
+        }
+        fun getColorFromARGB(a: Int, r: Int, g: Int, b: Int): Int{
+            return Color.argb(a, r, g, b)
         }
     }
 }

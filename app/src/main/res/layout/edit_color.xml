@@ -1,0 +1,236 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:clickable="true"
+    android:focusable="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="@dimen/property_editor_margin"
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
+
+        <FrameLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+            <ImageView
+                android:layout_width="@dimen/toolbar_button_size"
+                android:layout_height="@dimen/toolbar_button_size"
+                android:src="@drawable/png_background"
+                android:scaleType="center"
+                android:padding="@dimen/property_editor_margin"
+                tools:ignore="ContentDescription" />
+            <ImageView
+                android:id="@+id/temporary_color"
+                android:layout_width="@dimen/toolbar_button_size"
+                android:layout_height="@dimen/toolbar_button_size"
+                android:padding="@dimen/property_editor_margin"
+                android:src="@drawable/baseline_check_black_48"
+                tools:ignore="ContentDescription" />
+        </FrameLayout>
+
+        <ImageView
+            android:layout_width="@dimen/property_editor_margin"
+            android:layout_height="match_parent"
+            tools:ignore="ContentDescription" />
+
+        <SeekBar
+            android:id="@+id/color_rgb_seekbar"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/toolbar_button_size_small"
+            android:paddingStart="2dp"
+            android:paddingEnd="2dp"
+            android:thumb="@drawable/seekbar_thumb"
+            android:progressDrawable="@android:color/transparent"
+            android:progress="1536"
+            android:max="1536"/>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@android:drawable/editbox_background"
+        android:padding="@dimen/property_editor_margin"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/toolbar_button_size"
+            android:orientation="horizontal"
+            android:gravity="center">
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:paddingHorizontal="@dimen/property_editor_margin"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="14sp"
+                    android:text="A:"/>
+                <EditText
+                    android:id="@+id/argb_alpha"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:textSize="14sp"
+                    android:gravity="center"
+                    android:ellipsize="end"
+                    android:maxLength="3"
+                    android:ems="3"
+                    android:hint="A"
+                    android:text="255"
+                    android:inputType="numberDecimal"
+                    android:importantForAutofill="no"
+                    tools:ignore="HardcodedText" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:paddingHorizontal="@dimen/property_editor_margin"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="14sp"
+                    android:text="R:"/>
+
+                <EditText
+                    android:id="@+id/argb_red"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:textSize="14sp"
+                    android:gravity="center"
+                    android:ellipsize="end"
+                    android:maxLength="3"
+                    android:ems="3"
+                    android:hint="R"
+                    android:text="255"
+                    android:inputType="numberDecimal"
+                    android:importantForAutofill="no"
+                    tools:ignore="HardcodedText" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:paddingHorizontal="@dimen/property_editor_margin"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="14sp"
+                    android:text="G:"/>
+
+                <EditText
+                    android:id="@+id/argb_green"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:textSize="14sp"
+                    android:gravity="center"
+                    android:ellipsize="end"
+                    android:maxLength="3"
+                    android:ems="3"
+                    android:hint="G"
+                    android:text="255"
+                    android:inputType="numberDecimal"
+                    android:importantForAutofill="no"
+                    tools:ignore="HardcodedText" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:paddingHorizontal="@dimen/property_editor_margin"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="14sp"
+                    android:text="B:"/>
+
+                <EditText
+                    android:id="@+id/argb_blue"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:textSize="14sp"
+                    android:gravity="center"
+                    android:ellipsize="end"
+                    android:maxLength="3"
+                    android:ems="3"
+                    android:hint="B"
+                    android:text="255"
+                    android:inputType="numberDecimal"
+                    android:importantForAutofill="no"
+                    tools:ignore="HardcodedText" />
+
+            </LinearLayout>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="@dimen/property_editor_margin"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+            <!--<TextView
+                android:id="@+id/color_brightness_textview"
+                android:layout_width="@dimen/toolbar_button_size"
+                android:layout_height="@dimen/toolbar_button_size"
+                android:gravity="center"
+                android:text="255"/>-->
+
+            <SeekBar
+                android:id="@+id/color_brightness_seekbar"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/toolbar_button_size_small"
+                android:paddingVertical="4dp"
+                android:paddingStart="2dp"
+                android:paddingEnd="2dp"
+                android:thumb="@drawable/seekbar_thumb"
+                android:progressDrawable="@android:color/transparent"
+                android:progress="199"
+                android:max="199"/>
+        </LinearLayout>
+
+        <!--Todo: RGB editText -->
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="@dimen/property_editor_margin"
+            android:layout_marginBottom="@dimen/property_editor_margin"
+            android:orientation="horizontal"
+            android:gravity="center">
+
+            <!--
+            <TextView
+                android:id="@+id/color_opacity_textview"
+                android:layout_width="@dimen/toolbar_button_size"
+                android:layout_height="@dimen/toolbar_button_size"
+                android:gravity="center"
+                android:text="255"/>-->
+            <SeekBar
+                android:id="@+id/color_opacity_seekbar"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/toolbar_button_size_small"
+                android:paddingVertical="4dp"
+                android:paddingStart="2dp"
+                android:paddingEnd="2dp"
+                android:thumb="@drawable/seekbar_thumb"
+                android:progressDrawable="@android:color/transparent"
+                android:progress="255"
+                android:max="255"/>
+        </LinearLayout>
+    </LinearLayout>
+</LinearLayout>

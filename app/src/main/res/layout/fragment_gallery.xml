@@ -20,6 +20,6 @@
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
         android:layout_margin="@dimen/fab_margin"
-        app:srcCompat="@drawable/baseline_add_black_24"
+        app:srcCompat="@drawable/baseline_add_black_no_outline_48"
         android:contentDescription="@string/add" />
 </FrameLayout>

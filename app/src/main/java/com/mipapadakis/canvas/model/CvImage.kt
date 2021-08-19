@@ -13,7 +13,7 @@ import java.util.*
 
 class CvImage(var title: String, var width: Int, var height: Int): ArrayList<CvLayer>() {
     var fileType = CanvasViewModel.FILETYPE_CANVAS
-    var layerNameIndex = 0
+    private var layerNameIndex = 0
 
     constructor(width: Int, height: Int): this("", width, height)
     constructor(title: String, bmp: Bitmap): this(title, bmp.width, bmp.height){
@@ -59,14 +59,14 @@ class CvImage(var title: String, var width: Int, var height: Int): ArrayList<CvL
     }
     fun getTopLayer() = get(0)
 
-    fun getUniqueLayerName(): String {return "Layer ${CanvasViewModel.cvImage.layerNameIndex++}"}
+    private fun getUniqueLayerName(): String {return "Layer ${CanvasViewModel.cvImage.layerNameIndex++}"}
     fun getFilenameWithExtension(context: Context): String{
         return "${title}.${context.getString( 
             when (fileType) {
-                CanvasViewModel.FILETYPE_CANVAS -> R.string.file_extension_canvas   //cv
-                CanvasViewModel.FILETYPE_PNG -> R.string.file_extension_png         //png
-                CanvasViewModel.FILETYPE_JPEG -> R.string.file_extension_jpeg       //jpeg
-                else -> R.string.file_extension_bitmap                              //bmp
+                CanvasViewModel.FILETYPE_CANVAS -> R.string.file_extension_canvas
+                CanvasViewModel.FILETYPE_PNG -> R.string.file_extension_png
+                CanvasViewModel.FILETYPE_JPEG -> R.string.file_extension_jpeg
+                else -> R.string.file_extension_bitmap
             }
         )}"
     }

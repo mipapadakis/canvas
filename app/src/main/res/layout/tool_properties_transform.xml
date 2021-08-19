@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:gravity="center"
+    android:clickable="true"
+    android:focusable="true">
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <!--TODO
+        <TextView
+            android:id="@+id/property_transform_crop_btn"
+            android:layout_width="wrap_content"
+            android:layout_height="@dimen/toolbar_button_size"
+            android:background="@android:drawable/editbox_background"
+            android:text="crop"
+            android:maxLines="1"
+            android:scaleType="centerCrop"
+            android:layout_gravity="center"
+            android:gravity="center"
+            android:contentDescription="@string/bottom_toolbar_button" />-->
+
+        <ImageButton
+            android:id="@+id/property_transform_flip_horizontally_btn"
+            android:layout_width="@dimen/toolbar_button_size"
+            android:layout_height="@dimen/toolbar_button_size"
+            android:src="@drawable/flip_horizontally"
+            android:background="@android:drawable/editbox_background"
+            android:padding="5dp"
+            android:layout_gravity="center"
+            android:scaleType="fitCenter"
+            android:contentDescription="@string/bottom_toolbar_button" />
+
+        <ImageButton
+            android:id="@+id/property_transform_flip_vertically_btn"
+            android:layout_width="@dimen/toolbar_button_size"
+            android:layout_height="@dimen/toolbar_button_size"
+            android:src="@drawable/flip_vertically"
+            android:background="@android:drawable/editbox_background"
+            android:padding="5dp"
+            android:layout_gravity="center"
+            android:scaleType="fitCenter"
+            android:contentDescription="@string/bottom_toolbar_button" />
+    </LinearLayout>
+</LinearLayout>

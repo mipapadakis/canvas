@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:gravity="center"
+    android:clickable="true"
+    android:focusable="true">
+
+    <!--/////////////////////////////////////TEXT////////////////////////////////////-->
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <ImageButton
+            android:id="@+id/property_text_color_btn"
+            android:layout_width="@dimen/toolbar_button_size"
+            android:layout_height="@dimen/toolbar_button_size"
+            android:src="@drawable/baseline_color_lens_black_48"
+            android:background="@android:drawable/editbox_background"
+            android:padding="5dp"
+            android:layout_gravity="center"
+            android:scaleType="fitCenter"
+            android:contentDescription="@string/bottom_toolbar_button" />
+
+        <TextView
+            android:id="@+id/property_text_size_btn"
+            android:layout_width="wrap_content"
+            android:layout_height="@dimen/toolbar_button_size"
+            android:background="@android:drawable/editbox_background"
+            android:text="12"
+            android:maxLines="1"
+            android:scaleType="centerCrop"
+            android:layout_gravity="center"
+            android:gravity="center"
+            android:contentDescription="@string/bottom_toolbar_button" />
+
+        <ImageButton
+            android:id="@+id/property_text_font_btn"
+            android:layout_width="@dimen/toolbar_button_size"
+            android:layout_height="@dimen/toolbar_button_size"
+            android:src="@drawable/baseline_title_black_48"
+            android:background="@android:drawable/editbox_background"
+            android:padding="5dp"
+            android:layout_gravity="center"
+            android:scaleType="fitCenter"
+            android:contentDescription="@string/bottom_toolbar_button" />
+    </LinearLayout>
+
+    <include layout="@layout/edit_color"
+        android:id="@+id/property_text_color_editor"
+        android:visibility="gone"/>
+    <include layout="@layout/edit_size"
+        android:id="@+id/property_text_size_editor"
+        android:visibility="gone"/>
+    <LinearLayout
+        android:id="@+id/property_text_font_editor"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"/> <!--TODO-->
+</LinearLayout>

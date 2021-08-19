@@ -2,17 +2,18 @@
     <!-- Base application theme. -->
     <style name="Theme.Canvas" parent="Theme.MaterialComponents.Light.NoActionBar">
         <!-- Primary brand color. -->
-        <item name="colorPrimary">@color/gray_2</item>
-        <item name="colorPrimaryVariant">@color/gray_3</item>
+        <item name="colorPrimary">@color/primary2</item>
+        <item name="colorPrimaryVariant">@color/primary3</item>
         <item name="colorOnPrimary">@color/white</item>
         <!-- Secondary brand color. -->
-        <item name="colorSecondary">@color/yellow_2</item>
-        <item name="colorSecondaryVariant">@color/yellow_3</item>
+        <item name="colorSecondary">@color/secondary2</item>
+        <item name="colorSecondaryVariant">@color/secondary3</item>
         <item name="colorOnSecondary">@color/black</item>
 
         <!-- Status bar color. -->
         <item name="android:statusBarColor" tools:targetApi="l">?attr/colorPrimaryVariant</item>
         <!-- Customize your theme here. -->
+        <item name="android:fontFamily">@font/roboto_regular</item>
     </style>
 
     <style name="ButtonWithoutPadding">

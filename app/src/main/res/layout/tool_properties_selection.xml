@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:gravity="center"
+    android:orientation="vertical"
+    android:clickable="true"
+    android:focusable="true">
+
+    <!--////////////////////////////////////SELECT///////////////////////////////////-->
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <ImageButton
+            android:id="@+id/property_select_type_btn"
+            android:layout_width="@dimen/toolbar_button_size"
+            android:layout_height="@dimen/toolbar_button_size"
+            android:src="@drawable/select_rectangular"
+            android:background="@android:drawable/editbox_background"
+            android:padding="5dp"
+            android:layout_gravity="center"
+            android:scaleType="fitCenter"
+            android:contentDescription="@string/bottom_toolbar_button" />
+
+        <ImageButton
+            android:id="@+id/property_select_method_btn"
+            android:layout_width="@dimen/toolbar_button_size"
+            android:layout_height="@dimen/toolbar_button_size"
+            android:src="@drawable/selection_union"
+            android:background="@android:drawable/editbox_background"
+            android:padding="5dp"
+            android:layout_gravity="center"
+            android:scaleType="fitCenter"
+            android:contentDescription="@string/bottom_toolbar_button" />
+
+        <!--
+        <TextView
+            android:id="@+id/property_brush_type_btn"
+            android:layout_width="wrap_content"
+            android:layout_height="@dimen/toolbar_button_size"
+            android:background="@android:drawable/editbox_background"
+            android:text="copy | paste | crop | save | pattern" TODO
+            android:maxLines="1"
+            android:scaleType="centerCrop"
+            android:layout_gravity="center"
+            android:gravity="center"
+            android:contentDescription="@string/bottom_toolbar_button" />-->
+    </LinearLayout>
+
+    <!-- TODO
+    <LinearLayout
+        android:id="@+id/property_select_type_editor"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"/>
+
+    <LinearLayout
+        android:id="@+id/property_select_method_editor"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"/> -->
+</LinearLayout>

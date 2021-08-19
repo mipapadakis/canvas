@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@android:drawable/editbox_background"
+    android:orientation="vertical"
+    android:padding="8dp"
+    android:clickable="true"
+    android:focusable="true">
+
+    <LinearLayout
+        android:id="@+id/property_opacity_editor"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingVertical="@dimen/property_editor_margin"
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
+        <!--
+        <ImageView
+            android:layout_width="@dimen/toolbar_button_size"
+            android:layout_height="@dimen/toolbar_button_size"
+            android:src="@drawable/baseline_open_with_black_48"
+            android:layout_marginStart="@dimen/property_editor_margin"
+            android:layout_marginLeft="@dimen/property_editor_margin"
+            tools:ignore="ContentDescription" />
+        <TextView
+            android:id="@+id/property_brush_opacity_editor_textview"
+            android:layout_width="@dimen/toolbar_button_size"
+            android:layout_height="@dimen/toolbar_button_size"
+            android:background="@android:drawable/editbox_background"
+            android:gravity="center"
+            android:text="100"/>-->
+
+        <SeekBar
+            android:id="@+id/property_opacity_seekbar"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/toolbar_button_size_small"
+            android:layout_marginHorizontal="@dimen/property_editor_margin"
+            android:thumb="@drawable/seekbar_thumb"
+            android:progressDrawable="@android:color/transparent"
+            android:paddingVertical="8dp"
+            android:paddingStart="2dp"
+            android:paddingEnd="2dp"
+            android:progress="255"
+            android:max="255"/>
+    </LinearLayout>
+</LinearLayout>

@@ -94,6 +94,6 @@
     <string name="file_extension_bitmap">bmp</string>
     <string name="canvas_placeholder_title">Image</string>
     <string name="save_canvas_subtitle"><![CDATA[Choose title & format for your masterpiece!]]></string>
-    <string name="wrong_filename_warning"><![CDATA[Characters * \" ? : / | \\ < > are not allowed.]]></string>
+    <string name="wrong_filename_warning"><![CDATA[Characters * . \" ? : / | \\ < > are not allowed.]]></string>
 
 </resources>
