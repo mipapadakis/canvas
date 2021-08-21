@@ -32,8 +32,6 @@ import java.lang.Exception
 
 private const val CODE_IMAGE_PICK = 1000
 private const val CODE_PERMISSION = 1001
-const val MAX_WIDTH = 2048
-const val MAX_HEIGHT = 2048
 
 class CreateCanvasFragment : Fragment() {
     private lateinit var createCanvasViewModel: CreateCanvasViewModel
@@ -50,6 +48,8 @@ class CreateCanvasFragment : Fragment() {
         const val IMPORT_IMAGE_INTENT_KEY = "image_uri"
         const val DIMENSION_WIDTH_INTENT_KEY = "width_in_pixels"
         const val DIMENSION_HEIGHT_INTENT_KEY = "eight_in_pixels"
+        const val MAX_WIDTH = 2048
+        const val MAX_HEIGHT = 2048
         const val WIDTH = 0
         const val HEIGHT = 1
         enum class CanvasDefaultSize(val width: Int, val height: Int) {

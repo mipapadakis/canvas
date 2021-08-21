@@ -20,7 +20,6 @@ class CanvasViewModel: ViewModel() {
         const val FILETYPE_CANVAS = 0
         const val FILETYPE_PNG = 1
         const val FILETYPE_JPEG = 2
-        const val FILETYPE_BITMAP = 3
 
         //enum class toolCode { TOOL_BRUSH, TOOL_ERASER, TOOL_BUCKET, TOOL_EYEDROPPER, TOOL_SELECT, TOOL_SHAPE, TOOL_TEXT}
         const val TOOL_BRUSH = R.drawable.baseline_brush_black_48
@@ -76,12 +75,12 @@ class CanvasViewModel: ViewModel() {
         val colorEditorTempColor: LiveData<Int> = _colorEditorTempColor
         var newColor = CanvasPreferences.startingColorId
         var newColorHue = ColorValues.colorOnlyHue(CanvasPreferences.startingColorId)
+        var textToolText = ""
         var allColors: Array<Array<Int>>? = null //Colors of rainbow (in rgb values)
         var colorTableBitmap: Bitmap? = null //Rainbow
         var brightnessBitmap: Bitmap? = null //white -> transparent -> black
         var opacityBitmapForColorEditor: Bitmap? = null //png_grid -> transparent
         var opacityBitmapForOpacityEditor: Bitmap? = null //png_grid -> transparent
-
 
 
         ///////////////////////////////////////////Tools////////////////////////////////////////////
@@ -280,6 +279,12 @@ class CanvasViewModel: ViewModel() {
                 isDither = true
             }
             _toolbarColor.apply { value = CanvasPreferences.startingColorId}
+            textToolText = ""
+            allColors = null //Colors of rainbow (in rgb values)
+            colorTableBitmap = null //Rainbow
+            brightnessBitmap = null //white -> transparent -> black
+            opacityBitmapForColorEditor = null //png_grid -> transparent
+            opacityBitmapForOpacityEditor = null //png_grid -> transparent
         }
     }
     //var colorID = CanvasPreferences.startingColorId

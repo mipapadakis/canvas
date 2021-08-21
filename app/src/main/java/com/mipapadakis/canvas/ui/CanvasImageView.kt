@@ -1,6 +1,5 @@
 package com.mipapadakis.canvas.ui
 
-import android.R.attr.*
 import android.content.Context
 import android.graphics.*
 import android.util.Log
@@ -11,6 +10,7 @@ import androidx.appcompat.widget.AppCompatImageView
 import androidx.core.graphics.drawable.toBitmap
 import com.mipapadakis.canvas.CanvasViewModel
 import com.mipapadakis.canvas.model.CvImage
+import com.mipapadakis.canvas.tools.CvFileHelper
 import com.mipapadakis.canvas.tools.DeviceDimensions
 import java.util.*
 import kotlin.collections.ArrayList
@@ -304,7 +304,12 @@ class CanvasImageView(context: Context?, val notifyDataSetChanged: () -> Unit) :
             CanvasViewModel.TOOL_TEXT -> {
                 clearForeground()
                 foregroundCanvas.drawBitmap(firstBitmap)
-                foregroundCanvas.drawText("example", event.x, event.y, CanvasViewModel.textPaint)
+                foregroundCanvas.drawText(
+                    if(CanvasViewModel.textToolText.isEmpty()) "example"
+                    else CanvasViewModel.textToolText,
+                    event.x,
+                    event.y,
+                    CanvasViewModel.textPaint)
             }
         }
         invalidate()

@@ -7,6 +7,8 @@ import android.provider.Settings.Global.getString
 import com.mipapadakis.canvas.CanvasViewModel
 import com.mipapadakis.canvas.R
 import com.mipapadakis.canvas.model.layer.CvLayer
+import com.mipapadakis.canvas.tools.SerializableCvImage
+import com.mipapadakis.canvas.tools.SerializableCvLayer
 import java.util.*
 
 /**This represents the canvas' list of layers that the user has created.*/
@@ -16,10 +18,8 @@ class CvImage(var title: String, var width: Int, var height: Int): ArrayList<CvL
     private var layerNameIndex = 0
 
     constructor(width: Int, height: Int): this("", width, height)
-    constructor(title: String, bmp: Bitmap): this(title, bmp.width, bmp.height){
-        addLayer(0, bmp)
-    }
-    constructor(bmp: Bitmap): this("", bmp.width, bmp.height){
+    constructor(resources: Resources, title: String, bmp: Bitmap): this(title, bmp.width, bmp.height){
+        addPngGridLayer(resources)
         addLayer(0, bmp)
     }
     constructor(cvImage: CvImage): this(cvImage.title, cvImage.width, cvImage.height){
@@ -48,6 +48,7 @@ class CvImage(var title: String, var width: Int, var height: Int): ArrayList<CvL
     }
     /** Add an existing layer.*/
     fun addLayer(index: Int, bmp: Bitmap){ add(index, CvLayer(getUniqueLayerName(), bmp)) }
+    fun addLayer(bmp: Bitmap){ add(CvLayer(getUniqueLayerName(), bmp)) }
     fun addLayer(index: Int, cvLayer: CvLayer){ add(index, cvLayer) }
     /** Remove a layer.*/
     fun removeLayer(layer: CvLayer){ remove(layer) }
@@ -61,14 +62,16 @@ class CvImage(var title: String, var width: Int, var height: Int): ArrayList<CvL
 
     private fun getUniqueLayerName(): String {return "Layer ${CanvasViewModel.cvImage.layerNameIndex++}"}
     fun getFilenameWithExtension(context: Context): String{
-        return "${title}.${context.getString( 
+        return "${title}.${getExtension(context)}"
+    }
+    private fun getExtension(context: Context): String{
+        return context.getString(
             when (fileType) {
                 CanvasViewModel.FILETYPE_CANVAS -> R.string.file_extension_canvas
                 CanvasViewModel.FILETYPE_PNG -> R.string.file_extension_png
-                CanvasViewModel.FILETYPE_JPEG -> R.string.file_extension_jpeg
-                else -> R.string.file_extension_bitmap
+                else -> R.string.file_extension_jpeg
             }
-        )}"
+        )
     }
 
     fun swapLayers(fromPosition: Int, toPosition: Int){
@@ -93,6 +96,22 @@ class CvImage(var title: String, var width: Int, var height: Int): ArrayList<CvL
 
     private fun copyBitmap(bmp: Bitmap): Bitmap{
         return bmp.copy(bmp.config, true)
+    }
+
+    fun toSerializable(): SerializableCvImage {
+        return SerializableCvImage(this)
+    }
+
+    fun toPNG(){
+
+    }
+
+    fun toJPEG(){
+
+    }
+
+    fun toBMP(){
+
     }
 
     companion object{

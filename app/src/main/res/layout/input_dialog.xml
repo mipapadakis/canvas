@@ -50,6 +50,14 @@
         android:background="?attr/colorPrimaryVariant"
         tools:ignore="ContentDescription" />
 
+    <TextView
+        android:id="@+id/dialog_file_name_exists"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textColor="@color/red"
+        android:text="File name already exists!"
+        android:visibility="gone"/>
+
     <RadioGroup
         android:id="@+id/dialog_fileType_radio_group"
         android:layout_width="match_parent"
@@ -73,12 +81,6 @@
             android:layout_height="wrap_content"
             android:textSize="16sp"
             android:text="@string/file_type_jpeg"/>
-        <RadioButton
-            android:id="@+id/dialog_fileType_bitmap"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textSize="16sp"
-            android:text="@string/file_type_bitmap"/>
     </RadioGroup>
 
 

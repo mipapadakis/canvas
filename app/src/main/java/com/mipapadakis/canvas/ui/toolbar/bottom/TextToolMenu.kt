@@ -8,13 +8,11 @@ import androidx.lifecycle.LifecycleOwner
 import com.mipapadakis.canvas.CanvasViewModel
 import com.mipapadakis.canvas.R
 import com.mipapadakis.canvas.tools.ColorValues
-import com.mipapadakis.canvas.ui.CanvasImageView
 import com.mipapadakis.canvas.ui.toolbar.bottom.editors.ColorEditorHelper
 import com.mipapadakis.canvas.ui.toolbar.bottom.editors.SizeEditorHelper
 import android.text.method.ScrollingMovementMethod
 import androidx.core.content.res.ResourcesCompat
-import kotlin.random.Random
-
+import androidx.core.widget.addTextChangedListener
 
 class TextToolMenu(owner: LifecycleOwner, textLayout: View){
     private var toolTextColorBtn = textLayout.findViewById<ImageButton>(R.id.property_text_color_btn)
@@ -25,7 +23,8 @@ class TextToolMenu(owner: LifecycleOwner, textLayout: View){
     private var toolTextFontEditor = textLayout.findViewById<HorizontalScrollView>(R.id.property_text_font_editor)
     private var toolTextBoldBtn = textLayout.findViewById<ImageButton>(R.id.property_text_bold_btn)
     private var toolTextItalicsBtn = textLayout.findViewById<ImageButton>(R.id.property_text_italics_btn)
-    private var editorSizeSeekbar = toolTextSizeEditor.findViewById<SeekBar>(R.id.property_size_seekbar) //[0,100]
+    private var editorTextEditText = textLayout.findViewById<EditText>(R.id.property_text_text_editor) //[0,100]
+    private var editorSizeSeekbar = toolTextSizeEditor.findViewById<SeekBar>(R.id.property_size_seekbar) //[0,100] property_text_editor
     private var editorFont1 = textLayout.findViewById<TextView>(R.id.font_1)
     private var editorFont2 = textLayout.findViewById<TextView>(R.id.font_2)
     private var editorFont3 = textLayout.findViewById<TextView>(R.id.font_3)
@@ -45,6 +44,7 @@ class TextToolMenu(owner: LifecycleOwner, textLayout: View){
         else toolTextBoldBtn.setImageResource(R.drawable.bold_no_outline)
         if(CanvasViewModel.textPaint.typeface.isItalic) toolTextItalicsBtn.setImageResource(R.drawable.italic)
         else toolTextItalicsBtn.setImageResource(R.drawable.italic_no_outline)
+        editorTextEditText.setText(CanvasViewModel.textToolText)
 
         toolTextColorBtn.setOnClickListener {
             hideAllEditors()
@@ -118,6 +118,10 @@ class TextToolMenu(owner: LifecycleOwner, textLayout: View){
             }
         })
 
+        ////////////////////////////////////////TEXT EDITOR/////////////////////////////////////////
+        editorTextEditText.addTextChangedListener {
+            CanvasViewModel.textToolText = it.toString()
+        }
 
         ////////////////////////////////////////FONT EDITOR/////////////////////////////////////////
         setFontButtonListener(editorFont1)

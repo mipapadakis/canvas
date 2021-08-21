@@ -95,5 +95,6 @@
     <string name="canvas_placeholder_title">Image</string>
     <string name="save_canvas_subtitle"><![CDATA[Choose title & format for your masterpiece!]]></string>
     <string name="wrong_filename_warning"><![CDATA[Characters * . \" ? : / | \\ < > are not allowed.]]></string>
+    <string name="save_canvas_as_png_or_jpeg">In external storage, as a PNG or JPEG</string>
 
 </resources>

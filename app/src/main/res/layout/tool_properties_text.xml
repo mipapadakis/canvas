@@ -86,7 +86,8 @@
         android:id="@+id/property_text_font_editor"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:paddingHorizontal="2dp">
+        android:paddingHorizontal="2dp"
+        android:visibility="gone">
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -196,4 +197,16 @@
                 android:contentDescription="@string/bottom_toolbar_button" />
         </LinearLayout>
     </HorizontalScrollView>
+
+    <EditText
+        android:id="@+id/property_text_text_editor"
+        android:layout_width = "match_parent"
+        android:layout_height = "wrap_content"
+        android:layout_marginVertical="4dp"
+        android:background="@android:drawable/editbox_background_normal"
+        android:inputType = "textMultiLine"
+        android:hint="Insert Text Here"
+        android:autofillHints="false"
+        android:maxLines = "4"
+        android:padding="8dp"/>
 </LinearLayout>

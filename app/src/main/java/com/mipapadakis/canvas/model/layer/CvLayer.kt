@@ -1,6 +1,8 @@
 package com.mipapadakis.canvas.model.layer
 
 import android.graphics.*
+import com.mipapadakis.canvas.tools.CvFileHelper
+import com.mipapadakis.canvas.tools.SerializableCvLayer
 
 
 /** This represents a layer of the canvas, also containing its own shapes.
@@ -46,5 +48,9 @@ class CvLayer(var title: String, private var bitmap: Bitmap){
         val cv = Canvas(bitmap)
         cv.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR)
         cv.drawBitmap(bmp, 0f, 0f, null)
+    }
+
+    fun toSerializable(): SerializableCvLayer {
+        return SerializableCvLayer(this)
     }
 }

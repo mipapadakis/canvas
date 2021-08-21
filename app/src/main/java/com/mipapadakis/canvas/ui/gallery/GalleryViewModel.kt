@@ -16,16 +16,14 @@ class GalleryViewModel : ViewModel() {
         _text.value = text
     }
 
-    private val _images = MutableLiveData<List<CvImage>>() //List of cv files
-    val images: LiveData<List<CvImage>> = _images
+    private val _images = MutableLiveData<ArrayList<CvImage>>() //List of cv files
+    val images: LiveData<ArrayList<CvImage>> = _images
 
-    fun setImages(list: List<CvImage>){
+    fun setImages(list: ArrayList<CvImage>){
         _images.value = list
     }
 
-    fun addImage(image: CvImage){ //TODO check if it works
-        val newList = _images.value?.toMutableList()
-        newList?.add(image)
-        _images.value = newList?.toList()
+    fun addImage(image: CvImage){
+        _images.value?.add(image)
     }
 }

@@ -21,19 +21,22 @@ private val Red = 0
 private val Green = 1
 private val Blue = 2
 
-class ColorEditorHelper(owner: LifecycleOwner, toolBrushColorEditor: LinearLayout, val hideAllEditors: () -> Unit){
+class ColorEditorHelper(owner: LifecycleOwner, toolColorEditor: LinearLayout, val hideAllEditors: () -> Unit){
     private var change = Change.COMMITTED
     private var state = UserChanged.NOTHING
-    private var editorTemporaryColorImageView = toolBrushColorEditor.findViewById<ImageView>(R.id.temporary_color)
-    private var editorColorRGBSeekBar = toolBrushColorEditor.findViewById<SeekBar>(R.id.color_rgb_seekbar)//[0,1536]
-    private var editorColorAlpha = toolBrushColorEditor.findViewById<EditText>(R.id.argb_alpha)
-    private var editorColorRed = toolBrushColorEditor.findViewById<EditText>(R.id.argb_red)
-    private var editorColorGreen = toolBrushColorEditor.findViewById<EditText>(R.id.argb_green)
-    private var editorColorBlue = toolBrushColorEditor.findViewById<EditText>(R.id.argb_blue)
-    private var editorColorBrightnessSeekbar = toolBrushColorEditor.findViewById<SeekBar>(R.id.color_brightness_seekbar) //[0,200]
-    private var editorColorOpacitySeekbar = toolBrushColorEditor.findViewById<SeekBar>(R.id.color_opacity_seekbar) //[0,255]
+    private var editorTemporaryColorImageView = toolColorEditor.findViewById<ImageView>(R.id.temporary_color)
+    private var editorColorRGBSeekBar = toolColorEditor.findViewById<SeekBar>(R.id.color_rgb_seekbar)//[0,1536]
+    private var editorColorAlpha = toolColorEditor.findViewById<EditText>(R.id.argb_alpha)
+    private var editorColorRed = toolColorEditor.findViewById<EditText>(R.id.argb_red)
+    private var editorColorGreen = toolColorEditor.findViewById<EditText>(R.id.argb_green)
+    private var editorColorBlue = toolColorEditor.findViewById<EditText>(R.id.argb_blue)
+    private var editorColorBrightnessSeekbar = toolColorEditor.findViewById<SeekBar>(R.id.color_brightness_seekbar) //[0,200]
+    private var editorColorOpacitySeekbar = toolColorEditor.findViewById<SeekBar>(R.id.color_opacity_seekbar) //[0,255]
 
     init {
+        CanvasViewModel.newColorHue = ColorValues.colorOnlyHue(CanvasViewModel.paint.color)
+        CanvasViewModel.setTemporaryColor(CanvasViewModel.paint.color)
+
         CanvasViewModel.colorEditorTempColor.observe(owner, {
             beginChange() //Avoid unwanted loops
             editorTemporaryColorImageView.setBackgroundColor(CanvasViewModel.newColor)
@@ -250,7 +253,7 @@ class ColorEditorHelper(owner: LifecycleOwner, toolBrushColorEditor: LinearLayou
 
         fun initializeColorRGBSeekbar(seekbar: SeekBar){
             if(seekbar.width<=0 || seekbar.height<=0) return
-            if (allColors ==null) initializeAllColorsArray()
+            if (allColors == null) initializeAllColorsArray()
             if (colorTableBitmap == null || colorTableBitmap?.width != seekbar.width || colorTableBitmap?.height != seekbar.height) {
                 val bmp = Bitmap.createBitmap(SEEKBAR_RGB_MAX, 1, Bitmap.Config.ARGB_8888)
                 val pixelArray = IntArray(SEEKBAR_RGB_MAX * 1)
@@ -261,8 +264,8 @@ class ColorEditorHelper(owner: LifecycleOwner, toolBrushColorEditor: LinearLayou
                 bmp.setPixels(pixelArray, 0, SEEKBAR_RGB_MAX, 0, 0, SEEKBAR_RGB_MAX, 1)
                 colorTableBitmap = Bitmap.createScaledBitmap(bmp, seekbar.width, seekbar.height, false)
                 //Seekbar progressDrawable: has the colorTableBitmap drawn on top of it.
-                seekbar.progressDrawable = BitmapDrawable(seekbar.resources, colorTableBitmap)
             }
+            seekbar.progressDrawable = BitmapDrawable(seekbar.resources, colorTableBitmap)
         }
 
         private fun initializeAllColorsArray() {

@@ -14,8 +14,8 @@
         <entry key="..\:/Users/minas/AndroidStudioProjects/canvas/app/src/main/res/layout/edit_size.xml" value="0.36666666666666664" />
         <entry key="..\:/Users/minas/AndroidStudioProjects/canvas/app/src/main/res/layout/fragment_create_canvas.xml" value="0.33" />
         <entry key="..\:/Users/minas/AndroidStudioProjects/canvas/app/src/main/res/layout/fragment_gallery.xml" value="0.33" />
-        <entry key="..\:/Users/minas/AndroidStudioProjects/canvas/app/src/main/res/layout/gallery_card_view.xml" value="0.17831813576494426" />
-        <entry key="..\:/Users/minas/AndroidStudioProjects/canvas/app/src/main/res/layout/input_dialog.xml" value="0.17831813576494426" />
+        <entry key="..\:/Users/minas/AndroidStudioProjects/canvas/app/src/main/res/layout/gallery_card_view.xml" value="0.33" />
+        <entry key="..\:/Users/minas/AndroidStudioProjects/canvas/app/src/main/res/layout/input_dialog.xml" value="0.33" />
         <entry key="..\:/Users/minas/AndroidStudioProjects/canvas/app/src/main/res/layout/layer_card_view.xml" value="0.5" />
         <entry key="..\:/Users/minas/AndroidStudioProjects/canvas/app/src/main/res/layout/nav_header_main.xml" value="0.33" />
         <entry key="..\:/Users/minas/AndroidStudioProjects/canvas/app/src/main/res/layout/opacity_editor.xml" value="0.36666666666666664" />
@@ -31,8 +31,10 @@
         <entry key="..\:/Users/minas/AndroidStudioProjects/canvas/app/src/main/res/menu/canvas.xml" value="0.2635416666666667" />
         <entry key="..\:/Users/minas/AndroidStudioProjects/canvas/app/src/main/res/menu/colors.xml" value="0.36666666666666664" />
         <entry key="..\:/Users/minas/AndroidStudioProjects/canvas/app/src/main/res/menu/layer_options.xml" value="0.2635416666666667" />
+        <entry key="..\:/Users/minas/AndroidStudioProjects/canvas/app/src/main/res/menu/main.xml" value="0.36666666666666664" />
         <entry key="..\:/Users/minas/AndroidStudioProjects/canvas/app/src/main/res/menu/palette.xml" value="0.2635416666666667" />
         <entry key="..\:/Users/minas/AndroidStudioProjects/canvas/app/src/main/res/menu/shapes.xml" value="0.2635416666666667" />
+        <entry key="..\:/Users/minas/AndroidStudioProjects/canvas/app/src/main/res/menu/stroke_types.xml" value="0.36666666666666664" />
         <entry key="..\:/Users/minas/AndroidStudioProjects/canvas/app/src/main/res/menu/tools.xml" value="0.2635416666666667" />
         <entry key="..\:/Users/minas/AndroidStudioProjects/canvas/app/src/main/res/menu/transform_flip.xml" value="0.2635416666666667" />
       </map>

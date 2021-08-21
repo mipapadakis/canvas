@@ -20,6 +20,7 @@ import androidx.recyclerview.widget.DefaultItemAnimator
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.mipapadakis.canvas.tools.CvFileHelper
 import com.mipapadakis.canvas.tools.DeviceDimensions
 import com.mipapadakis.canvas.ui.*
 import com.mipapadakis.canvas.ui.create_canvas.CreateCanvasFragment
@@ -32,8 +33,8 @@ import kotlin.math.abs
 private const val IMPORT_IMAGE_INTENT_KEY = CreateCanvasFragment.IMPORT_IMAGE_INTENT_KEY
 private const val DIMENSION_WIDTH_INTENT_KEY = CreateCanvasFragment.DIMENSION_WIDTH_INTENT_KEY
 private const val DIMENSION_HEIGHT_INTENT_KEY = CreateCanvasFragment.DIMENSION_HEIGHT_INTENT_KEY
-private const val WIDTH = CreateCanvasFragment.WIDTH
-private const val HEIGHT = CreateCanvasFragment.HEIGHT
+//private const val MAX_WIDTH = CreateCanvasFragment.MAX_WIDTH
+//private const val MAX_HEIGHT = CreateCanvasFragment.MAX_HEIGHT
 
 @SuppressLint("ClickableViewAccessibility", "NotifyDataSetChanged")
 class CanvasActivity : AppCompatActivity() {
@@ -155,6 +156,22 @@ class CanvasActivity : AppCompatActivity() {
 //            })
 //        )
     }
+
+//    private fun scaleBitmapToFitMaxDimensions(bmp: Bitmap): Bitmap{
+//        if(bmp.width < MAX_WIDTH && bmp.height < MAX_HEIGHT) return bmp
+//        val newWidth: Int
+//        val newHeight: Int
+//
+//        if(bmp.width/bmp.height > MAX_WIDTH/MAX_HEIGHT){
+//            newWidth = MAX_WIDTH-1
+//            newHeight = bmp.height*(MAX_WIDTH / bmp.width)
+//        }
+//        else{
+//            newWidth = bmp.width*(MAX_WIDTH / bmp.width)
+//            newHeight = MAX_HEIGHT-1
+//        }
+//        return Bitmap.createScaledBitmap(bmp, newWidth,newHeight,false)
+//    }
 
     private fun getItemTouchHelper(): ItemTouchHelper {
         return ItemTouchHelper(object : ItemTouchHelper.SimpleCallback(ItemTouchHelper.LEFT + ItemTouchHelper.RIGHT, 0) {
@@ -450,10 +467,10 @@ class CanvasActivity : AppCompatActivity() {
         val inputTitle = view.findViewById<EditText>(R.id.input_title)
         val dialogTitle = view.findViewById<TextView>(R.id.dialog_title)
         val dialogSubtitle = view.findViewById<TextView>(R.id.dialog_subtitle)
+        val fileNameExistsTV = view.findViewById<TextView>(R.id.dialog_file_name_exists)
         val fileTypeCanvas = view.findViewById<RadioButton>(R.id.dialog_fileType_canvas)
         val fileTypePng = view.findViewById<RadioButton>(R.id.dialog_fileType_png)
         val fileTypeJpeg = view.findViewById<RadioButton>(R.id.dialog_fileType_jpeg)
-        val fileTypeBitmap = view.findViewById<RadioButton>(R.id.dialog_fileType_bitmap)
 
         val titleText = getString(R.string.save_canvas_title) + if(askBeforeExit) "?" else ""
         dialogTitle.text = titleText
@@ -478,6 +495,15 @@ class CanvasActivity : AppCompatActivity() {
 
         //Filter out the special characters ?:"*|/\<>
         val filter = InputFilter { source, start, end, _, _, _ ->
+            if(CvFileHelper(this).fileNameAlreadyExists(
+                    "$source." + when {
+                                fileTypeCanvas.isChecked -> getString(R.string.file_extension_canvas)
+                                fileTypePng.isChecked -> getString(R.string.file_extension_png)
+                                else -> getString(R.string.file_extension_jpeg)
+                            }
+                ))
+                fileNameExistsTV.visibility = View.VISIBLE
+            else fileNameExistsTV.visibility = View.GONE
             for (i in start until end) {
                 if (source!=null && ("?:.\"*|/\\<>").contains(source[i])) {
                     showToast(getString(R.string.wrong_filename_warning))
@@ -502,7 +528,6 @@ class CanvasActivity : AppCompatActivity() {
                 fileTypeCanvas.isChecked -> CanvasViewModel.cvImage.fileType = CanvasViewModel.FILETYPE_CANVAS
                 fileTypePng.isChecked -> CanvasViewModel.cvImage.fileType = CanvasViewModel.FILETYPE_PNG
                 fileTypeJpeg.isChecked -> CanvasViewModel.cvImage.fileType = CanvasViewModel.FILETYPE_JPEG
-                fileTypeBitmap.isChecked -> CanvasViewModel.cvImage.fileType = CanvasViewModel.FILETYPE_BITMAP
             }
             //Update undo history with the new title and filetype
             for(action in CanvasViewModel.history){
@@ -528,8 +553,8 @@ class CanvasActivity : AppCompatActivity() {
     }
 
     private fun saveCvImage(){
-        //TODO save .cv file (containing all data from the current cvImage)
-        showToast("Saved As \"${CanvasViewModel.cvImage.getFilenameWithExtension(this)}\"")
+        if(CvFileHelper(this).saveCvImage())
+            showToast("Saved As \"${CanvasViewModel.cvImage.getFilenameWithExtension(this)}\"")
     }
 
     fun Context.hideKeyboard(view: View) {
@@ -566,12 +591,6 @@ class CanvasActivity : AppCompatActivity() {
             }
         }
     }
-
-//    private fun toggleKeyboard(view: View, show: Boolean) {
-//        val inputMethodManger: InputMethodManager = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
-//        if(show) inputMethodManger.toggleSoftInput(InputMethodManager.SHOW_FORCED, 0) //inputMethodManger.showSoftInput(view, 0)//
-//        else inputMethodManger.hideSoftInputFromWindow(view.windowToken, 0)
-//    }
 
     private fun inViewInBounds(view: View, x: Int, y: Int): Boolean {
         view.getDrawingRect(outRect)
