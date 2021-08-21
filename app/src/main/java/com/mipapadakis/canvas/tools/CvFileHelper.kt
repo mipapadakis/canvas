@@ -12,14 +12,11 @@ import java.lang.Exception
 import java.text.SimpleDateFormat
 import java.util.*
 import android.graphics.BitmapFactory
-import android.graphics.Canvas
-import android.graphics.Color
 
 import android.util.Log
 import kotlin.collections.ArrayList
 
 import com.mipapadakis.canvas.R
-import kotlin.math.pow
 import kotlin.math.roundToInt
 
 
@@ -172,10 +169,6 @@ class CvFileHelper(val context: Context) {
         }
         else Log.v("CanvasInfo", "File \"$fileName\" does not exist!")
     }
-    fun shareCvImage(fileName: String){}//TODO
-    fun openCvImage(fileName: String){
-        //TODO Intent to CanvasActivity
-    }
     fun getInfo(fileName: String): String{
         val sb = StringBuffer("")
         val file = File(fileName.withPath()).absoluteFile
@@ -189,10 +182,19 @@ class CvFileHelper(val context: Context) {
     }
 
     fun getAllCvImages(): ArrayList<CvImage> {
-        val files = context.fileList()
         val cvImageList = ArrayList<CvImage>()
+        val fileNames = ArrayList<String>()
+        try{ //try to order the files based on time of last modification
+            val files = ArrayList<File>()
+            for(fn in context.fileList()) files.add(File(fn.withPath()))
+            files.sortBy { it.lastModified() }
+            for(f in files) fileNames.add(0, f.name) //Place the most recent first
+        }
+        catch (e: Exception){
+            for(fn in context.fileList()) fileNames.add(fn)
+        }
         var loadedImage: CvImage?
-        for(f in files){
+        for(f in fileNames){
             loadedImage = loadCvImage(f)
             if(loadedImage!=null) cvImageList.add(loadedImage)
         }

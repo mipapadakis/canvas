@@ -23,7 +23,7 @@ import kotlin.math.sqrt
 private const val POINTER_DOWN_DELAY = 10L
 
 /** Custom ImageView which represents the canvas. It handles canvas changes and touches in order to draw on the canvas. */
-class CanvasImageView(context: Context?, val notifyDataSetChanged: () -> Unit) : AppCompatImageView(context!!), MyTouchListener.MultiTouchListener{
+class CanvasImageView(context: Context?, val shouldInitializeCvImage: Boolean, val notifyDataSetChanged: () -> Unit) : AppCompatImageView(context!!), MyTouchListener.MultiTouchListener{
     private val touchTolerance = 0.01f//ViewConfiguration.get(context).scaledTouchSlop //If the finger has moved less than the touchTolerance distance, don't draw.
     private lateinit var params: RelativeLayout.LayoutParams
     private lateinit var cvImage: CvImage
@@ -84,15 +84,17 @@ class CanvasImageView(context: Context?, val notifyDataSetChanged: () -> Unit) :
 
     //First called in CanvasActivity.onAttachedToWindow()
     fun onAttachedToWindowInitializer(width: Int, height: Int){
-        CanvasViewModel.cvImage = CvImage(width, height)
-        cvImage = CanvasViewModel.cvImage
-        cvImage.addPngGridLayer(resources)
-
-        //Add a layer containing the starting canvas (either imported image or solid-color canvas)
-        val startingBitmap = Bitmap.createBitmap(width,height,Bitmap.Config.ARGB_8888)
-        val startingCanvas = Canvas(startingBitmap)
-        startingCanvas.drawBitmap(drawable.toBitmap())
-        cvImage.addLayer(0, startingBitmap)
+        //Initialize cvImage
+        if(shouldInitializeCvImage) {
+            CanvasViewModel.cvImage = CvImage(width, height)
+            cvImage = CanvasViewModel.cvImage
+            cvImage.addPngGridLayer(resources)
+            //Add a layer containing the starting canvas (either imported image or solid-color canvas)
+            val startingBitmap = Bitmap.createBitmap(width,height,Bitmap.Config.ARGB_8888)
+            val startingCanvas = Canvas(startingBitmap)
+            startingCanvas.drawBitmap(drawable.toBitmap())
+            cvImage.addLayer(0, startingBitmap)
+        } else cvImage = CanvasViewModel.cvImage
 
         startingWidth = width
         startingHeight = height

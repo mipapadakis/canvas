@@ -16,6 +16,8 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.ViewTreeObserver
 import android.widget.*
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import androidx.core.content.ContextCompat.checkSelfPermission
 import androidx.core.text.isDigitsOnly
@@ -29,13 +31,13 @@ import com.mipapadakis.canvas.InterfaceMainActivity
 import com.mipapadakis.canvas.R
 import java.lang.Exception
 
-
-private const val CODE_IMAGE_PICK = 1000
 private const val CODE_PERMISSION = 1001
 
 class CreateCanvasFragment : Fragment() {
-    private lateinit var createCanvasViewModel: CreateCanvasViewModel
+    private lateinit var permissionRequestLauncher: ActivityResultLauncher<String>
+    private lateinit var resultLauncher: ActivityResultLauncher<Intent>
     private lateinit var interfaceOfMainActivity: InterfaceMainActivity
+    private lateinit var createCanvasViewModel: CreateCanvasViewModel
     private lateinit var scrollToBottomLayout: FrameLayout
     private lateinit var pixelLayout: LinearLayout
     private lateinit var dpiLayout: LinearLayout
@@ -46,6 +48,7 @@ class CreateCanvasFragment : Fragment() {
 
     companion object {
         const val IMPORT_IMAGE_INTENT_KEY = "image_uri"
+        const val IMPORT_CV_IMAGE_INTENT_KEY = "cv_image"
         const val DIMENSION_WIDTH_INTENT_KEY = "width_in_pixels"
         const val DIMENSION_HEIGHT_INTENT_KEY = "eight_in_pixels"
         const val MAX_WIDTH = 2048
@@ -71,10 +74,27 @@ class CreateCanvasFragment : Fragment() {
         val root = inflater.inflate(R.layout.fragment_create_canvas, container, false)
         importedImagePreview = root.findViewById(R.id.import_image_view)
 
-//        Observable example:
-//        val textView: TextView = root.findViewById(R.id.text_canvas)
-//        canvasViewModel.text.observe(viewLifecycleOwner, {
-//            textView.text = it })
+        //Receive image from gallery
+        resultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            if (result.resultCode == Activity.RESULT_OK) {
+                //https://stackoverflow.com/a/63654043/11535380
+                val uri: Uri? = result.data?.data
+                importedImagePreview?.setImageURI(uri)
+                createCanvasViewModel.setImportImagePreview(uri.toString())
+            }
+            else createCanvasViewModel.setImportImagePreview("")
+        }
+        //handle requested permission result
+        permissionRequestLauncher = registerForActivityResult(ActivityResultContracts.RequestPermission()){
+            if (it) { //permission from popup granted
+                val intent = Intent(Intent.ACTION_PICK)
+                intent.type = "image/*"
+                resultLauncher.launch(intent) //instead of startActivityForResult(intent, CODE_IMAGE_PICK)
+            } else {//permission from popup denied
+                showToast("Permission denied")
+            }
+        }
+
         initializeList(root)
         return root
     }
@@ -182,17 +202,16 @@ class CreateCanvasFragment : Fragment() {
         //check runtime permission
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
             if ( checkSelfPermission(requireContext(), Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_DENIED){
-                val permissions = arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE)
+                //val permissions = arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE)
                 //show popup to request runtime permission
-                requestPermissions(permissions, CODE_PERMISSION)
+                permissionRequestLauncher.launch(Manifest.permission.READ_EXTERNAL_STORAGE) //requestPermissions(permissions, CODE_PERMISSION)
                 return
             }
             //else: permission already granted
-        }
-        //else: system OS is < Marshmallow
+        } //else: system OS is < Marshmallow
         val intent = Intent(Intent.ACTION_PICK) //Intent to pick image
         intent.type = "image/*"
-        startActivityForResult(intent, CODE_IMAGE_PICK)
+        resultLauncher.launch(intent) //startActivityForResult(intent, CODE_IMAGE_PICK)
     }
 
     private fun setPixelUnit(){
@@ -523,30 +542,19 @@ class CreateCanvasFragment : Fragment() {
         interfaceOfMainActivity.showToast(text)
     }
 
-    //handle requested permission result
-    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
-        when(requestCode){
-            CODE_PERMISSION -> {
-                if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    //permission from popup granted
-                    val intent = Intent(Intent.ACTION_PICK)
-                    intent.type = "image/*"
-                    startActivityForResult(intent, CODE_IMAGE_PICK)
-                } else {
-                    //permission from popup denied
-                    showToast("Permission denied")
-                }
-            }
-        }
-    }
-
-    //handle result of picked image
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        if (resultCode == Activity.RESULT_OK && requestCode == CODE_IMAGE_PICK){
-            val uri = data?.data
-            importedImagePreview?.setImageURI(uri)
-            createCanvasViewModel.setImportImagePreview(uri.toString())
-        }
-        else createCanvasViewModel.setImportImagePreview("")
-    }
+//    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+//        when(requestCode){
+//            CODE_PERMISSION -> {
+//                if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+//                    //permission from popup granted
+//                    val intent = Intent(Intent.ACTION_PICK)
+//                    intent.type = "image/*"
+//                    resultLauncher.launch(intent) //instead of startActivityForResult(intent, CODE_IMAGE_PICK)
+//                } else {
+//                    //permission from popup denied
+//                    showToast("Permission denied")
+//                }
+//            }
+//        }
+//    }
 }

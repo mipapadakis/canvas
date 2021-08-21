@@ -16,6 +16,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.cardview.widget.CardView
 import androidx.core.content.ContextCompat
+import androidx.core.widget.addTextChangedListener
 import androidx.recyclerview.widget.DefaultItemAnimator
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -24,6 +25,7 @@ import com.mipapadakis.canvas.tools.CvFileHelper
 import com.mipapadakis.canvas.tools.DeviceDimensions
 import com.mipapadakis.canvas.ui.*
 import com.mipapadakis.canvas.ui.create_canvas.CreateCanvasFragment
+import com.mipapadakis.canvas.ui.gallery.GalleryViewModel
 import com.mipapadakis.canvas.ui.toolbar.bottom.*
 import com.mipapadakis.canvas.ui.toolbar.bottom.editors.LayerListAdapter
 import java.util.*
@@ -31,6 +33,7 @@ import kotlin.math.abs
 
 
 private const val IMPORT_IMAGE_INTENT_KEY = CreateCanvasFragment.IMPORT_IMAGE_INTENT_KEY
+private const val IMPORT_CV_IMAGE_INTENT_KEY = CreateCanvasFragment.IMPORT_CV_IMAGE_INTENT_KEY
 private const val DIMENSION_WIDTH_INTENT_KEY = CreateCanvasFragment.DIMENSION_WIDTH_INTENT_KEY
 private const val DIMENSION_HEIGHT_INTENT_KEY = CreateCanvasFragment.DIMENSION_HEIGHT_INTENT_KEY
 //private const val MAX_WIDTH = CreateCanvasFragment.MAX_WIDTH
@@ -89,9 +92,6 @@ class CanvasActivity : AppCompatActivity() {
         layoutCanvas = findViewById(R.id.canvas_layout)
         toolCanvasLayersLayout = findViewById(R.id.canvas_layers_properties)
         layerRecyclerView = toolCanvasLayersLayout.findViewById(R.id.property_layers_recycler_view)
-        canvasIV = CanvasImageView(this){
-            layerRecyclerView.adapter?.notifyDataSetChanged()
-        }
 
         //Receive intent from MainActivity:
         when {
@@ -104,8 +104,23 @@ class CanvasActivity : AppCompatActivity() {
                 Log.i("CanvasDimensions", "canvasWidth=$canvasWidth, canvasHeight=$canvasHeight")
                 val layoutParamsCanvas = RelativeLayout.LayoutParams(canvasWidth, canvasHeight)
                 layoutParamsCanvas.addRule(RelativeLayout.BELOW)
+                canvasIV = CanvasImageView(this, true){
+                    layerRecyclerView.adapter?.notifyDataSetChanged()
+                }
                 canvasIV.layoutParams = layoutParamsCanvas
                 canvasIV.setImageURI(Uri.parse(uri))
+                layoutCanvas.addView(canvasIV)
+            }
+            intent.getStringExtra(IMPORT_CV_IMAGE_INTENT_KEY)!=null -> {
+                val cvImage = CanvasViewModel.cvImage
+                canvasWidth = cvImage.width
+                canvasHeight = cvImage.height
+                val layoutParamsCanvas = RelativeLayout.LayoutParams(canvasWidth, canvasHeight)
+                layoutParamsCanvas.addRule(RelativeLayout.BELOW)
+                canvasIV = CanvasImageView(this, false){
+                    layerRecyclerView.adapter?.notifyDataSetChanged()
+                }
+                canvasIV.layoutParams = layoutParamsCanvas
                 layoutCanvas.addView(canvasIV)
             }
             else -> {
@@ -113,6 +128,9 @@ class CanvasActivity : AppCompatActivity() {
                 canvasHeight = intent.getIntExtra(DIMENSION_HEIGHT_INTENT_KEY, canvasHeight)
                 val layoutParamsCanvas = RelativeLayout.LayoutParams(canvasWidth, canvasHeight)
                 layoutParamsCanvas.addRule(RelativeLayout.BELOW)
+                canvasIV = CanvasImageView(this, true){
+                    layerRecyclerView.adapter?.notifyDataSetChanged()
+                }
                 canvasIV.layoutParams = layoutParamsCanvas
                 val bitmap = Bitmap.createBitmap(canvasWidth, canvasHeight, Bitmap.Config.ARGB_8888)
                 val canvas = Canvas(bitmap)
@@ -468,9 +486,9 @@ class CanvasActivity : AppCompatActivity() {
         val dialogTitle = view.findViewById<TextView>(R.id.dialog_title)
         val dialogSubtitle = view.findViewById<TextView>(R.id.dialog_subtitle)
         val fileNameExistsTV = view.findViewById<TextView>(R.id.dialog_file_name_exists)
-        val fileTypeCanvas = view.findViewById<RadioButton>(R.id.dialog_fileType_canvas)
-        val fileTypePng = view.findViewById<RadioButton>(R.id.dialog_fileType_png)
-        val fileTypeJpeg = view.findViewById<RadioButton>(R.id.dialog_fileType_jpeg)
+        val typeCanvasRadioButton = view.findViewById<RadioButton>(R.id.dialog_fileType_canvas)
+        val typePngRadioButton = view.findViewById<RadioButton>(R.id.dialog_fileType_png)
+        val typeJpegRadioButton = view.findViewById<RadioButton>(R.id.dialog_fileType_jpeg)
 
         val titleText = getString(R.string.save_canvas_title) + if(askBeforeExit) "?" else ""
         dialogTitle.text = titleText
@@ -479,7 +497,7 @@ class CanvasActivity : AppCompatActivity() {
 
         alertDialogBuilderUserInput
             .setIcon(R.drawable.baseline_save_black_48)
-            //.setCancelable(false)
+            .setCancelable(true)
             .setPositiveButton(  "save" ) { _, _ -> }
             .setNegativeButton( if(askBeforeExit) "Exit without saving" else "cancel" ) { dialogBox, _ ->
                 hideKeyboard(inputTitle)
@@ -495,15 +513,6 @@ class CanvasActivity : AppCompatActivity() {
 
         //Filter out the special characters ?:"*|/\<>
         val filter = InputFilter { source, start, end, _, _, _ ->
-            if(CvFileHelper(this).fileNameAlreadyExists(
-                    "$source." + when {
-                                fileTypeCanvas.isChecked -> getString(R.string.file_extension_canvas)
-                                fileTypePng.isChecked -> getString(R.string.file_extension_png)
-                                else -> getString(R.string.file_extension_jpeg)
-                            }
-                ))
-                fileNameExistsTV.visibility = View.VISIBLE
-            else fileNameExistsTV.visibility = View.GONE
             for (i in start until end) {
                 if (source!=null && ("?:.\"*|/\\<>").contains(source[i])) {
                     showToast(getString(R.string.wrong_filename_warning))
@@ -515,7 +524,27 @@ class CanvasActivity : AppCompatActivity() {
         //Focus the title, open soft keyboard.
         inputTitle.filters = arrayOf(filter)
         inputTitle.focusAndShowKeyboard()
-        //toggleKeyboard(inputTitle, true)
+
+        //////////////////////Handle when FileNameExistsTextView is visible:////////////////////////
+        inputTitle.addTextChangedListener {
+            updateDialogFileNameExistsTextView(it?.toString()?:"",
+                typeCanvasRadioButton, typePngRadioButton, fileNameExistsTV)
+        }
+        typeCanvasRadioButton.setOnCheckedChangeListener { _, _ ->
+            updateDialogFileNameExistsTextView(inputTitle?.text.toString(),
+                typeCanvasRadioButton, typePngRadioButton, fileNameExistsTV)
+        }
+        typePngRadioButton.setOnCheckedChangeListener { _, _ ->
+            updateDialogFileNameExistsTextView(inputTitle?.text.toString(),
+                typeCanvasRadioButton, typePngRadioButton, fileNameExistsTV)
+        }
+        typeJpegRadioButton.setOnCheckedChangeListener { _, _ ->
+            updateDialogFileNameExistsTextView(inputTitle?.text.toString(),
+                typeCanvasRadioButton, typePngRadioButton, fileNameExistsTV)
+        }
+        updateDialogFileNameExistsTextView(inputTitle?.text.toString(),
+            typeCanvasRadioButton, typePngRadioButton, fileNameExistsTV)
+        ////////////////////////////////////////////////////////////////////////////////////////////
 
         alertDialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(View.OnClickListener {
             if (TextUtils.isEmpty(inputTitle.text.toString())) {
@@ -525,9 +554,9 @@ class CanvasActivity : AppCompatActivity() {
 
             CanvasViewModel.cvImage.title = inputTitle.text.toString()
             when {
-                fileTypeCanvas.isChecked -> CanvasViewModel.cvImage.fileType = CanvasViewModel.FILETYPE_CANVAS
-                fileTypePng.isChecked -> CanvasViewModel.cvImage.fileType = CanvasViewModel.FILETYPE_PNG
-                fileTypeJpeg.isChecked -> CanvasViewModel.cvImage.fileType = CanvasViewModel.FILETYPE_JPEG
+                typeCanvasRadioButton.isChecked -> CanvasViewModel.cvImage.fileType = CanvasViewModel.FILETYPE_CANVAS
+                typePngRadioButton.isChecked -> CanvasViewModel.cvImage.fileType = CanvasViewModel.FILETYPE_PNG
+                typeJpegRadioButton.isChecked -> CanvasViewModel.cvImage.fileType = CanvasViewModel.FILETYPE_JPEG
             }
             //Update undo history with the new title and filetype
             for(action in CanvasViewModel.history){
@@ -552,9 +581,26 @@ class CanvasActivity : AppCompatActivity() {
         }
     }
 
+    private fun updateDialogFileNameExistsTextView(fileName: String,
+                                                   fileTypeCanvas: RadioButton,
+                                                   fileTypePng: RadioButton,
+                                                   fileNameExistsTV: TextView){
+        if(CvFileHelper(this).fileNameAlreadyExists(
+                "${fileName}." + when {
+                    fileTypeCanvas.isChecked -> getString(R.string.file_extension_canvas)
+                    fileTypePng.isChecked -> getString(R.string.file_extension_png)
+                    else -> getString(R.string.file_extension_jpeg)
+                }
+            ))
+            fileNameExistsTV.visibility = View.VISIBLE
+        else fileNameExistsTV.visibility = View.GONE
+    }
+
     private fun saveCvImage(){
-        if(CvFileHelper(this).saveCvImage())
+        if(CvFileHelper(this).saveCvImage()) {
             showToast("Saved As \"${CanvasViewModel.cvImage.getFilenameWithExtension(this)}\"")
+            GalleryViewModel.setImages(CvFileHelper(this).getAllCvImages())
+        }
     }
 
     fun Context.hideKeyboard(view: View) {

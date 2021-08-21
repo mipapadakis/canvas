@@ -6,24 +6,15 @@ import androidx.lifecycle.ViewModel
 import com.mipapadakis.canvas.model.CvImage
 
 class GalleryViewModel : ViewModel() {
+    companion object{
+        private val _images = MutableLiveData<ArrayList<CvImage>>() //List of cv files
+        val images: LiveData<ArrayList<CvImage>> = _images
 
-    private val _text = MutableLiveData<String>().apply {
-        value = "This is gallery Fragment"
-    }
-    val text: LiveData<String> = _text
-
-    fun setText(text: String){
-        _text.value = text
-    }
-
-    private val _images = MutableLiveData<ArrayList<CvImage>>() //List of cv files
-    val images: LiveData<ArrayList<CvImage>> = _images
-
-    fun setImages(list: ArrayList<CvImage>){
-        _images.value = list
-    }
-
-    fun addImage(image: CvImage){
-        _images.value?.add(image)
+        fun setImages(list: ArrayList<CvImage>){
+            _images.value = list
+        }
+        //fun addImage(image: CvImage){
+        //    _images.value?.add(image)
+        //}
     }
 }

@@ -1,38 +1,34 @@
 package com.mipapadakis.canvas.ui.gallery
 
-import android.app.Activity
+import android.annotation.SuppressLint
 import android.content.Context
-import android.os.Build
-import android.text.InputFilter
-import android.text.TextUtils
 import android.text.method.ScrollingMovementMethod
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.ViewTreeObserver
-import android.view.inputmethod.InputMethodManager
 import android.widget.*
 import androidx.appcompat.app.AlertDialog
 import androidx.cardview.widget.CardView
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LiveData
 import androidx.recyclerview.widget.RecyclerView
-import com.google.android.material.button.MaterialButton
-import com.mipapadakis.canvas.CanvasViewModel
 import com.mipapadakis.canvas.R
 import com.mipapadakis.canvas.model.CvImage
 import com.mipapadakis.canvas.tools.CvFileHelper
-import android.content.DialogInterface
+import android.content.Intent
 import androidx.core.content.ContextCompat
+import com.mipapadakis.canvas.CanvasActivity
+import com.mipapadakis.canvas.CanvasViewModel
+import com.mipapadakis.canvas.ui.create_canvas.CreateCanvasFragment
 
-
+@SuppressLint("NotifyDataSetChanged")
 class GalleryCvImageAdapter(liveDataToObserve: LiveData<ArrayList<CvImage>>, lifecycleOwner: LifecycleOwner): RecyclerView.Adapter<ItemViewHolder>() {
     private lateinit var imageList: ArrayList<CvImage>
 
     init {
         liveDataToObserve.observe(lifecycleOwner){
             imageList = it
+            notifyDataSetChanged()
         }
     }
 
@@ -44,7 +40,7 @@ class GalleryCvImageAdapter(liveDataToObserve: LiveData<ArrayList<CvImage>>, lif
     override fun onBindViewHolder(holder: ItemViewHolder, position: Int) {
         val cvImage: CvImage = imageList[position]
         holder.image.setImageBitmap(cvImage.getTotalImage(false))
-        holder.titleTV.text = cvImage.title
+        holder.titleTV.text = cvImage.getFilenameWithExtension(holder.titleTV.context)
         holder.button1.setOnClickListener{
             AlertDialog.Builder(holder.button1.context)
                 .setTitle("File Information")
@@ -61,11 +57,19 @@ class GalleryCvImageAdapter(liveDataToObserve: LiveData<ArrayList<CvImage>>, lif
             val fileHelper = CvFileHelper(holder.button3.context)
             fileHelper.deleteCvImage(cvImage.getFilenameWithExtension(holder.button3.context))
             imageList.removeAt(position)
-            notifyItemRemoved(position)
+            notifyDataSetChanged()
         }
         holder.image.setOnClickListener {
-            //todo intent to canvas
+            //TODO fix problem: ripple effect is cancelled (because of this clickListener override)
+            CanvasViewModel.cvImage = CvImage(cvImage)
+            launchCanvasActivity(holder.image.context)
         }
+    }
+
+    private fun launchCanvasActivity(context: Context){
+        val intent = Intent(context, CanvasActivity::class.java)
+        intent.putExtra(CreateCanvasFragment.IMPORT_CV_IMAGE_INTENT_KEY, "CanvasViewModel.cvImage contains the required cvImage.")
+        context.startActivity(intent)
     }
 
     override fun getItemCount() = imageList.size
