@@ -3,6 +3,7 @@ package com.mipapadakis.canvas
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
+import android.content.Intent
 import android.graphics.*
 import android.net.Uri
 import android.os.*
@@ -12,6 +13,7 @@ import android.util.Log
 import android.view.*
 import android.view.inputmethod.InputMethodManager
 import android.widget.*
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.cardview.widget.CardView
@@ -96,7 +98,7 @@ class CanvasActivity : AppCompatActivity() {
         //Receive intent from MainActivity:
         when {
             intent==null -> showToast("Error!")
-            intent.getStringExtra(IMPORT_IMAGE_INTENT_KEY)!=null -> {
+            intent.getStringExtra(IMPORT_IMAGE_INTENT_KEY)!=null -> { //Imported image from CreateCanvasFragment
                 val uri = intent.getStringExtra(IMPORT_IMAGE_INTENT_KEY)
                 //Initialize canvasWidth and canvasHeight:
                 if(uri!=null) getImageDimensionsFromUri(Uri.parse(uri))
@@ -111,6 +113,7 @@ class CanvasActivity : AppCompatActivity() {
                 canvasIV.setImageURI(Uri.parse(uri))
                 layoutCanvas.addView(canvasIV)
             }
+            //Imported image from GalleryFragment or MainActivity(intent.ACTION_VIEW)
             intent.getStringExtra(IMPORT_CV_IMAGE_INTENT_KEY)!=null -> {
                 val cvImage = CanvasViewModel.cvImage
                 canvasWidth = cvImage.width
@@ -123,7 +126,7 @@ class CanvasActivity : AppCompatActivity() {
                 canvasIV.layoutParams = layoutParamsCanvas
                 layoutCanvas.addView(canvasIV)
             }
-            else -> {
+            else -> { //Image dimensions from CreateCanvas fragment
                 canvasWidth = intent.getIntExtra(DIMENSION_WIDTH_INTENT_KEY, canvasWidth)
                 canvasHeight = intent.getIntExtra(DIMENSION_HEIGHT_INTENT_KEY, canvasHeight)
                 val layoutParamsCanvas = RelativeLayout.LayoutParams(canvasWidth, canvasHeight)

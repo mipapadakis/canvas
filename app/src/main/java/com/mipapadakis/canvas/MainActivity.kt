@@ -1,10 +1,15 @@
 package com.mipapadakis.canvas
 
+import android.app.Activity
+import android.content.Context
+import android.content.Intent
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.CountDownTimer
 import android.view.Menu
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
@@ -14,6 +19,10 @@ import androidx.navigation.ui.navigateUp
 import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
 import com.google.android.material.navigation.NavigationView
+import com.mipapadakis.canvas.model.CvImage
+import com.mipapadakis.canvas.tools.CvFileHelper
+import com.mipapadakis.canvas.ui.create_canvas.CreateCanvasFragment
+import java.io.File
 
 
 private const val ON_BACK_WAIT_TIME_SHORT = 2000L // FYI: Toast.LENGTH_SHORT = 2000ms
@@ -26,6 +35,23 @@ class MainActivity : AppCompatActivity(), InterfaceMainActivity{
     private lateinit var appBarConfiguration: AppBarConfiguration
     private var backIsPressed = BACK_NOT_PRESSED
     private lateinit var toast: Toast
+
+    fun selectImage() {
+        //Receive cv Image
+//        val resultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+//            if (result.resultCode == Activity.RESULT_OK) {
+//                //https://stackoverflow.com/a/63654043/11535380
+//                val uri: Uri? = result.data?.data //TODO what to do when the file is .cv type
+//                showToast("received uri ${uri?.path}")
+//            }
+//        }
+//
+//        val intent = Intent(Intent.ACTION_VIEW).apply {
+//            type = "*/*"
+//            //addCategory(Intent.CATEGORY_OPENABLE)
+//        }
+//        resultLauncher.launch(intent) //startActivityForResult(intent, REQUEST_IMAGE_OPEN)
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -43,6 +69,24 @@ class MainActivity : AppCompatActivity(), InterfaceMainActivity{
         )
         setupActionBarWithNavController(navController, appBarConfiguration)
         navView.setupWithNavController(navController)
+
+        //User wants to open an image using this app
+        if(intent.action == Intent.ACTION_VIEW){
+            //Receive the image and go to CanvasActivity:
+            val cvImageUri = intent.data
+            val cvImage = CvFileHelper(this).loadExternalCvImage(cvImageUri)
+            if(cvImage==null) exitApp()
+            else{
+                CanvasViewModel.cvImage = CvImage(cvImage)
+                launchCanvasActivity()
+            }
+        }
+    }
+
+    private fun launchCanvasActivity(){
+        val intent = Intent(this, CanvasActivity::class.java)
+        intent.putExtra(CreateCanvasFragment.IMPORT_CV_IMAGE_INTENT_KEY, "CanvasViewModel.cvImage contains the required cvImage.")
+        startActivity(intent)
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -75,10 +119,14 @@ class MainActivity : AppCompatActivity(), InterfaceMainActivity{
 //                val navController = findNavController(R.id.nav_host_fragment)
 //                navController.popBackStack()
 //                super.onBackPressed()
-                if(Build.VERSION.SDK_INT >=Build.VERSION_CODES.LOLLIPOP) finishAndRemoveTask()
-                else this.finishAffinity()
+                exitApp()
             }
         }
+    }
+
+    private fun exitApp(){
+        if(Build.VERSION.SDK_INT >=Build.VERSION_CODES.LOLLIPOP) finishAndRemoveTask()
+        else this.finishAffinity()
     }
 
     override fun showToast(text: String){

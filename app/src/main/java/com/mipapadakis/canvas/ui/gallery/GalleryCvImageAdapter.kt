@@ -1,5 +1,6 @@
 package com.mipapadakis.canvas.ui.gallery
 
+import android.R.attr
 import android.annotation.SuppressLint
 import android.content.Context
 import android.text.method.ScrollingMovementMethod
@@ -20,6 +21,20 @@ import androidx.core.content.ContextCompat
 import com.mipapadakis.canvas.CanvasActivity
 import com.mipapadakis.canvas.CanvasViewModel
 import com.mipapadakis.canvas.ui.create_canvas.CreateCanvasFragment
+import androidx.core.content.ContextCompat.startActivity
+
+import android.R.attr.path
+import android.net.Uri
+import android.util.Log
+import androidx.core.content.FileProvider
+import java.io.File
+import androidx.core.content.ContextCompat.startActivity
+
+import androidx.core.app.ShareCompat
+
+
+
+
 
 @SuppressLint("NotifyDataSetChanged")
 class GalleryCvImageAdapter(liveDataToObserve: LiveData<ArrayList<CvImage>>, lifecycleOwner: LifecycleOwner): RecyclerView.Adapter<ItemViewHolder>() {
@@ -39,30 +54,63 @@ class GalleryCvImageAdapter(liveDataToObserve: LiveData<ArrayList<CvImage>>, lif
 
     override fun onBindViewHolder(holder: ItemViewHolder, position: Int) {
         val cvImage: CvImage = imageList[position]
+        val context = holder.context ?: return
+
         holder.image.setImageBitmap(cvImage.getTotalImage(false))
-        holder.titleTV.text = cvImage.getFilenameWithExtension(holder.titleTV.context)
+        holder.titleTV.text = cvImage.getFilenameWithExtension(context)
         holder.button1.setOnClickListener{
-            AlertDialog.Builder(holder.button1.context)
+            AlertDialog.Builder(context)
                 .setTitle("File Information")
-                .setMessage(CvFileHelper(holder.button1.context).getInfo(cvImage.getFilenameWithExtension(holder.button1.context)))
+                .setMessage(CvFileHelper(context).getInfo(cvImage.getFilenameWithExtension(context)))
                 .setNegativeButton("Close", null)
-                .setIcon(ContextCompat.getDrawable(holder.button1.context, R.drawable.baseline_info_black_36))
+                .setIcon(ContextCompat.getDrawable(context, R.drawable.baseline_info_black_36))
                 .setCancelable(true)
                 .show()
         }
-        holder.button2.setOnClickListener {
-            //TODO share as PNG
+        holder.button2.setOnClickListener { //Share cvImage
+            when (cvImage.fileType) {
+                CanvasViewModel.FILETYPE_CANVAS -> { // Share as Canvas
+                    val requestFile = File( CvFileHelper.getFilesDirPath( context, cvImage.getFilenameWithExtension(context)))
+                    val uri = FileProvider.getUriForFile( context, "com.mipapadakis.canvas.fileprovider", requestFile)
+                    val sharingIntent = Intent(Intent.ACTION_SEND).apply {
+                        flags = Intent.FLAG_GRANT_READ_URI_PERMISSION
+                        type = "*/*"
+                        putExtra(Intent.EXTRA_STREAM, uri)
+                    }
+                    context.startActivity(Intent.createChooser(sharingIntent, "Share canvas file using"))
+                }
+                CanvasViewModel.FILETYPE_JPEG -> { // Share as Jpeg
+                    val requestFile = File( CvFileHelper.getFilesDirPath( context, cvImage.getFilenameWithExtension(context)))
+                    val uri = FileProvider.getUriForFile( context, "com.mipapadakis.canvas.fileprovider", requestFile)
+                    val sharingIntent = Intent(Intent.ACTION_SEND).apply {
+                        flags = Intent.FLAG_GRANT_READ_URI_PERMISSION
+                        type = "image/jpeg"
+                        putExtra(Intent.EXTRA_STREAM, uri)
+                    }
+                    context.startActivity(Intent.createChooser(sharingIntent, "Share jpeg using"))
+                }
+                else -> { //share as PNG
+                    val requestFile = File( CvFileHelper.getFilesDirPath( context, cvImage.getFilenameWithExtension(context)))
+                    val uri = FileProvider.getUriForFile( context, "com.mipapadakis.canvas.fileprovider", requestFile)
+                    val sharingIntent = Intent(Intent.ACTION_SEND).apply {
+                        flags = Intent.FLAG_GRANT_READ_URI_PERMISSION
+                        type = "image/png"
+                        putExtra(Intent.EXTRA_STREAM, uri)
+                    }
+                    context.startActivity(Intent.createChooser(sharingIntent, "Share png using"))
+                }
+            }
         }
         holder.button3.setOnClickListener {
-            val fileHelper = CvFileHelper(holder.button3.context)
-            fileHelper.deleteCvImage(cvImage.getFilenameWithExtension(holder.button3.context))
+            val fileHelper = CvFileHelper(context)
+            fileHelper.deleteCvImage(cvImage.getFilenameWithExtension(context))
             imageList.removeAt(position)
             notifyDataSetChanged()
         }
         holder.image.setOnClickListener {
             //TODO fix problem: ripple effect is cancelled (because of this clickListener override)
             CanvasViewModel.cvImage = CvImage(cvImage)
-            launchCanvasActivity(holder.image.context)
+            launchCanvasActivity(context)
         }
     }
 
@@ -78,6 +126,7 @@ class GalleryCvImageAdapter(liveDataToObserve: LiveData<ArrayList<CvImage>>, lif
 
 class ItemViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView){
     private var outerCardView: CardView
+    val context: Context? = itemView.context
     var image: ImageView
     var titleTV: TextView
     var button1: ImageButton

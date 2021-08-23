@@ -78,7 +78,7 @@ class CreateCanvasFragment : Fragment() {
         resultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             if (result.resultCode == Activity.RESULT_OK) {
                 //https://stackoverflow.com/a/63654043/11535380
-                val uri: Uri? = result.data?.data
+                val uri: Uri? = result.data?.data //TODO what to do when the file is .cv type
                 importedImagePreview?.setImageURI(uri)
                 createCanvasViewModel.setImportImagePreview(uri.toString())
             }

@@ -43,9 +43,9 @@ class GalleryFragment : Fragment() {
 //            createCvImage("image 4", R.drawable.baseline_color_lens_black_48),
 //            createCvImage("image 5", R.drawable.baseline_create_black_48))
         GalleryViewModel.setImages(CvFileHelper(requireContext()).getAllCvImages())
-        val stringBuffer = StringBuffer(".\nAbsolute Path: ${context?.filesDir?.absolutePath}\nCanonical Path: ${context?.filesDir?.canonicalPath}\nFiles:\n")
-        for(f in context?.fileList()?: arrayOf("")) stringBuffer.append(f+"\n")
-        Log.v("CanvasDebug", stringBuffer.toString())
+//        val stringBuffer = StringBuffer(".\nAbsolute Path: ${context?.filesDir?.absolutePath}\nCanonical Path: ${context?.filesDir?.canonicalPath}\nFiles:\n")
+//        for(f in context?.fileList()?: arrayOf("")) stringBuffer.append(f+"\n")
+//        Log.v("CanvasDebug", stringBuffer.toString())
 
         recyclerView = root.findViewById(R.id.recycler_view)
         recyclerView.layoutManager = LinearLayoutManager(context)

@@ -23,24 +23,32 @@
             android:screenOrientation="fullUser">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
 
             <!-- File extension: .cv -->
             <intent-filter
                 android:icon="@drawable/logo"
-                android:label="canvas_file">
+                android:label="canvas">
                 <action android:name="android.intent.action.VIEW" />
-                <action android:name="android.intent.action.EDIT"/>
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE"/>
-                <data android:scheme="file" />
+                <data android:scheme="content" />
                 <data android:mimeType="*/*" />
-                <data android:host="*" />
                 <data android:pathPattern=".*\\.cv" />
+                <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
+
+        <!--FileProvider - used to securely share canvas images
+        https://developer.android.com/guide/topics/manifest/provider-element -->
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="com.mipapadakis.canvas.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/provider_paths"/>
+        </provider>
     </application>
 
 </manifest>

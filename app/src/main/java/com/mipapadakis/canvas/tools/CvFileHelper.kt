@@ -12,11 +12,13 @@ import java.lang.Exception
 import java.text.SimpleDateFormat
 import java.util.*
 import android.graphics.BitmapFactory
+import android.net.Uri
 
 import android.util.Log
 import kotlin.collections.ArrayList
 
 import com.mipapadakis.canvas.R
+import java.net.URI
 import kotlin.math.roundToInt
 
 
@@ -61,10 +63,6 @@ class CvFileHelper(val context: Context) {
         }
         return cvImageInput
     }
-    fun loadAndSetCvImageFromCanvasFile(fileName: String?){
-        val deserializedCvImage = loadCvImageFromCanvasFile(fileName)
-        if(deserializedCvImage!=null) cvImage.setCvImage(deserializedCvImage)
-    }
 
     //https://stackoverflow.com/a/4118917/11535380
     private fun saveCvImageAsPngFile(fileName: String){
@@ -89,7 +87,7 @@ class CvFileHelper(val context: Context) {
             fis.read(byteArray)
             val bitmap = BitmapFactory.decodeByteArray(byteArray, 0, byteArray.size)
                 .copy(Bitmap.Config.ARGB_8888, true)
-            deserializedCvImage = CvImage(resources, File(fileName.withPath()).nameWithoutExtension, bitmap)
+            deserializedCvImage = CvImage(resources, File(fileName!!).nameWithoutExtension, bitmap)
             deserializedCvImage.fileType = CanvasViewModel.FILETYPE_PNG
             fis.close()
 
@@ -98,10 +96,6 @@ class CvFileHelper(val context: Context) {
             showToast("Error")
         }
         return deserializedCvImage
-    }
-    fun loadAndSetCvImageFromPngFile(fileName: String?){
-        val deserializedCvImage = loadCvImageFromPngFile(fileName)
-        if(deserializedCvImage!=null) cvImage.setCvImage(deserializedCvImage)
     }
 
     private fun saveCvImageAsJpegFile(fileName: String){
@@ -124,7 +118,7 @@ class CvFileHelper(val context: Context) {
             fis.read(byteArray)
             val bitmap = BitmapFactory.decodeByteArray(byteArray, 0, byteArray.size)
                 .copy(Bitmap.Config.ARGB_8888, true)
-            deserializedCvImage = CvImage(resources, File(fileName.withPath()).nameWithoutExtension, bitmap)
+            deserializedCvImage = CvImage(resources, File(fileName!!).nameWithoutExtension, bitmap)
             deserializedCvImage.fileType = CanvasViewModel.FILETYPE_JPEG
             fis.close()
 
@@ -133,10 +127,6 @@ class CvFileHelper(val context: Context) {
             showToast("Error")
         }
         return deserializedCvImage
-    }
-    fun loadAndSetCvImageFromJpegFile(fileName: String?){
-        val deserializedCvImage = loadCvImageFromJpegFile(fileName)
-        if(deserializedCvImage!=null) cvImage.setCvImage(deserializedCvImage)
     }
 
     fun saveCvImage(): Boolean{
@@ -156,6 +146,35 @@ class CvFileHelper(val context: Context) {
             CanvasViewModel.FILETYPE_JPEG -> cvImageInput = loadCvImageFromJpegFile(fileName)
         }
         return cvImageInput
+    }
+    fun loadExternalCvImage(uri: Uri?): CvImage?{
+        if(uri==null) return null
+        var cvImage: CvImage? = null
+        try {
+            val inputStream = context.contentResolver.openInputStream(uri)
+            val ois = ObjectInputStream(inputStream)
+            cvImage = (ois.readObject() as SerializableCvImage).deserialize()
+            ois.close()
+            inputStream?.close()
+        }
+        catch (e: Exception){ //Try png/jpeg
+            val byteArray: ByteArray
+            try {
+                val inputStream = context.contentResolver.openInputStream(uri)
+                byteArray = ByteArray(inputStream!!.available())
+                inputStream.read(byteArray)
+                val bitmap = BitmapFactory.decodeByteArray(byteArray, 0, byteArray.size)
+                    .copy(Bitmap.Config.ARGB_8888, true)
+                cvImage = CvImage(resources, "", bitmap)
+                cvImage.fileType = CanvasViewModel.FILETYPE_PNG
+                inputStream.close()
+
+            } catch(e: Exception){
+                e.printStackTrace()
+                showToast("Error")
+            }
+        }
+        return cvImage
     }
     fun loadAndSetCvImage(fileName: String?){
         val deserializedCvImage = loadCvImage(fileName)
@@ -250,6 +269,12 @@ class CvFileHelper(val context: Context) {
         toast.cancel()
         toast = Toast.makeText(context, text, toast.duration)
         toast.show()
+    }
+
+    companion object{
+        fun getFilesDirPath(context: Context) = context.filesDir.path+"/"
+        fun getFilesDirPath(context: Context, fileNameWithExtension: String?) =
+            context.filesDir.path+"/"+fileNameWithExtension
     }
 }
 
