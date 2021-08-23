@@ -2,7 +2,6 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     tools:showIn="navigation_view">
-    <!-- TODO icons look like shit -->
     <group
         android:id="@+id/nav_group_canvas"
         android:checkableBehavior="single">

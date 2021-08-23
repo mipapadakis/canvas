@@ -12,6 +12,7 @@ import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GravityCompat
+import androidx.core.view.get
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
@@ -31,44 +32,34 @@ private const val BACK_NOT_PRESSED = 200
 private const val BACK_PRESSED_ONCE = 201
 
 class MainActivity : AppCompatActivity(), InterfaceMainActivity{
+    private lateinit var navView: NavigationView
     private lateinit var drawerLayout: DrawerLayout
     private lateinit var appBarConfiguration: AppBarConfiguration
     private var backIsPressed = BACK_NOT_PRESSED
     private lateinit var toast: Toast
 
-    fun selectImage() {
-        //Receive cv Image
-//        val resultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-//            if (result.resultCode == Activity.RESULT_OK) {
-//                //https://stackoverflow.com/a/63654043/11535380
-//                val uri: Uri? = result.data?.data //TODO what to do when the file is .cv type
-//                showToast("received uri ${uri?.path}")
-//            }
-//        }
-//
-//        val intent = Intent(Intent.ACTION_VIEW).apply {
-//            type = "*/*"
-//            //addCategory(Intent.CATEGORY_OPENABLE)
-//        }
-//        resultLauncher.launch(intent) //startActivityForResult(intent, REQUEST_IMAGE_OPEN)
-    }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        setSupportActionBar(findViewById(R.id.toolbar))
+        setSupportActionBar(findViewById(R.id.toolbar)) // In app_bar_main.xml
         toast = Toast(this)
-        drawerLayout = findViewById(R.id.drawer_layout)
-        val navView: NavigationView = findViewById(R.id.nav_view)
+        drawerLayout = findViewById(R.id.drawer_layout) // In activity_main.xml
+        navView = findViewById(R.id.nav_view) // In activity_main.xml
         navView.itemIconTintList = null
-        val navController = findNavController(R.id.nav_host_fragment)
+        val navController = findNavController(R.id.nav_host_fragment) // In content_main.xml
         // Passing each menu ID as a set of Ids because each
         // menu should be considered as top level destinations.
-        appBarConfiguration = AppBarConfiguration(
-                setOf(R.id.nav_gallery, R.id.nav_canvas, R.id.nav_about), drawerLayout
+        appBarConfiguration = AppBarConfiguration( setOf( //In menu activity_main_drawer
+            R.id.nav_gallery,
+            R.id.nav_canvas,
+            R.id.nav_about,
+            R.id.nav_feedback,
+            R.id.nav_rate),
+            drawerLayout
         )
         setupActionBarWithNavController(navController, appBarConfiguration)
         navView.setupWithNavController(navController)
+
 
         //User wants to open an image using this app
         if(intent.action == Intent.ACTION_VIEW){
@@ -102,9 +93,18 @@ class MainActivity : AppCompatActivity(), InterfaceMainActivity{
 
 
     override fun onBackPressed() {
-        if (drawerLayout.isDrawerOpen(GravityCompat.START))
+        if (drawerLayout.isDrawerOpen(GravityCompat.START)){
             drawerLayout.closeDrawer(GravityCompat.START)
+            if(drawerLayout[0].isSelected) showToast("Gallery is selected")
+            else if(drawerLayout[1].isSelected) showToast("CreateCanvas is selected")
+        }
         else{
+            //If createCanvasFragment or AboutFragment are open, pressing back button opens Gallery:
+            if(!navView.menu[0].isChecked) {
+                super.onBackPressed()
+                return
+            }
+
             if(backIsPressed == BACK_NOT_PRESSED){
                 backIsPressed = BACK_PRESSED_ONCE
                 val timer = object: CountDownTimer(ON_BACK_WAIT_TIME_SHORT, ON_BACK_WAIT_TIME_SHORT) {

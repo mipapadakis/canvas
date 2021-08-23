@@ -317,31 +317,6 @@ class CanvasImageView(context: Context?, val shouldInitializeCvImage: Boolean, v
         invalidate()
     }
 
-//    //https://stackoverflow.com/a/28467745/11535380
-//    fun drawOverlappingAreas(paint: Paint){
-//        if(pathPoints.size==0) return
-//        val path = Path()
-//        val points = ArrayList<PointF>()
-//        points.add(pathPoints[0])
-//        points.add(pathPoints[0])
-//        points.addAll(pathPoints)
-//        points.add(pathPoints.last())
-//        points.add(pathPoints.last())
-//        var p1: PointF
-//        var p2: PointF
-//        var p3: PointF
-//
-//        for (i in 0 until pathPoints.size) {
-//            p1 = points[i]
-//            p2 = points[i+1]
-//            p3 = points[i+2]
-//            path.rewind()
-//            path.moveTo((p1.x + p2.x) / 2.0f, (p1.y + p2.y) / 2.0f)
-//            path.quadTo(p2.x, p2.y, (p2.x + p3.x) / 2.0f, (p2.y + p3.y) / 2.0f)
-//            foregroundCanvas.drawPath(path, paint)
-//        }
-//    }
-
     /** Returns a RectF containing the coordinates of a square, created by combining two points.*/
     private fun getSquareCoords(pointA: PointF, pointB: PointF): RectF{
         val side = min(abs(pointA.x - pointB.x), abs(pointA.y - pointB.y))
@@ -489,6 +464,8 @@ class CanvasImageView(context: Context?, val shouldInitializeCvImage: Boolean, v
         val flippedBmp = Bitmap.createBitmap(foregroundBitmap, 0, 0, width, height, matrix, true)
         clearForeground()
         foregroundCanvas.drawBitmap(flippedBmp)
+        invalidate()
+        addActionToHistory(ACTION_FLIP_HORIZONTALLY)
     }
     fun writeText(text: String, x: Float, y: Float){
         foregroundCanvas.drawText(text, x, y, CanvasViewModel.textPaint)

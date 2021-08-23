@@ -12,7 +12,7 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal">
 
-        <!--TODO
+        <!--TODO-->
         <TextView
             android:id="@+id/property_transform_crop_btn"
             android:layout_width="wrap_content"
@@ -23,7 +23,7 @@
             android:scaleType="centerCrop"
             android:layout_gravity="center"
             android:gravity="center"
-            android:contentDescription="@string/bottom_toolbar_button" />-->
+            android:contentDescription="@string/bottom_toolbar_button" />
 
         <ImageButton
             android:id="@+id/property_transform_flip_horizontally_btn"
