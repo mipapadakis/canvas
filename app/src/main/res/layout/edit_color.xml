@@ -26,11 +26,11 @@
                 android:padding="@dimen/property_editor_margin"
                 tools:ignore="ContentDescription" />
             <ImageView
-                android:id="@+id/temporary_color"
+                android:id="@+id/color_editor_temporary_color"
                 android:layout_width="@dimen/toolbar_button_size"
                 android:layout_height="@dimen/toolbar_button_size"
                 android:padding="@dimen/property_editor_margin"
-                android:src="@drawable/baseline_check_black_48"
+                android:src="@drawable/check_outlined"
                 tools:ignore="ContentDescription" />
         </FrameLayout>
 
@@ -40,7 +40,7 @@
             tools:ignore="ContentDescription" />
 
         <SeekBar
-            android:id="@+id/color_rgb_seekbar"
+            android:id="@+id/color_editor_rgb_seekbar"
             android:layout_width="match_parent"
             android:layout_height="@dimen/toolbar_button_size_small"
             android:paddingStart="2dp"
@@ -191,7 +191,7 @@
                 android:text="255"/>-->
 
             <SeekBar
-                android:id="@+id/color_brightness_seekbar"
+                android:id="@+id/color_editor_brightness_seekbar"
                 android:layout_width="match_parent"
                 android:layout_height="@dimen/toolbar_button_size_small"
                 android:paddingVertical="4dp"
@@ -221,7 +221,7 @@
                 android:gravity="center"
                 android:text="255"/>-->
             <SeekBar
-                android:id="@+id/color_opacity_seekbar"
+                android:id="@+id/color_editor_opacity_seekbar"
                 android:layout_width="match_parent"
                 android:layout_height="@dimen/toolbar_button_size_small"
                 android:paddingVertical="4dp"

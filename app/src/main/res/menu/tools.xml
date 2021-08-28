@@ -3,31 +3,32 @@
     <group>
         <item
             android:id="@+id/tool_brush"
-            android:icon="@drawable/baseline_brush_black_48"
+            android:icon="@drawable/brush_outlined"
             android:title="@string/tools_menu_brush" />
         <item
             android:id="@+id/tool_eraser"
-            android:icon="@drawable/eraser_bold"
+            android:icon="@drawable/eraser_outlined"
             android:title="@string/tools_menu_eraser"/>
         <item
             android:id="@+id/tool_bucket"
-            android:icon="@drawable/baseline_format_color_fill_black_48"
+            android:icon="@drawable/bucket_outlined"
             android:title="@string/tools_menu_bucket" />
         <item
             android:id="@+id/tool_eyedropper"
-            android:icon="@drawable/baseline_colorize_black_48"
+            android:icon="@drawable/eyedropper_outlined"
             android:title="@string/tools_menu_eyedropper" />
         <item
             android:id="@+id/tool_select"
             android:icon="@drawable/select_rectangular"
-            android:title="@string/tools_menu_select" />
+            android:title="@string/tools_menu_select"
+            android:visible="false"/>
         <item
             android:id="@+id/tool_shape"
-            android:icon="@drawable/baseline_check_box_outline_blank_black_48"
+            android:icon="@drawable/check_box_empty_outlined"
             android:title="@string/tools_menu_shape" />
         <item
             android:id="@+id/tool_text"
-            android:icon="@drawable/baseline_title_black_48"
+            android:icon="@drawable/text_outlined"
             android:title="@string/tools_menu_text" />
     </group>
 </menu>

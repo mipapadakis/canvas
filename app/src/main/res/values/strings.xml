@@ -25,7 +25,7 @@
     <string name="create_canvas_import_details_2">Click on the image if you want to pick another one.</string>
     <string name="create_canvas_custom_pixel_title">Custom (pixels)</string>
     <string name="create_canvas_custom_title">Custom</string>
-    <string name="create_canvas_custom_dpi_in_pixels">In pixels: %s×%s</string>
+    <string name="create_canvas_custom_dpi_in_pixels">Pixels: %s×%s</string>
     <string name="create_canvas_sd_title">SD Size</string>
     <string name="create_canvas_sd_details">540×984</string>
     <string name="create_canvas_hd_title">HD Size</string>
@@ -39,13 +39,6 @@
     <string name="create_canvas_A4_title">A4</string>
     <string name="create_canvas_A4_details">1240×1754 (150dpi)</string>
     <string name="error">Error</string>
-    <string name="about_details">Insert app description here.
-    Tutorial:
-        • Two-finger double click resizes canvas to fit the screen.
-        • Triple-finger single click resets canvas to original size.
-        • Long Press on a button shows a dialog explaining its use (in most cases).
-        • Double tapping on a layer brings it to the front, and deselects all selected layers.
-    </string>
     <string name="toolbar_button">toolbar button</string>
     <string name="bottom_toolbar_button">bottom toolbar button</string>
     <string name="tools_menu_brush">Brush</string>
@@ -80,6 +73,8 @@
     <string name="layer_option_delete">Delete</string>
     <string name="layer_option_merge">Merge</string>
     <string name="layer_option_bring_to_front">To Front</string>
+    <string name="exit_without_save">Exit without saving</string>
+    <string name="overwrite">Overwrite</string>
     <string name="cancel">Cancel</string>
     <string name="save">Save</string>
     <string name="title">Title</string>
@@ -94,5 +89,119 @@
     <string name="canvas_placeholder_title">Image</string>
     <string name="save_canvas_subtitle"><![CDATA[Choose title & format for your masterpiece!]]></string>
     <string name="wrong_filename_warning"><![CDATA[Characters * . \" ? : / | \\ < > are not allowed.]]></string>
+    <string name="thanks">Thanks!</string>
+    <string name="close">Close</string>
+    <string name="ok">OK</string>
 
+    <!-- Tutorial & Tips TODO app description-->
+    <string name="about_details">Insert app description here.</string>
+    <string name="tutorial_dialog_title">Welcome to Canvas!</string>
+    <string name="tutorial_dialog_subtitle">A tip to make things easier for you</string>
+    <string name="tutorial_dialog_description">Whenever you see a button or tool whose purpose is not
+        clear, long-press on it. A tip explaining its function will appear on your screen.
+        \n\nHave fun!</string>
+    <string name="canvas_tip_title">Canvas</string>
+    <string name="canvas_tip_subtitle">Contains your drawings</string>
+    <string name="canvas_tip_description">Tip: Use two fingers to rotate, or zoom in/out of the canvas.
+        \nTwo-finger double click resizes the canvas to fit the screen.
+        \nTriple-finger single click resets canvas to original size.</string>
+    <string name="toolbar_button_undo_content_description">Undo Button
+        /
+        /Press this button to undo an action, if possible.</string>
+    <string name="toolbar_button_redo_content_description">Redo Button
+        /
+        /Press this button to redo an action, if possible.</string>
+    <!-- \n• Select: Select an area of the canvas -->
+    <string name="toolbar_button_tool_content_description">Tool Button
+        /Determines what is drawn on the canvas.
+        /Tools:
+        \n• Brush: Draw freehand, following your finger gestures
+        \n• Eraser: Set drawn pixels transparent
+        \n• Bucket: Draw an enclosed area with a solid color
+        \n• Eyedropper: Pick a color from the canvas
+        \n• Shape: Draw lines, squares, circles, polygons, and more
+        \n• Text: Draw text on the canvas </string>
+    <string name="toolbar_button_layers_content_description">Layer List
+        /Your canvas consists of a list of layers, stacked on each other. The left-most layer in the list is considered the top layer.
+        /Functions:
+        \n• Change their hierarchy, by long-pressing and rearranging them in the list
+        \n• Set a layer visible or hidden
+        \n• Add a new layer
+        \n• Merge two or more layers together
+        \n• Duplicate one or more layers
+        \n• Change opacity of one or more layers
+        \n• Clear one or more layers
+        \n• Delete one or more layers
+        \n\nTip: Double tapping on a layer brings it to the front, and deselects all selected layers.</string>
+    <string name="toolbar_button_options_content_description">Canvas Options
+        /
+        /• Transform your canvas
+        \n•Save canvas as a file in the app\'s local directory
+        \n• Settings</string>
+    <string name="property_brush_color_btn_content_description">Brush Color
+        /
+        /Pick a color using the ARGB format, or just by using the three color bars that determine the Hue, the brightness and saturation, and lastly the color\'s opacity.
+        \nThe top-left square is a preview of your new color. Click on it when you have found the your color choice.</string>
+    <string name="property_brush_size_btn_content_description">Brush Size
+        /Determine the width of your brush
+        /The size can range from 1 to 100 pixels.</string>
+    <string name="property_brush_type_btn_content_description">Brush Type
+        /
+        /• The first type is the traditional brush.
+        \n• Next is the pencil, used for details, always with the width of 1 pixel.
+        \n• Lastly, there is a number of patterns with which you can draw.</string>
+    <string name="property_bucket_color_btn_content_description">Bucket Color
+        /
+        /Pick a color using the ARGB format, or just by using the three color bars that determine the Hue, the brightness and saturation, and lastly the color\'s opacity.
+        \n The top-left square is a preview of your new color. Click on it when you have found the your color choice.</string>
+    <string name="property_eraser_opacity_btn_content_description">Eraser Opacity
+        /Determine the transparency of erased pixels
+        /The opacity can range from 0 (transparent) to 255 (opaque).</string>
+    <string name="property_eraser_size_btn_content_description">Eraser Size
+        /Determine the width of your eraser
+        /The size can range from 1 to 100 pixels</string>
+    <string name="property_layers_add_btn_content_description">Add layer
+        /
+        /Create a new, transparent layer. Add it to the top of the list.</string>
+    <string name="property_shape_color_btn_content_description">Shape Color
+        /
+        /Pick a color using the ARGB format, or just by using the three color bars that determine the Hue, the brightness and saturation, and lastly the color\'s opacity.
+        \n The top-left square is a preview of your new color. Click on it when you have found the your color choice.</string>
+    <string name="property_shape_size_btn_content_description">Stroke Size
+        /Determine the width of your shapes\' edges
+        /The size can range from 1 to 100 pixels.</string>
+    <string name="property_shape_type_btn_content_description">Shape type
+        /
+        /You can draw:
+        \n• Line
+        \n• Square
+        \n• Rectangle
+        \n• Circle
+        \n• Oval
+        \n• Polygon</string>
+    <string name="property_shape_fill_btn_content_description">Shape Fill
+        /
+        /Choose between drawing your shapes filled or just their edges.</string>
+    <string name="property_text_color_btn_content_description">Text Color
+        /
+        /Pick a color using the ARGB format, or just by using the three color bars that determine the Hue, the brightness and saturation, and lastly the color\'s opacity.
+        \n The top-left square is a preview of your new color. Click on it when you have found the your color choice.</string>
+    <string name="property_text_size_btn_content_description">Font Size
+        /Determine the height of your text in pixels
+        /The height can range from 1 to 100 pixels.</string>
+    <string name="property_text_font_btn_content_description">Choose Font
+        /
+        /Choose between some default fonts for your text tool.</string>
+    <string name="property_text_bold_btn_content_description">Toggle Bold
+        /
+        /Choose whether your text tool is in bold.</string>
+    <string name="property_text_italics_btn_content_description">Toggle Italics
+        /
+        /Choose whether your text tool is in italics.</string>
+    <string name="property_transform_flip_horizontally_btn_content_description">Flip Horizontally
+        /
+        /Note that the flipping occurs on the top layer only.</string>
+    <string name="property_transform_flip_vertically_btn_content_description">Flip Vertically
+        /
+        /Note that the flipping occurs on the top layer only.</string>
 </resources>

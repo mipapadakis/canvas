@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:paddingTop="16dp"
+    android:paddingLeft="16dp"
+    android:paddingRight="16dp">
+
+    <TextView
+        android:id="@+id/input_dialog_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/roboto_black"
+        android:lineSpacingExtra="8sp"
+        android:text="Insert title"
+        android:textSize="20sp"
+        android:textStyle="bold"/>
+
+    <TextView
+        android:id="@+id/input_dialog_subtitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="10dp"
+        android:alpha="0.6"
+        android:text="subtitle"
+        android:textColor="#757575"
+        android:textSize="14sp" />
+
+    <EditText
+        android:id="@+id/input_dialog_input_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@android:color/transparent"
+        android:gravity="center_vertical"
+        android:hint="@string/title"
+        android:imeOptions="actionDone"
+        android:importantForAutofill="no"
+        android:inputType="textCapSentences|text"
+        android:lines="1"
+        android:minHeight="48dp"
+        android:textColorHint="#89C3C3C3"
+        android:textSize="20sp" />
+
+    <ImageView
+        android:layout_width="match_parent"
+        android:layout_height="0.3dp"
+        android:layout_marginBottom="10dp"
+        android:background="?attr/colorPrimaryVariant"
+        tools:ignore="ContentDescription" />
+
+    <TextView
+        android:id="@+id/input_dialog_file_name_exists"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textColor="@color/red"
+        android:text="File name already exists!"
+        android:visibility="gone"/>
+
+    <RadioGroup
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <RadioButton
+            android:id="@+id/input_dialog_filetype_canvas"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="16sp"
+            android:checked="true"
+            android:text="@string/file_type_canvas"/>
+        <RadioButton
+            android:id="@+id/input_dialog_filetype_png"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="16sp"
+            android:text="@string/file_type_png"/>
+        <RadioButton
+            android:id="@+id/input_dialog_filetype_jpeg"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="16sp"
+            android:text="@string/file_type_jpeg"/>
+    </RadioGroup>
+</LinearLayout>

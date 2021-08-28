@@ -29,22 +29,22 @@
             android:id="@+id/property_transform_flip_horizontally_btn"
             android:layout_width="@dimen/toolbar_button_size"
             android:layout_height="@dimen/toolbar_button_size"
-            android:src="@drawable/flip_horizontally"
+            android:src="@drawable/flip_horizontally_outlined"
             android:background="@android:drawable/editbox_background"
             android:padding="5dp"
             android:layout_gravity="center"
             android:scaleType="fitCenter"
-            android:contentDescription="@string/bottom_toolbar_button" />
+            android:contentDescription="@string/property_transform_flip_horizontally_btn_content_description" />
 
         <ImageButton
             android:id="@+id/property_transform_flip_vertically_btn"
             android:layout_width="@dimen/toolbar_button_size"
             android:layout_height="@dimen/toolbar_button_size"
-            android:src="@drawable/flip_vertically"
+            android:src="@drawable/flip_vertically_outlined"
             android:background="@android:drawable/editbox_background"
             android:padding="5dp"
             android:layout_gravity="center"
             android:scaleType="fitCenter"
-            android:contentDescription="@string/bottom_toolbar_button" />
+            android:contentDescription="@string/property_transform_flip_vertically_btn_content_description" />
     </LinearLayout>
 </LinearLayout>

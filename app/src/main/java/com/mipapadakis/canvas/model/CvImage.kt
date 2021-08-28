@@ -3,18 +3,16 @@ package com.mipapadakis.canvas.model
 import android.content.Context
 import android.content.res.Resources
 import android.graphics.*
-import android.provider.Settings.Global.getString
-import com.mipapadakis.canvas.CanvasViewModel
+import com.mipapadakis.canvas.CanvasActivityData
 import com.mipapadakis.canvas.R
 import com.mipapadakis.canvas.model.layer.CvLayer
 import com.mipapadakis.canvas.tools.SerializableCvImage
-import com.mipapadakis.canvas.tools.SerializableCvLayer
 import java.util.*
 
 /**This represents the canvas' list of layers that the user has created.*/
 
 class CvImage(var title: String, var width: Int, var height: Int): ArrayList<CvLayer>() {
-    var fileType = CanvasViewModel.FILETYPE_CANVAS
+    var fileType = CanvasActivityData.FILETYPE_CANVAS
     private var layerNameIndex = 0
 
     constructor(width: Int, height: Int): this("", width, height)
@@ -60,15 +58,15 @@ class CvImage(var title: String, var width: Int, var height: Int): ArrayList<CvL
     }
     fun getTopLayer() = get(0)
 
-    private fun getUniqueLayerName(): String {return "Layer ${CanvasViewModel.cvImage.layerNameIndex++}"}
+    private fun getUniqueLayerName(): String {return "Layer ${CanvasActivityData.cvImage.layerNameIndex++}"}
     fun getFilenameWithExtension(context: Context): String{
         return "${title}.${getExtension(context)}"
     }
     private fun getExtension(context: Context): String{
         return context.getString(
             when (fileType) {
-                CanvasViewModel.FILETYPE_CANVAS -> R.string.file_extension_canvas
-                CanvasViewModel.FILETYPE_PNG -> R.string.file_extension_png
+                CanvasActivityData.FILETYPE_CANVAS -> R.string.file_extension_canvas
+                CanvasActivityData.FILETYPE_PNG -> R.string.file_extension_png
                 else -> R.string.file_extension_jpeg
             }
         )
@@ -94,24 +92,8 @@ class CvImage(var title: String, var width: Int, var height: Int): ArrayList<CvL
         return bmp
     }
 
-    private fun copyBitmap(bmp: Bitmap): Bitmap{
-        return bmp.copy(bmp.config, true)
-    }
-
     fun toSerializable(): SerializableCvImage {
         return SerializableCvImage(this)
-    }
-
-    fun toPNG(){
-
-    }
-
-    fun toJPEG(){
-
-    }
-
-    fun toBMP(){
-
     }
 
     companion object{

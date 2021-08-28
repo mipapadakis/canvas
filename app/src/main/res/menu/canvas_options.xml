@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+    <group>
+        <item
+            android:id="@+id/canvas_transform"
+            android:icon="@drawable/brush_outlined"
+            android:title="@string/canvas_menu_transform" />
+        <item
+            android:id="@+id/canvas_save"
+            android:icon="@drawable/brush_outlined"
+            android:title="@string/canvas_menu_save" />
+        <item
+            android:id="@+id/canvas_settings"
+            android:icon="@drawable/brush_outlined"
+            android:title="@string/canvas_menu_settings"
+            android:visible="false"/>
+    </group>
+</menu>

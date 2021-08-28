@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "215194706159",
+    "project_id": "canvas-mipapadakis",
+    "storage_bucket": "canvas-mipapadakis.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:215194706159:android:dc2dcd9a8cefd76c523b1a",
+        "android_client_info": {
+          "package_name": "com.mipapadakis.canvas"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "215194706159-sj7qqimqrlmog5151aj0rfrdlua7jhoh.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAZIZNtquUEcJlukSVfVLxT-g8-GYl8hHw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "215194706159-sj7qqimqrlmog5151aj0rfrdlua7jhoh.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

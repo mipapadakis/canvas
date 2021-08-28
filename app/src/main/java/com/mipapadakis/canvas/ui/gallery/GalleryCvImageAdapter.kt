@@ -1,6 +1,5 @@
 package com.mipapadakis.canvas.ui.gallery
 
-import android.R.attr
 import android.annotation.SuppressLint
 import android.content.Context
 import android.text.method.ScrollingMovementMethod
@@ -19,21 +18,11 @@ import com.mipapadakis.canvas.tools.CvFileHelper
 import android.content.Intent
 import androidx.core.content.ContextCompat
 import com.mipapadakis.canvas.CanvasActivity
-import com.mipapadakis.canvas.CanvasViewModel
+import com.mipapadakis.canvas.CanvasActivityData
 import com.mipapadakis.canvas.ui.create_canvas.CreateCanvasFragment
-import androidx.core.content.ContextCompat.startActivity
 
-import android.R.attr.path
-import android.net.Uri
-import android.util.Log
 import androidx.core.content.FileProvider
 import java.io.File
-import androidx.core.content.ContextCompat.startActivity
-
-import androidx.core.app.ShareCompat
-
-
-
 
 
 @SuppressLint("NotifyDataSetChanged")
@@ -48,7 +37,7 @@ class GalleryCvImageAdapter(liveDataToObserve: LiveData<ArrayList<CvImage>>, lif
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ItemViewHolder {
-        val itemView: View = LayoutInflater.from(parent.context).inflate( R.layout.gallery_card_view, parent, false)
+        val itemView: View = LayoutInflater.from(parent.context).inflate( R.layout.card_gallery, parent, false)
         return ItemViewHolder(itemView)
     }
 
@@ -63,13 +52,13 @@ class GalleryCvImageAdapter(liveDataToObserve: LiveData<ArrayList<CvImage>>, lif
                 .setTitle("File Information")
                 .setMessage(CvFileHelper(context).getInfo(cvImage.getFilenameWithExtension(context)))
                 .setNegativeButton("Close", null)
-                .setIcon(ContextCompat.getDrawable(context, R.drawable.baseline_info_black_36))
+                .setIcon(ContextCompat.getDrawable(context, R.drawable.info_black_36))
                 .setCancelable(true)
                 .show()
         }
         holder.button2.setOnClickListener { //Share cvImage
             when (cvImage.fileType) {
-                CanvasViewModel.FILETYPE_CANVAS -> { // Share as Canvas
+                CanvasActivityData.FILETYPE_CANVAS -> { // Share as Canvas
                     val requestFile = File( CvFileHelper.getFilesDirPath( context, cvImage.getFilenameWithExtension(context)))
                     val uri = FileProvider.getUriForFile( context, "com.mipapadakis.canvas.fileprovider", requestFile)
                     val sharingIntent = Intent(Intent.ACTION_SEND).apply {
@@ -79,7 +68,7 @@ class GalleryCvImageAdapter(liveDataToObserve: LiveData<ArrayList<CvImage>>, lif
                     }
                     context.startActivity(Intent.createChooser(sharingIntent, "Share canvas file using"))
                 }
-                CanvasViewModel.FILETYPE_JPEG -> { // Share as Jpeg
+                CanvasActivityData.FILETYPE_JPEG -> { // Share as Jpeg
                     val requestFile = File( CvFileHelper.getFilesDirPath( context, cvImage.getFilenameWithExtension(context)))
                     val uri = FileProvider.getUriForFile( context, "com.mipapadakis.canvas.fileprovider", requestFile)
                     val sharingIntent = Intent(Intent.ACTION_SEND).apply {
@@ -109,7 +98,7 @@ class GalleryCvImageAdapter(liveDataToObserve: LiveData<ArrayList<CvImage>>, lif
         }
         holder.image.setOnClickListener {
             //TODO fix problem: ripple effect is cancelled (because of this clickListener override)
-            CanvasViewModel.cvImage = CvImage(cvImage)
+            CanvasActivityData.cvImage = CvImage(cvImage)
             launchCanvasActivity(context)
         }
     }
@@ -136,11 +125,11 @@ class ItemViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView){
     init {
         super.itemView
         outerCardView = itemView.findViewById(R.id.card)
-        image = itemView.findViewById(R.id.image_view)
-        titleTV = itemView.findViewById(R.id.title)
+        image = itemView.findViewById(R.id.gallery_card_icon)
+        titleTV = itemView.findViewById(R.id.gallery_card_title)
         titleTV.movementMethod = ScrollingMovementMethod() //In case text-width > maxWidth
-        button1 = itemView.findViewById(R.id.button_1)
-        button2 = itemView.findViewById(R.id.button_2)
-        button3 = itemView.findViewById(R.id.button_3)
+        button1 = itemView.findViewById(R.id.gallery_card_button_1)
+        button2 = itemView.findViewById(R.id.gallery_card_button_2)
+        button3 = itemView.findViewById(R.id.gallery_card_button_3)
     }
 }

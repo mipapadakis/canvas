@@ -3,27 +3,27 @@
     <group>
         <item
             android:id="@+id/layer_option_to_front"
-            android:icon="@drawable/baseline_show_chart_black_48"
+            android:icon="@drawable/line_outlined"
             android:title="@string/layer_option_bring_to_front" />
         <item
             android:id="@+id/layer_option_merge"
-            android:icon="@drawable/baseline_show_chart_black_48"
+            android:icon="@drawable/line_outlined"
             android:title="@string/layer_option_merge" />
         <item
             android:id="@+id/layer_option_duplicate"
-            android:icon="@drawable/baseline_show_chart_black_48"
+            android:icon="@drawable/line_outlined"
             android:title="@string/layer_option_duplicate" />
         <item
             android:id="@+id/layer_option_opacity"
-            android:icon="@drawable/baseline_panorama_fish_eye_black_48"
+            android:icon="@drawable/circle_outlined"
             android:title="@string/layer_option_opacity" />
         <item
             android:id="@+id/layer_option_clear"
-            android:icon="@drawable/baseline_check_box_outline_blank_black_48"
+            android:icon="@drawable/check_box_empty_outlined"
             android:title="@string/layer_option_clear" />
         <item
             android:id="@+id/layer_option_delete"
-            android:icon="@drawable/baseline_crop_16_9_black_48"
+            android:icon="@drawable/rectangle_outlined"
             android:title="@string/layer_option_delete" />
     </group>
 </menu>

@@ -1,7 +1,6 @@
 package com.mipapadakis.canvas.tools
 
 import android.graphics.Color
-import com.mipapadakis.canvas.CanvasViewModel
 
 class ColorValues {
     companion object{

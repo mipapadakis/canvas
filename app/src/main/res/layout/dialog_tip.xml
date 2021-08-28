@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="300dp"
+    android:layout_height="wrap_content"
+    android:background="?attr/colorSecondaryVariant"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:paddingBottom="@dimen/property_editor_margin">
+        <ImageView
+            android:id="@+id/tip_dialog_icon"
+            android:layout_width="@dimen/toolbar_button_size_large"
+            android:layout_height="@dimen/toolbar_button_size_large"
+            android:src="@drawable/logo_outlined"
+            android:layout_gravity="center_vertical"
+            android:scaleType="fitXY"
+            tools:ignore="ContentDescription" />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_gravity="center"
+            android:paddingHorizontal="@dimen/property_editor_margin">
+
+            <TextView
+                android:id="@+id/tip_dialog_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/roboto_black"
+                android:textColor="@color/black"
+                android:paddingBottom="4dp"
+                android:text="Insert title"
+                android:textSize="20sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tip_dialog_subtitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:alpha="0.7"
+                android:fontFamily="sans-serif-medium"
+                android:text="subtitle"
+                android:textColor="@color/black"
+                android:textSize="14sp"
+                tools:ignore="TextContrastCheck" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/tip_dialog_description"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textColor="@color/black"
+        android:paddingBottom="@dimen/property_editor_margin"
+        android:text="Insert description"
+        android:textSize="16sp"
+        android:textStyle="bold"/>
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <TextView
+            android:id="@+id/tip_dialog_appear_once_textview"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:text="This tip won't appear again"
+            android:textSize="12sp"
+            android:visibility="gone"/>
+
+        <Button
+            android:id="@+id/tip_dialog_close_button"
+            style="?android:attr/buttonBarButtonStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end"
+            android:text="@string/close"
+            android:textColor="@color/black"
+            tools:ignore="TextContrastCheck" />
+    </FrameLayout>
+</LinearLayout>

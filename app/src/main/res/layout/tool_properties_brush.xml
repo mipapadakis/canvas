@@ -15,39 +15,17 @@
         android:layout_gravity="start"
         android:gravity="center"
         android:orientation="horizontal">
-        <!--
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:paddingHorizontal="15dp"
-            android:layout_gravity="center"
-            android:gravity="center"
-            android:textSize="12sp"
-            android:textStyle="bold"
-            android:text="Brush\nproperties:"/>-->
 
         <ImageButton
             android:id="@+id/property_brush_color_btn"
             android:layout_width="@dimen/toolbar_button_size"
             android:layout_height="@dimen/toolbar_button_size"
-            android:src="@drawable/baseline_color_lens_black_48"
+            android:src="@drawable/color_palette_outlined"
             android:background="@android:drawable/editbox_background"
             android:padding="5dp"
             android:layout_gravity="center"
             android:scaleType="fitCenter"
-            android:contentDescription="@string/bottom_toolbar_button" />
-
-        <!--
-        <ImageButton
-            android:id="@+id/property_brush_opacity_btn"
-            android:layout_width="@dimen/toolbar_button_size"
-            android:layout_height="@dimen/toolbar_button_size"
-            android:src="@drawable/baseline_opacity_black_48"
-            android:background="@android:color/transparent"
-            android:padding="5dp"
-            android:scaleType="fitCenter"
-            android:layout_gravity="center"
-            android:contentDescription="@string/bottom_toolbar_button"/>-->
+            android:contentDescription="@string/property_brush_color_btn_content_description" />
 
         <TextView
             android:id="@+id/property_brush_size_btn"
@@ -59,18 +37,18 @@
             android:scaleType="centerCrop"
             android:layout_gravity="center"
             android:gravity="center"
-            android:contentDescription="@string/bottom_toolbar_button" />
+            android:contentDescription="@string/property_brush_size_btn_content_description" />
 
         <ImageButton
             android:id="@+id/property_brush_type_btn"
             android:layout_width="@dimen/toolbar_button_size"
             android:layout_height="@dimen/toolbar_button_size"
-            android:src="@drawable/baseline_brush_black_48"
+            android:src="@drawable/brush_outlined"
             android:background="@android:drawable/editbox_background"
             android:padding="5dp"
             android:layout_gravity="center"
             android:scaleType="fitCenter"
-            android:contentDescription="@string/bottom_toolbar_button" />
+            android:contentDescription="@string/property_brush_type_btn_content_description" />
     </LinearLayout>
 
     <include layout="@layout/edit_color"
@@ -97,24 +75,23 @@
                 android:layout_height="@dimen/toolbar_button_size_large"
                 android:background="@android:drawable/editbox_background"
                 android:layout_margin="@dimen/property_editor_margin"
-                android:src="@drawable/baseline_brush_black_48"
+                android:src="@drawable/brush_outlined"
                 android:padding="5dp"
                 android:layout_gravity="center"
                 android:scaleType="fitCenter"
                 tools:ignore="ContentDescription" />
 
-            <!--
             <ImageButton
                 android:id="@+id/brush_type_pencil"
                 android:layout_width="@dimen/toolbar_button_size_large"
                 android:layout_height="@dimen/toolbar_button_size_large"
                 android:background="@android:drawable/editbox_background"
                 android:layout_margin="@dimen/property_editor_margin"
-                android:src="@drawable/baseline_create_black_48"
+                android:src="@drawable/pencil_outlined"
                 android:padding="5dp"
                 android:layout_gravity="center"
                 android:scaleType="fitCenter"
-                tools:ignore="ContentDescription" />-->
+                tools:ignore="ContentDescription" />
 
             <!--////////////////////////////////////PATTERN_1////////////////////////////////////-->
             <FrameLayout

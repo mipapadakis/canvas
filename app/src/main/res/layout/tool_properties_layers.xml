@@ -16,7 +16,7 @@
         android:padding="5dp"
         android:layout_gravity="center_vertical"
         android:scaleType="fitCenter"
-        android:contentDescription="@string/bottom_toolbar_button" />
+        android:contentDescription="@string/property_layers_add_btn_content_description" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/property_layers_recycler_view"

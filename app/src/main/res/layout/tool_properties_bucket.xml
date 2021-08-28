@@ -11,11 +11,11 @@
         android:id="@+id/property_bucket_color_btn"
         android:layout_width="@dimen/toolbar_button_size"
         android:layout_height="@dimen/toolbar_button_size"
-        android:src="@drawable/baseline_color_lens_black_48"
+        android:src="@drawable/color_palette_outlined"
         android:background="@android:drawable/editbox_background"
         android:padding="5dp"
         android:scaleType="fitCenter"
-        android:contentDescription="@string/bottom_toolbar_button" />
+        android:contentDescription="@string/property_bucket_color_btn_content_description" />
 
     <include layout="@layout/edit_color"
         android:id="@+id/property_bucket_color_editor"

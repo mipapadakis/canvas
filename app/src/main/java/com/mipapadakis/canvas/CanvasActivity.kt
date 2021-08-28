@@ -3,7 +3,6 @@ package com.mipapadakis.canvas
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
-import android.content.Intent
 import android.graphics.*
 import android.net.Uri
 import android.os.*
@@ -13,7 +12,6 @@ import android.util.Log
 import android.view.*
 import android.view.inputmethod.InputMethodManager
 import android.widget.*
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.cardview.widget.CardView
@@ -23,13 +21,16 @@ import androidx.recyclerview.widget.DefaultItemAnimator
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.mipapadakis.canvas.tools.CanvasTouchListener
 import com.mipapadakis.canvas.tools.CvFileHelper
 import com.mipapadakis.canvas.tools.DeviceDimensions
+import com.mipapadakis.canvas.tools.ShowTipDialog
 import com.mipapadakis.canvas.ui.*
+import com.mipapadakis.canvas.ui.canvas.CanvasImageView
+import com.mipapadakis.canvas.ui.canvas.toolbar.bottom.*
 import com.mipapadakis.canvas.ui.create_canvas.CreateCanvasFragment
-import com.mipapadakis.canvas.ui.gallery.GalleryViewModel
-import com.mipapadakis.canvas.ui.toolbar.bottom.*
-import com.mipapadakis.canvas.ui.toolbar.bottom.editors.LayerListAdapter
+import com.mipapadakis.canvas.ui.gallery.GalleryFragmentData
+import com.mipapadakis.canvas.ui.canvas.toolbar.bottom.editors.LayerListAdapter
 import java.util.*
 import kotlin.math.abs
 
@@ -38,8 +39,6 @@ private const val IMPORT_IMAGE_INTENT_KEY = CreateCanvasFragment.IMPORT_IMAGE_IN
 private const val IMPORT_CV_IMAGE_INTENT_KEY = CreateCanvasFragment.IMPORT_CV_IMAGE_INTENT_KEY
 private const val DIMENSION_WIDTH_INTENT_KEY = CreateCanvasFragment.DIMENSION_WIDTH_INTENT_KEY
 private const val DIMENSION_HEIGHT_INTENT_KEY = CreateCanvasFragment.DIMENSION_HEIGHT_INTENT_KEY
-//private const val MAX_WIDTH = CreateCanvasFragment.MAX_WIDTH
-//private const val MAX_HEIGHT = CreateCanvasFragment.MAX_HEIGHT
 
 @SuppressLint("ClickableViewAccessibility", "NotifyDataSetChanged")
 class CanvasActivity : AppCompatActivity() {
@@ -49,8 +48,8 @@ class CanvasActivity : AppCompatActivity() {
     private var canvasWidth = 540
     private var canvasHeight = 984
     private var safeToExit = false
-    private var outRect = Rect()
     private var location = IntArray(2)
+    private var outRect = Rect()
 
     ////////////////////////////////////////////Views///////////////////////////////////////////////x
     private lateinit var layoutCanvas: RelativeLayout
@@ -65,7 +64,7 @@ class CanvasActivity : AppCompatActivity() {
     private lateinit var toolbarRedoBtn: ImageButton
     private lateinit var toolbarLayerBtn: ImageButton
     private lateinit var toolbarToolBtn: ImageButton
-    private lateinit var toolbarCanvasBtn: ImageButton
+    private lateinit var toolbarOptionsBtn: ImageButton
     private lateinit var bottomToolbarOuterCardView: CardView
     private lateinit var bottomToolbarInnerCardView: CardView
     //Properties
@@ -77,20 +76,16 @@ class CanvasActivity : AppCompatActivity() {
     private lateinit var toolShapeLayout: View
     private lateinit var toolTextLayout: View
     private lateinit var toolCanvasLayersLayout: View
-    private lateinit var toolCanvasLayersAddBtn: ImageButton
+    private lateinit var toolLayerAddBtn: ImageButton
     private lateinit var toolCanvasTransformLayout: View
-//    private lateinit var toolCanvasSettingsBtn: AppCompatButton //TODO
-//    private lateinit var toolCanvasSaveBtn: AppCompatButton //TODO
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_canvas)
-        //hideSystemUI() //TODO?
         toast = Toast(this)
         devicePixelWidth = DeviceDimensions.getWidth(this)
         devicePixelHeight = DeviceDimensions.getHeight(this)
-        //canvasViewModel = ViewModelProvider(this).get(CanvasViewModel::class.java)
-        CanvasViewModel.resetAttributes()
+        CanvasActivityData.resetAttributes()
         layoutCanvas = findViewById(R.id.canvas_layout)
         toolCanvasLayersLayout = findViewById(R.id.canvas_layers_properties)
         layerRecyclerView = toolCanvasLayersLayout.findViewById(R.id.property_layers_recycler_view)
@@ -115,7 +110,7 @@ class CanvasActivity : AppCompatActivity() {
             }
             //Imported image from GalleryFragment or MainActivity(intent.ACTION_VIEW)
             intent.getStringExtra(IMPORT_CV_IMAGE_INTENT_KEY)!=null -> {
-                val cvImage = CanvasViewModel.cvImage
+                val cvImage = CanvasActivityData.cvImage
                 canvasWidth = cvImage.width
                 canvasHeight = cvImage.height
                 val layoutParamsCanvas = RelativeLayout.LayoutParams(canvasWidth, canvasHeight)
@@ -144,13 +139,15 @@ class CanvasActivity : AppCompatActivity() {
         }
 
         //Handle background touches:
-        layoutCanvas.setOnTouchListener(MyTouchListener(object : MyTouchListener.MultiTouchListener {
+        layoutCanvas.setOnTouchListener(CanvasTouchListener(object : CanvasTouchListener.MultiTouchListener {
             override fun on1PointerTap(event: MotionEvent) { toggleToolbarVisibility() }
             override fun on2PointerDoubleTap(event: MotionEvent) {
                 Log.i("CanvasTouchListener", "Background on2PointerDoubleTap")
                 canvasIV.on2PointerDoubleTap(event)
             }
-            override fun on1PointerLongPress(event: MotionEvent) { toggleToolbarVisibility() }
+            override fun on1PointerLongPress(event: MotionEvent) {
+                ShowTipDialog.showCanvasTipDialog(applicationContext)
+            }
             override fun on3PointerTap(event: MotionEvent) {
                 Log.i("CanvasTouchListener", "Background on3PointerTap")
                 canvasIV.on3PointerTap(event)
@@ -168,31 +165,17 @@ class CanvasActivity : AppCompatActivity() {
         layerRecyclerView.itemAnimator = DefaultItemAnimator()
         layerRecyclerView.adapter = LayerListAdapter(canvasIV, resources)
         getItemTouchHelper().attachToRecyclerView(layerRecyclerView)
-//        layerRecyclerView.addOnItemTouchListener(
-//            RecyclerViewTouchListener(this, layerRecyclerView, object : RecyclerViewTouchListener.ClickListener {
-//                override fun onItemClick(view: View?, position: Int) {}
-//                override fun onLongClick(view: View?, position: Int) {}
-//                override fun onDoubleClick(view: View?, position: Int) {}
-//                override fun onBackgroundClick() {}
-//            })
-//        )
-    }
 
-//    private fun scaleBitmapToFitMaxDimensions(bmp: Bitmap): Bitmap{
-//        if(bmp.width < MAX_WIDTH && bmp.height < MAX_HEIGHT) return bmp
-//        val newWidth: Int
-//        val newHeight: Int
-//
-//        if(bmp.width/bmp.height > MAX_WIDTH/MAX_HEIGHT){
-//            newWidth = MAX_WIDTH-1
-//            newHeight = bmp.height*(MAX_WIDTH / bmp.width)
-//        }
-//        else{
-//            newWidth = bmp.width*(MAX_WIDTH / bmp.width)
-//            newHeight = MAX_HEIGHT-1
-//        }
-//        return Bitmap.createScaledBitmap(bmp, newWidth,newHeight,false)
-//    }
+        setTipDialogs()
+    }
+    private fun setTipDialogs() {
+        ShowTipDialog(toolbarUndoBtn, R.drawable.undo_outlined)
+        ShowTipDialog(toolbarRedoBtn, R.drawable.redo_outlined)
+        ShowTipDialog(toolbarToolBtn, R.drawable.brush_outlined)
+        ShowTipDialog(toolbarLayerBtn, R.drawable.layers_outlined)
+        ShowTipDialog(toolbarOptionsBtn, R.drawable.settings_outlined)
+        ShowTipDialog(toolLayerAddBtn, R.drawable.add_layer)
+    }
 
     private fun getItemTouchHelper(): ItemTouchHelper {
         return ItemTouchHelper(object : ItemTouchHelper.SimpleCallback(ItemTouchHelper.LEFT + ItemTouchHelper.RIGHT, 0) {
@@ -243,11 +226,10 @@ class CanvasActivity : AppCompatActivity() {
         toolbarUndoBtn = findViewById(R.id.toolbar_button_undo)
         toolbarRedoBtn = findViewById(R.id.toolbar_button_redo)
         toolbarLayerBtn = findViewById(R.id.toolbar_button_layers)
-        toolbarToolBtn = findViewById(R.id.toolbar_button_tool) //TODO menu & options for each tool
-        toolbarCanvasBtn = findViewById(R.id.toolbar_button_options) //TODO canvas menu. Contains canvas global options.
+        toolbarToolBtn = findViewById(R.id.toolbar_button_tool)
+        toolbarOptionsBtn = findViewById(R.id.toolbar_button_options)
         bottomToolbarOuterCardView = findViewById(R.id.bottom_toolbar_outer_card)
         bottomToolbarInnerCardView = findViewById(R.id.bottom_toolbar_inner_card)
-        //TODO menu of colors (onColorPick, change background color of toolbarInnerCardView)
 
         var timer: CountDownTimer? = null
         var longPressed = false
@@ -321,14 +303,16 @@ class CanvasActivity : AppCompatActivity() {
         addPopMenuTools()
         addPopMenuCanvas()
 
-        CanvasViewModel.toolbarColor.observe(this, {
-            toolbarInnerCardView.setCardBackgroundColor(CanvasViewModel.paint.color)
-            bottomToolbarInnerCardView.setCardBackgroundColor(CanvasViewModel.paint.color)
+        CanvasActivityData.toolbarColor.observe(this, {
+            toolbarInnerCardView.setCardBackgroundColor(CanvasActivityData.paint.color)
+            bottomToolbarInnerCardView.setCardBackgroundColor(CanvasActivityData.paint.color)
         })
         //bottomToolbarInnerCardView.setCardBackgroundColor(CanvasColor.getColorFromId(this, CanvasPreferences.startingColorId))
-        toolbarToolBtn.setImageResource(CanvasViewModel.tool)
-        CanvasViewModel.setPaintColor(getColorFromId( CanvasPreferences.startingColorId))
+        toolbarToolBtn.setImageResource(CanvasActivityData.tool)
+        CanvasActivityData.setPaintColor(getColorFromId( CanvasPreferences.startingColorId))
     }
+
+
 
     private fun setBottomToolbar() {
         toolBrushLayout = findViewById(R.id.tool_brush_properties)
@@ -337,7 +321,7 @@ class CanvasActivity : AppCompatActivity() {
         toolSelectLayout = findViewById(R.id.tool_select_properties)
         toolShapeLayout = findViewById(R.id.tool_shape_properties)
         toolTextLayout = findViewById(R.id.tool_text_properties)
-        toolCanvasLayersAddBtn = toolCanvasLayersLayout.findViewById(R.id.property_layers_add_btn)
+        toolLayerAddBtn = toolCanvasLayersLayout.findViewById(R.id.property_layers_add_btn)
         toolCanvasTransformLayout = findViewById(R.id.canvas_transform_properties)
         properties = arrayOf(
             toolBrushLayout,
@@ -349,7 +333,7 @@ class CanvasActivity : AppCompatActivity() {
             toolCanvasLayersLayout,
             toolCanvasTransformLayout)
         hideProperties()
-        if(CanvasViewModel.tool == CanvasViewModel.TOOL_BRUSH)
+        if(CanvasActivityData.tool == CanvasActivityData.TOOL_BRUSH)
             toolBrushLayout.visibility = View.VISIBLE
 
         // setup Toolbar Menus
@@ -369,19 +353,19 @@ class CanvasActivity : AppCompatActivity() {
         //SHAPE
         ShapeToolMenu(this, toolShapeLayout){
             //OnShapeChanged:
-            toolbarToolBtn.setImageResource(CanvasViewModel.shapeType)
+            toolbarToolBtn.setImageResource(CanvasActivityData.shapeType)
         }
 
         //TEXT
         TextToolMenu(this, toolTextLayout)
 
         //LAYERS
-        toolCanvasLayersAddBtn.setOnClickListener {
-            if(CanvasViewModel.cvImage.layerCount()>=15){
+        toolLayerAddBtn.setOnClickListener {
+            if(CanvasActivityData.cvImage.layerCount()>=15){
                 showToast("Try merging some of the existing layers first to save up memory.")
                 return@setOnClickListener
             }
-            CanvasViewModel.cvImage.newLayer()
+            CanvasActivityData.cvImage.newLayer()
             canvasIV.invalidateLayers()
             canvasIV.addActionToHistory(CanvasImageView.ACTION_LAYER_ADD)
         }
@@ -395,9 +379,9 @@ class CanvasActivity : AppCompatActivity() {
     }
 
     private fun addPopMenuCanvas() {
-        toolbarCanvasBtn.setOnClickListener {
-            val canvasMenu = PopupMenu(this, toolbarCanvasBtn)
-            canvasMenu.menuInflater.inflate(R.menu.canvas, canvasMenu.menu)
+        toolbarOptionsBtn.setOnClickListener {
+            val canvasMenu = PopupMenu(this, toolbarOptionsBtn)
+            canvasMenu.menuInflater.inflate(R.menu.canvas_options, canvasMenu.menu)
             canvasMenu.setOnMenuItemClickListener {
                 when (it.itemId) {
                     R.id.canvas_transform-> {
@@ -436,39 +420,39 @@ class CanvasActivity : AppCompatActivity() {
                 showBottomToolbar()
                 when (it.itemId) {
                     R.id.tool_brush -> {
-                        CanvasViewModel.tool = CanvasViewModel.TOOL_BRUSH
+                        CanvasActivityData.tool = CanvasActivityData.TOOL_BRUSH
                         toolBrushLayout.visibility = View.VISIBLE
-                        toolbarToolBtn.setImageResource(R.drawable.baseline_brush_black_48)
+                        toolbarToolBtn.setImageResource(R.drawable.brush_outlined)
                     }
                     R.id.tool_eraser -> {
                         toolEraserLayout.visibility = View.VISIBLE
-                        CanvasViewModel.tool = CanvasViewModel.TOOL_ERASER
-                        toolbarToolBtn.setImageResource(R.drawable.eraser_bold)
+                        CanvasActivityData.tool = CanvasActivityData.TOOL_ERASER
+                        toolbarToolBtn.setImageResource(R.drawable.eraser_outlined)
                     }
                     R.id.tool_bucket -> {
                         toolBucketLayout.visibility = View.VISIBLE
-                        CanvasViewModel.tool = CanvasViewModel.TOOL_BUCKET
-                        toolbarToolBtn.setImageResource(R.drawable.baseline_format_color_fill_black_48)
+                        CanvasActivityData.tool = CanvasActivityData.TOOL_BUCKET
+                        toolbarToolBtn.setImageResource(R.drawable.bucket_outlined)
                     }
                     R.id.tool_eyedropper -> {
                         hideBottomToolbar()
-                        CanvasViewModel.tool = CanvasViewModel.TOOL_EYEDROPPER
-                        toolbarToolBtn.setImageResource(R.drawable.baseline_colorize_black_48)
+                        CanvasActivityData.tool = CanvasActivityData.TOOL_EYEDROPPER
+                        toolbarToolBtn.setImageResource(R.drawable.eyedropper_outlined)
                     }
                     R.id.tool_select -> {
                         toolSelectLayout.visibility = View.VISIBLE
-                        CanvasViewModel.tool = CanvasViewModel.TOOL_SELECT
+                        CanvasActivityData.tool = CanvasActivityData.TOOL_SELECT
                         toolbarToolBtn.setImageResource(R.drawable.select_rectangular)
                     }
                     R.id.tool_shape -> {
                         toolShapeLayout.visibility = View.VISIBLE
-                        CanvasViewModel.tool = CanvasViewModel.TOOL_SHAPE
-                        toolbarToolBtn.setImageResource(CanvasViewModel.shapeType)
+                        CanvasActivityData.tool = CanvasActivityData.TOOL_SHAPE
+                        toolbarToolBtn.setImageResource(CanvasActivityData.shapeType)
                     }
                     R.id.tool_text -> {
                         toolTextLayout.visibility = View.VISIBLE
-                        CanvasViewModel.tool = CanvasViewModel.TOOL_TEXT
-                        toolbarToolBtn.setImageResource(R.drawable.baseline_title_black_48)
+                        CanvasActivityData.tool = CanvasActivityData.TOOL_TEXT
+                        toolbarToolBtn.setImageResource(R.drawable.text_outlined)
                     }
                     else -> {}
                 }
@@ -482,27 +466,27 @@ class CanvasActivity : AppCompatActivity() {
 
     private fun showSaveCanvasDialog(askBeforeExit: Boolean){
         val layoutInflaterAndroid = LayoutInflater.from(this)
-        val view: View = layoutInflaterAndroid.inflate(R.layout.input_dialog, null)
+        val view: View = layoutInflaterAndroid.inflate(R.layout.dialog_save, null)
         val alertDialogBuilderUserInput: AlertDialog.Builder = AlertDialog.Builder(this)
         alertDialogBuilderUserInput.setView(view)
-        val inputTitle = view.findViewById<EditText>(R.id.input_title)
-        val dialogTitle = view.findViewById<TextView>(R.id.dialog_title)
-        val dialogSubtitle = view.findViewById<TextView>(R.id.dialog_subtitle)
-        val fileNameExistsTV = view.findViewById<TextView>(R.id.dialog_file_name_exists)
-        val typeCanvasRadioButton = view.findViewById<RadioButton>(R.id.dialog_fileType_canvas)
-        val typePngRadioButton = view.findViewById<RadioButton>(R.id.dialog_fileType_png)
-        val typeJpegRadioButton = view.findViewById<RadioButton>(R.id.dialog_fileType_jpeg)
+        val inputTitle = view.findViewById<EditText>(R.id.input_dialog_input_title)
+        val dialogTitle = view.findViewById<TextView>(R.id.input_dialog_title)
+        val dialogSubtitle = view.findViewById<TextView>(R.id.input_dialog_subtitle)
+        val fileNameExistsTV = view.findViewById<TextView>(R.id.input_dialog_file_name_exists)
+        val typeCanvasRadioButton = view.findViewById<RadioButton>(R.id.input_dialog_filetype_canvas)
+        val typePngRadioButton = view.findViewById<RadioButton>(R.id.input_dialog_filetype_png)
+        val typeJpegRadioButton = view.findViewById<RadioButton>(R.id.input_dialog_filetype_jpeg)
 
         val titleText = getString(R.string.save_canvas_title) + if(askBeforeExit) "?" else ""
         dialogTitle.text = titleText
         dialogSubtitle.text = getString(R.string.save_canvas_subtitle)
-        inputTitle.setText(CanvasViewModel.cvImage.title)
+        inputTitle.setText(CanvasActivityData.cvImage.title)
 
         alertDialogBuilderUserInput
-            .setIcon(R.drawable.baseline_save_black_48)
+            .setIcon(R.drawable.save_outlined)
             .setCancelable(true)
-            .setPositiveButton(  "save" ) { _, _ -> }
-            .setNegativeButton( if(askBeforeExit) "Exit without saving" else "cancel" ) { dialogBox, _ ->
+            .setPositiveButton(  getString(R.string.save) ) { _, _ -> }
+            .setNegativeButton( if(askBeforeExit) getString(R.string.exit_without_save) else getString(R.string.cancel) ) { dialogBox, _ ->
                 hideKeyboard(inputTitle)
                 dialogBox.cancel()
                 if(askBeforeExit){
@@ -531,22 +515,27 @@ class CanvasActivity : AppCompatActivity() {
         //////////////////////Handle when FileNameExistsTextView is visible:////////////////////////
         inputTitle.addTextChangedListener {
             updateDialogFileNameExistsTextView(it?.toString()?:"",
-                typeCanvasRadioButton, typePngRadioButton, fileNameExistsTV)
+                typeCanvasRadioButton, typePngRadioButton, fileNameExistsTV,
+                alertDialog.getButton(AlertDialog.BUTTON_POSITIVE))
         }
         typeCanvasRadioButton.setOnCheckedChangeListener { _, _ ->
             updateDialogFileNameExistsTextView(inputTitle?.text.toString(),
-                typeCanvasRadioButton, typePngRadioButton, fileNameExistsTV)
+                typeCanvasRadioButton, typePngRadioButton, fileNameExistsTV,
+                alertDialog.getButton(AlertDialog.BUTTON_POSITIVE))
         }
         typePngRadioButton.setOnCheckedChangeListener { _, _ ->
             updateDialogFileNameExistsTextView(inputTitle?.text.toString(),
-                typeCanvasRadioButton, typePngRadioButton, fileNameExistsTV)
+                typeCanvasRadioButton, typePngRadioButton, fileNameExistsTV,
+                alertDialog.getButton(AlertDialog.BUTTON_POSITIVE))
         }
         typeJpegRadioButton.setOnCheckedChangeListener { _, _ ->
             updateDialogFileNameExistsTextView(inputTitle?.text.toString(),
-                typeCanvasRadioButton, typePngRadioButton, fileNameExistsTV)
+                typeCanvasRadioButton, typePngRadioButton, fileNameExistsTV,
+                alertDialog.getButton(AlertDialog.BUTTON_POSITIVE))
         }
         updateDialogFileNameExistsTextView(inputTitle?.text.toString(),
-            typeCanvasRadioButton, typePngRadioButton, fileNameExistsTV)
+            typeCanvasRadioButton, typePngRadioButton, fileNameExistsTV,
+            alertDialog.getButton(AlertDialog.BUTTON_POSITIVE))
         ////////////////////////////////////////////////////////////////////////////////////////////
 
         alertDialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(View.OnClickListener {
@@ -555,16 +544,16 @@ class CanvasActivity : AppCompatActivity() {
                 return@OnClickListener
             }
 
-            CanvasViewModel.cvImage.title = inputTitle.text.toString()
+            CanvasActivityData.cvImage.title = inputTitle.text.toString()
             when {
-                typeCanvasRadioButton.isChecked -> CanvasViewModel.cvImage.fileType = CanvasViewModel.FILETYPE_CANVAS
-                typePngRadioButton.isChecked -> CanvasViewModel.cvImage.fileType = CanvasViewModel.FILETYPE_PNG
-                typeJpegRadioButton.isChecked -> CanvasViewModel.cvImage.fileType = CanvasViewModel.FILETYPE_JPEG
+                typeCanvasRadioButton.isChecked -> CanvasActivityData.cvImage.fileType = CanvasActivityData.FILETYPE_CANVAS
+                typePngRadioButton.isChecked -> CanvasActivityData.cvImage.fileType = CanvasActivityData.FILETYPE_PNG
+                typeJpegRadioButton.isChecked -> CanvasActivityData.cvImage.fileType = CanvasActivityData.FILETYPE_JPEG
             }
             //Update undo history with the new title and filetype
-            for(action in CanvasViewModel.history){
-                action.actionCvImage.title = CanvasViewModel.cvImage.title
-                action.actionCvImage.fileType = CanvasViewModel.cvImage.fileType
+            for(action in CanvasActivityData.history){
+                action.actionCvImage.title = CanvasActivityData.cvImage.title
+                action.actionCvImage.fileType = CanvasActivityData.cvImage.fileType
             }
 
             //Save Canvas:
@@ -587,22 +576,28 @@ class CanvasActivity : AppCompatActivity() {
     private fun updateDialogFileNameExistsTextView(fileName: String,
                                                    fileTypeCanvas: RadioButton,
                                                    fileTypePng: RadioButton,
-                                                   fileNameExistsTV: TextView){
+                                                   fileNameExistsTV: TextView,
+                                                   saveButton: Button){
         if(CvFileHelper(this).fileNameAlreadyExists(
                 "${fileName}." + when {
                     fileTypeCanvas.isChecked -> getString(R.string.file_extension_canvas)
                     fileTypePng.isChecked -> getString(R.string.file_extension_png)
                     else -> getString(R.string.file_extension_jpeg)
                 }
-            ))
+            )) {
             fileNameExistsTV.visibility = View.VISIBLE
-        else fileNameExistsTV.visibility = View.GONE
+            saveButton.text = getString(R.string.overwrite)
+        }
+        else {
+            fileNameExistsTV.visibility = View.GONE
+            saveButton.text = getString(R.string.save)
+        }
     }
 
     private fun saveCvImage(){
         if(CvFileHelper(this).saveCvImage()) {
-            showToast("Saved As \"${CanvasViewModel.cvImage.getFilenameWithExtension(this)}\"")
-            GalleryViewModel.setImages(CvFileHelper(this).getAllCvImages())
+            showToast("Saved As \"${CanvasActivityData.cvImage.getFilenameWithExtension(this)}\"")
+            GalleryFragmentData.setImages(CvFileHelper(this).getAllCvImages())
         }
     }
 
@@ -655,7 +650,7 @@ class CanvasActivity : AppCompatActivity() {
 
     private fun showToolBars() {
         //val drawableOff = getDrawableFromId(R.drawable.baseline_visibility_off_black_24)
-        toolbarMoveImageView.setImageResource(R.drawable.baseline_open_with_black_48)
+        toolbarMoveImageView.setImageResource(R.drawable.move_outlined)
         toolbarButtonLayout.visibility = View.VISIBLE
         if(hasVisibleProperties()) showBottomToolbar() else hideBottomToolbar()
     }
@@ -669,7 +664,7 @@ class CanvasActivity : AppCompatActivity() {
     }
 
     private fun hideToolbars() {
-        val drawableOn = getDrawableFromId(R.drawable.baseline_visibility_black_48)
+        val drawableOn = getDrawableFromId(R.drawable.visibility_outlined)
         toolbarMoveImageView.setImageDrawable(drawableOn)
         toolbarButtonLayout.visibility = View.GONE
         hideBottomToolbar()
@@ -687,8 +682,8 @@ class CanvasActivity : AppCompatActivity() {
         avoidTopAndBottomToolbarOverlap()
     }
 
-    fun getColorFromId(id: Int) = CanvasColor.getColorFromId(this, id)
-    fun getDrawableFromId(id: Int) = ContextCompat.getDrawable(this, id)
+    private fun getColorFromId(id: Int) = ContextCompat.getColor(this, id)
+    private fun getDrawableFromId(id: Int) = ContextCompat.getDrawable(this, id)
 
     @Suppress("SameParameterValue")
     private fun showToast(text: String){
@@ -702,25 +697,5 @@ class CanvasActivity : AppCompatActivity() {
     override fun onBackPressed() {
         if(safeToExit) super.onBackPressed()
         else showSaveCanvasDialog(true)
-    }
-
-    // https://stackoverflow.com/a/64828067/11535380
-    @SuppressLint("InlinedApi")
-    private fun hideSystemUI() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            window.setDecorFitsSystemWindows(false)
-            window.insetsController?.let {
-                it.hide(WindowInsets.Type.statusBars() or WindowInsets.Type.navigationBars())
-                it.systemBarsBehavior = WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
-            }
-        } else {
-            @Suppress("DEPRECATION")
-            window.decorView.systemUiVisibility = (View.SYSTEM_UI_FLAG_FULLSCREEN
-                    or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                    or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
-                    or View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                    or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                    or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION)
-        }
     }
 }

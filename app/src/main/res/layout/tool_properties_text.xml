@@ -17,12 +17,12 @@
             android:id="@+id/property_text_color_btn"
             android:layout_width="@dimen/toolbar_button_size"
             android:layout_height="@dimen/toolbar_button_size"
-            android:src="@drawable/baseline_color_lens_black_48"
+            android:src="@drawable/color_palette_outlined"
             android:background="@android:drawable/editbox_background"
             android:padding="5dp"
             android:layout_gravity="center"
             android:scaleType="fitCenter"
-            android:contentDescription="@string/bottom_toolbar_button" />
+            android:contentDescription="@string/property_text_color_btn_content_description" />
 
         <TextView
             android:id="@+id/property_text_size_btn"
@@ -34,7 +34,7 @@
             android:scaleType="centerCrop"
             android:layout_gravity="center"
             android:gravity="center"
-            android:contentDescription="@string/bottom_toolbar_button" />
+            android:contentDescription="@string/property_text_size_btn_content_description" />
 
         <TextView
             android:id="@+id/property_text_font_btn"
@@ -49,31 +49,31 @@
             android:scaleType="centerCrop"
             android:layout_gravity="center"
             android:gravity="center"
-            android:contentDescription="@string/bottom_toolbar_button" />
+            android:contentDescription="@string/property_text_font_btn_content_description" />
 
         <ImageButton
             android:id="@+id/property_text_bold_btn"
             android:layout_width="@dimen/toolbar_button_size_small"
             android:layout_height="@dimen/toolbar_button_size_small"
-            android:src="@drawable/bold_no_outline"
+            android:src="@drawable/bold"
             android:background="@android:color/transparent"
             android:layout_marginHorizontal="4dp"
             android:layout_marginTop="2dp"
             android:layout_gravity="center"
             android:scaleType="fitCenter"
-            android:contentDescription="@string/bottom_toolbar_button" />
+            android:contentDescription="@string/property_text_bold_btn_content_description" />
 
         <ImageButton
             android:id="@+id/property_text_italics_btn"
             android:layout_width="@dimen/toolbar_button_size_small"
             android:layout_height="@dimen/toolbar_button_size_small"
-            android:src="@drawable/italic_no_outline"
+            android:src="@drawable/italic"
             android:background="@android:color/transparent"
             android:layout_marginHorizontal="4dp"
             android:layout_marginTop="2dp"
             android:layout_gravity="center"
             android:scaleType="fitCenter"
-            android:contentDescription="@string/bottom_toolbar_button" />
+            android:contentDescription="@string/property_text_italics_btn_content_description" />
     </LinearLayout>
 
     <include layout="@layout/edit_color"

@@ -14,20 +14,21 @@
         android:gravity="center">
 
         <LinearLayout
-            android:id="@+id/property_eraser_opacity_btn"
             android:layout_width="wrap_content"
             android:layout_height="@dimen/toolbar_button_size"
             android:background="@android:drawable/editbox_background"
-            android:orientation="horizontal">
+            android:orientation="horizontal"
+            android:contentDescription="@string/property_eraser_opacity_btn_content_description">
             <ImageButton
+                android:id="@+id/property_eraser_opacity_btn"
                 android:layout_width="@dimen/toolbar_button_size"
                 android:layout_height="@dimen/toolbar_button_size"
-                android:src="@drawable/baseline_opacity_black_48"
+                android:src="@drawable/opacity_outlined"
                 android:background="@android:color/transparent"
                 android:padding="5dp"
                 android:scaleType="fitCenter"
                 android:layout_gravity="center"
-                android:contentDescription="@string/bottom_toolbar_button"/>
+                android:contentDescription="@string/property_eraser_opacity_btn_content_description"/>
 
             <TextView
                 android:id="@+id/property_eraser_opacity_value"
@@ -38,7 +39,7 @@
                 android:scaleType="centerCrop"
                 android:layout_gravity="center"
                 android:gravity="center"
-                android:contentDescription="@string/bottom_toolbar_button" />
+                android:contentDescription="@string/property_eraser_opacity_btn_content_description" />
             <ImageView
                 android:layout_width="10dp"
                 android:layout_height="@dimen/toolbar_button_size"/>
@@ -54,7 +55,7 @@
             android:scaleType="centerCrop"
             android:layout_gravity="center"
             android:gravity="center"
-            android:contentDescription="@string/bottom_toolbar_button" />
+            android:contentDescription="@string/property_eraser_size_btn_content_description"/>
     </LinearLayout>
 
     <include layout="@layout/edit_opacity"

@@ -59,51 +59,51 @@
                         android:id="@+id/toolbar_button_undo"
                         android:layout_width="@dimen/toolbar_button_size"
                         android:layout_height="@dimen/toolbar_button_size"
-                        android:src="@drawable/baseline_undo_black_48"
+                        android:src="@drawable/undo_outlined"
                         android:background="@android:color/transparent"
                         android:padding="5dp"
                         android:scaleType="fitCenter"
-                        android:contentDescription="@string/toolbar_button"/>
+                        android:contentDescription="@string/toolbar_button_undo_content_description"/>
 
                     <ImageButton
                         android:id="@+id/toolbar_button_redo"
                         android:layout_width="@dimen/toolbar_button_size"
                         android:layout_height="@dimen/toolbar_button_size"
-                        android:src="@drawable/baseline_redo_black_48"
+                        android:src="@drawable/redo_outlined"
                         android:background="@android:color/transparent"
                         android:padding="5dp"
                         android:scaleType="fitCenter"
-                        android:contentDescription="@string/toolbar_button" />
+                        android:contentDescription="@string/toolbar_button_redo_content_description" />
 
                     <ImageButton
                         android:id="@+id/toolbar_button_tool"
                         android:layout_width="@dimen/toolbar_button_size"
                         android:layout_height="@dimen/toolbar_button_size"
-                        android:src="@drawable/baseline_brush_black_48"
+                        android:src="@drawable/brush_outlined"
                         android:background="@android:color/transparent"
                         android:padding="6dp"
                         android:scaleType="fitCenter"
-                        android:contentDescription="@string/toolbar_button" />
+                        android:contentDescription="@string/toolbar_button_tool_content_description" />
 
                     <ImageButton
                         android:id="@+id/toolbar_button_layers"
                         android:layout_width="@dimen/toolbar_button_size"
                         android:layout_height="@dimen/toolbar_button_size"
-                        android:src="@drawable/baseline_layers_black_48"
+                        android:src="@drawable/layers_outlined"
                         android:background="@android:color/transparent"
                         android:padding="5dp"
                         android:scaleType="fitCenter"
-                        android:contentDescription="@string/toolbar_button" />
+                        android:contentDescription="@string/toolbar_button_layers_content_description" />
 
                     <ImageButton
                         android:id="@+id/toolbar_button_options"
                         android:layout_width="@dimen/toolbar_button_size"
                         android:layout_height="@dimen/toolbar_button_size"
-                        android:src="@drawable/baseline_settings_black_48"
+                        android:src="@drawable/settings_outlined"
                         android:background="@android:color/transparent"
                         android:padding="5dp"
                         android:scaleType="fitCenter"
-                        android:contentDescription="@string/toolbar_button" />
+                        android:contentDescription="@string/toolbar_button_options_content_description" />
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
 
@@ -112,7 +112,7 @@
                 android:layout_width="@dimen/toolbar_button_size_small"
                 android:layout_height="@dimen/toolbar_button_size_small"
                 android:layout_gravity="center_vertical"
-                android:src="@drawable/baseline_open_with_black_48"
+                android:src="@drawable/move_outlined"
                 android:background="@android:color/transparent"
                 android:layout_marginEnd="4dp"
                 android:layout_marginRight="4dp"
@@ -127,15 +127,16 @@
         android:id="@+id/bottom_toolbar_outer_card"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
         android:clickable="true"
         android:focusable="true"
-        android:layout_alignParentBottom="true"
+        android:visibility="visible"
+        app:cardBackgroundColor="@color/black"
         app:cardCornerRadius="8dp"
         app:cardElevation="6dp"
         app:cardPreventCornerOverlap="true"
         app:cardUseCompatPadding="true"
-        app:cardBackgroundColor="@color/black"
-        android:visibility="visible">
+        tools:ignore="TouchTargetSizeCheck">
 
         <androidx.cardview.widget.CardView
             android:id="@+id/bottom_toolbar_inner_card"
@@ -143,34 +144,49 @@
             android:layout_height="wrap_content"
             android:clickable="true"
             android:focusable="true"
+            app:cardCornerRadius="4dp"
             app:cardPreventCornerOverlap="true"
-            app:cardUseCompatPadding="true"
-            app:cardCornerRadius="4dp">
+            app:cardUseCompatPadding="true">
 
-            <include layout="@layout/tool_properties_brush"
+            <include
                 android:id="@+id/tool_brush_properties"
-                android:visibility="gone"/>
-            <include layout="@layout/tool_properties_eraser"
+                layout="@layout/tool_properties_brush"
+                android:visibility="gone" />
+
+            <include
                 android:id="@+id/tool_eraser_properties"
-                android:visibility="gone"/>
-            <include layout="@layout/tool_properties_bucket"
+                layout="@layout/tool_properties_eraser"
+                android:visibility="gone" />
+
+            <include
                 android:id="@+id/tool_bucket_properties"
-                android:visibility="gone"/>
-            <include layout="@layout/tool_properties_selection"
+                layout="@layout/tool_properties_bucket"
+                android:visibility="gone" />
+
+            <include
                 android:id="@+id/tool_select_properties"
-                android:visibility="gone"/>
-            <include layout="@layout/tool_properties_shape"
+                layout="@layout/tool_properties_selection"
+                android:visibility="gone" />
+
+            <include
                 android:id="@+id/tool_shape_properties"
-                android:visibility="gone"/>
-            <include layout="@layout/tool_properties_text"
+                layout="@layout/tool_properties_shape"
+                android:visibility="gone" />
+
+            <include
                 android:id="@+id/tool_text_properties"
-                android:visibility="gone"/>
-            <include layout="@layout/tool_properties_transform"
+                layout="@layout/tool_properties_text"
+                android:visibility="gone" />
+
+            <include
                 android:id="@+id/canvas_transform_properties"
-                android:visibility="gone"/>
-            <include layout="@layout/tool_properties_layers"
+                layout="@layout/tool_properties_transform"
+                android:visibility="gone" />
+
+            <include
                 android:id="@+id/canvas_layers_properties"
-                android:visibility="gone"/>
+                layout="@layout/tool_properties_layers"
+                android:visibility="gone" />
         </androidx.cardview.widget.CardView>
     </androidx.cardview.widget.CardView>
 </RelativeLayout>

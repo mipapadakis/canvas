@@ -8,7 +8,7 @@
     tools:context=".ui.about.AboutFragment">
 
     <TextView
-        android:id="@+id/info_title"
+        android:id="@+id/fragment_about_title"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text=""
@@ -26,11 +26,11 @@
         android:fillViewport="true">
 
         <TextView
-            android:id="@+id/text_about"
+            android:id="@+id/fragment_about_text"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:scrollbars = "vertical"
             android:text="@string/about_details"
-            android:textSize="16sp"/>
+            android:textSize="18sp"/>
     </ScrollView>
 </FrameLayout>

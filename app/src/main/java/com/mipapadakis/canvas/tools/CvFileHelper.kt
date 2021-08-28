@@ -4,7 +4,7 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.os.Build
 import android.widget.Toast
-import com.mipapadakis.canvas.CanvasViewModel
+import com.mipapadakis.canvas.CanvasActivityData
 import com.mipapadakis.canvas.model.CvImage
 import com.mipapadakis.canvas.model.layer.CvLayer
 import java.io.*
@@ -18,19 +18,18 @@ import android.util.Log
 import kotlin.collections.ArrayList
 
 import com.mipapadakis.canvas.R
-import java.net.URI
 import kotlin.math.roundToInt
 
 
-private const val FILETYPE_CANVAS = CanvasViewModel.FILETYPE_CANVAS
-private const val FILETYPE_PNG = CanvasViewModel.FILETYPE_PNG
-private const val FILETYPE_JPEG = CanvasViewModel.FILETYPE_JPEG
+private const val FILETYPE_CANVAS = CanvasActivityData.FILETYPE_CANVAS
+private const val FILETYPE_PNG = CanvasActivityData.FILETYPE_PNG
+private const val FILETYPE_JPEG = CanvasActivityData.FILETYPE_JPEG
 
 class CvFileHelper(val context: Context) {
     private val resources = context.resources
     private val cacheDir = context.cacheDir
     private var toast = Toast(context)
-    private val cvImage = CanvasViewModel.cvImage
+    private val cvImage = CanvasActivityData.cvImage
     private val fileType = cvImage.fileType
 
     //https://stackoverflow.com/a/4118917/11535380
@@ -88,7 +87,7 @@ class CvFileHelper(val context: Context) {
             val bitmap = BitmapFactory.decodeByteArray(byteArray, 0, byteArray.size)
                 .copy(Bitmap.Config.ARGB_8888, true)
             deserializedCvImage = CvImage(resources, File(fileName!!).nameWithoutExtension, bitmap)
-            deserializedCvImage.fileType = CanvasViewModel.FILETYPE_PNG
+            deserializedCvImage.fileType = CanvasActivityData.FILETYPE_PNG
             fis.close()
 
         } catch(e: Exception){
@@ -119,7 +118,7 @@ class CvFileHelper(val context: Context) {
             val bitmap = BitmapFactory.decodeByteArray(byteArray, 0, byteArray.size)
                 .copy(Bitmap.Config.ARGB_8888, true)
             deserializedCvImage = CvImage(resources, File(fileName!!).nameWithoutExtension, bitmap)
-            deserializedCvImage.fileType = CanvasViewModel.FILETYPE_JPEG
+            deserializedCvImage.fileType = CanvasActivityData.FILETYPE_JPEG
             fis.close()
 
         } catch(e: Exception){
@@ -131,9 +130,9 @@ class CvFileHelper(val context: Context) {
 
     fun saveCvImage(): Boolean{
         when (fileType) {
-            CanvasViewModel.FILETYPE_CANVAS -> saveCvImageAsCanvasFile()
-            CanvasViewModel.FILETYPE_PNG -> saveCvImageAsPngFile()
-            CanvasViewModel.FILETYPE_JPEG -> saveCvImageAsJpegFile()
+            CanvasActivityData.FILETYPE_CANVAS -> saveCvImageAsCanvasFile()
+            CanvasActivityData.FILETYPE_PNG -> saveCvImageAsPngFile()
+            CanvasActivityData.FILETYPE_JPEG -> saveCvImageAsJpegFile()
             else -> return false
         }
         return true
@@ -141,9 +140,9 @@ class CvFileHelper(val context: Context) {
     fun loadCvImage(fileName: String?): CvImage?{
         var cvImageInput: CvImage? = null
         when (getFileTypeFromFileName(fileName?:"")) {
-            CanvasViewModel.FILETYPE_CANVAS -> cvImageInput = loadCvImageFromCanvasFile(fileName)
-            CanvasViewModel.FILETYPE_PNG -> cvImageInput = loadCvImageFromPngFile(fileName)
-            CanvasViewModel.FILETYPE_JPEG -> cvImageInput = loadCvImageFromJpegFile(fileName)
+            CanvasActivityData.FILETYPE_CANVAS -> cvImageInput = loadCvImageFromCanvasFile(fileName)
+            CanvasActivityData.FILETYPE_PNG -> cvImageInput = loadCvImageFromPngFile(fileName)
+            CanvasActivityData.FILETYPE_JPEG -> cvImageInput = loadCvImageFromJpegFile(fileName)
         }
         return cvImageInput
     }
@@ -166,7 +165,7 @@ class CvFileHelper(val context: Context) {
                 val bitmap = BitmapFactory.decodeByteArray(byteArray, 0, byteArray.size)
                     .copy(Bitmap.Config.ARGB_8888, true)
                 cvImage = CvImage(resources, "", bitmap)
-                cvImage.fileType = CanvasViewModel.FILETYPE_PNG
+                cvImage.fileType = CanvasActivityData.FILETYPE_PNG
                 inputStream.close()
 
             } catch(e: Exception){
@@ -230,11 +229,11 @@ class CvFileHelper(val context: Context) {
     private fun getFileTypeFromFileName(fileName: String): Int{
         val extension = File(fileName).extension
         if(extension==context.getString(R.string.file_extension_canvas))
-            return CanvasViewModel.FILETYPE_CANVAS
+            return CanvasActivityData.FILETYPE_CANVAS
         if(extension==context.getString(R.string.file_extension_png))
-            return CanvasViewModel.FILETYPE_PNG
+            return CanvasActivityData.FILETYPE_PNG
         if(extension==context.getString(R.string.file_extension_jpeg))
-            return CanvasViewModel.FILETYPE_JPEG
+            return CanvasActivityData.FILETYPE_JPEG
         return -1
     }
 
@@ -301,9 +300,9 @@ class SerializableCvImage(cvImage: CvImage): Serializable{
 }
 
 class SerializableCvLayer(cvLayer: CvLayer): Serializable{
-    val opacityPercent = cvLayer.getOpacityPercentage()
+    private val opacity = cvLayer.getOpacity()
+    private val byteArray: ByteArray
     val title = cvLayer.title
-    val byteArray: ByteArray
 
     init {
         val byteStream = ByteArrayOutputStream()
@@ -314,7 +313,7 @@ class SerializableCvLayer(cvLayer: CvLayer): Serializable{
     fun deserialize(): CvLayer{
         val bitmap = BitmapFactory.decodeByteArray(byteArray, 0, byteArray.size).copy(Bitmap.Config.ARGB_8888, true)
         val deserializedLayer = CvLayer(title, bitmap)
-        deserializedLayer.setOpacityPercentage(opacityPercent)
+        deserializedLayer.setOpacity(opacity)
         return deserializedLayer
     }
 }
