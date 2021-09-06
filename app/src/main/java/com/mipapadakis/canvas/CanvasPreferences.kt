@@ -5,7 +5,7 @@ import android.content.SharedPreferences
 import android.graphics.Color
 import android.view.View
 
-const val KEY = "canvas_preferences"
+const val KEY = "canvas_shared_preferences"
 
 /** Store here the user's settings.*/
 class CanvasPreferences {
@@ -14,7 +14,7 @@ class CanvasPreferences {
         const val MEDIUM_ALPHA = 0.6f
         const val LOW_ALPHA = 0.3f
 
-        var startingColorId = R.color.green
+        var startingColor = 32768
         var startingCanvasColor = Color.WHITE
 
 

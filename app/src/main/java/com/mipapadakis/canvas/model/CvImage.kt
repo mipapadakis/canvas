@@ -3,16 +3,16 @@ package com.mipapadakis.canvas.model
 import android.content.Context
 import android.content.res.Resources
 import android.graphics.*
-import com.mipapadakis.canvas.CanvasActivityData
+import com.mipapadakis.canvas.CanvasViewModel
 import com.mipapadakis.canvas.R
 import com.mipapadakis.canvas.model.layer.CvLayer
-import com.mipapadakis.canvas.tools.SerializableCvImage
+import java.io.Serializable
 import java.util.*
 
 /**This represents the canvas' list of layers that the user has created.*/
 
 class CvImage(var title: String, var width: Int, var height: Int): ArrayList<CvLayer>() {
-    var fileType = CanvasActivityData.FILETYPE_CANVAS
+    var fileType = CanvasViewModel.FILETYPE_CANVAS
     private var layerNameIndex = 0
 
     constructor(width: Int, height: Int): this("", width, height)
@@ -58,15 +58,15 @@ class CvImage(var title: String, var width: Int, var height: Int): ArrayList<CvL
     }
     fun getTopLayer() = get(0)
 
-    private fun getUniqueLayerName(): String {return "Layer ${CanvasActivityData.cvImage.layerNameIndex++}"}
+    private fun getUniqueLayerName(): String {return "Layer ${layerNameIndex++}"}
     fun getFilenameWithExtension(context: Context): String{
         return "${title}.${getExtension(context)}"
     }
     private fun getExtension(context: Context): String{
         return context.getString(
             when (fileType) {
-                CanvasActivityData.FILETYPE_CANVAS -> R.string.file_extension_canvas
-                CanvasActivityData.FILETYPE_PNG -> R.string.file_extension_png
+                CanvasViewModel.FILETYPE_CANVAS -> R.string.file_extension_canvas
+                CanvasViewModel.FILETYPE_PNG -> R.string.file_extension_png
                 else -> R.string.file_extension_jpeg
             }
         )
@@ -114,5 +114,27 @@ class CvImage(var title: String, var width: Int, var height: Int): ArrayList<CvL
             backgroundCanvas.drawRect(0f, 0f, backgroundBitmap.width-1f, backgroundBitmap.height-1f, backgroundPaint)
             return backgroundBitmap
         }
+    }
+
+    class SerializableCvImage(cvImage: CvImage): Serializable {
+        private val layerList: List<CvLayer.SerializableCvLayer>
+        val title = cvImage.title
+        val width = cvImage.width
+        val height = cvImage.height
+
+        init {
+            val arrayList = ArrayList<CvLayer.SerializableCvLayer>()
+            for(l in cvImage){
+                arrayList.add(l.toSerializable())
+            }
+            layerList = arrayList.toList()
+        }
+
+        fun deserialize(): CvImage{
+            val deserializedCvImage = CvImage(title, width, height)
+            for(dl in layerList) deserializedCvImage.add(dl.deserialize())
+            return deserializedCvImage
+        }
+
     }
 }

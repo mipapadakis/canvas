@@ -93,18 +93,23 @@
     <string name="close">Close</string>
     <string name="ok">OK</string>
 
-    <!-- Tutorial & Tips TODO app description-->
-    <string name="about_details">Insert app description here.</string>
+    <string name="about_details">Welcome to Canvas!
+        \nEmbrace your inner Picasso and create your masterpieces, using Canvas\' variety of drawing tools. Save them, share them, admire them.
+        \n\nAnd remember:
+        \nWhenever you see a button or tool whose purpose is not clear, long-press on it. A tip explaining its function will appear on your screen.
+        \n\nHave fun!</string>
     <string name="tutorial_dialog_title">Welcome to Canvas!</string>
     <string name="tutorial_dialog_subtitle">A tip to make things easier for you</string>
-    <string name="tutorial_dialog_description">Whenever you see a button or tool whose purpose is not
-        clear, long-press on it. A tip explaining its function will appear on your screen.
+    <string name="tutorial_dialog_description">Whenever you see a button or tool whose purpose is not clear, long-press on it. A tip explaining its function will appear on your screen.
         \n\nHave fun!</string>
     <string name="canvas_tip_title">Canvas</string>
     <string name="canvas_tip_subtitle">Contains your drawings</string>
-    <string name="canvas_tip_description">Tip: Use two fingers to rotate, or zoom in/out of the canvas.
-        \nTwo-finger double click resizes the canvas to fit the screen.
+    <string name="canvas_tip_description">Tip: Use two fingers to rotate, reposition, or zoom in/out of the canvas.
+        \n\nTwo-finger double click resizes the canvas to fit the screen.
         \nTriple-finger single click resets canvas to original size.</string>
+    <string name="canvas_background_tip_title">Background</string>
+    <string name="canvas_background_tip_subtitle">Some space to move your canvas around</string>
+    <string name="canvas_background_tip_description">Tip:\nTap on the background to hide or show the toolbars.</string>
     <string name="toolbar_button_undo_content_description">Undo Button
         /
         /Press this button to undo an action, if possible.</string>

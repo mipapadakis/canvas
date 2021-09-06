@@ -1,8 +1,8 @@
 package com.mipapadakis.canvas.model.layer
 
 import android.graphics.*
-import com.mipapadakis.canvas.tools.CvFileHelper
-import com.mipapadakis.canvas.tools.SerializableCvLayer
+import java.io.ByteArrayOutputStream
+import java.io.Serializable
 
 
 /** This represents a layer of the canvas, also containing its own shapes.
@@ -16,8 +16,7 @@ class CvLayer(var title: String, private var bitmap: Bitmap){
     var selected = false
     var visible = true
 
-    constructor(title: String, cvLayer: CvLayer): this(title, Bitmap.createBitmap(cvLayer.bitmap)){
-        opacity = cvLayer.opacity
+    constructor(title: String, cvLayer: CvLayer): this(title, Bitmap.createBitmap(cvLayer.bitmap)){        opacity = cvLayer.opacity
         selected = cvLayer.selected
         visible = cvLayer.isVisible()
     }
@@ -42,4 +41,24 @@ class CvLayer(var title: String, private var bitmap: Bitmap){
     fun toSerializable(): SerializableCvLayer {
         return SerializableCvLayer(this)
     }
+
+    class SerializableCvLayer(cvLayer: CvLayer): Serializable {
+        private val opacity = cvLayer.getOpacity()
+        private val byteArray: ByteArray
+        val title = cvLayer.title
+
+        init {
+            val byteStream = ByteArrayOutputStream()
+            cvLayer.getBitmap().compress(Bitmap.CompressFormat.PNG, 0, byteStream) //If you compress() to a PNG, the quality value is ignored.
+            byteArray = byteStream.toByteArray()
+        }
+
+        fun deserialize(): CvLayer {
+            val bitmap = BitmapFactory.decodeByteArray(byteArray, 0, byteArray.size).copy(Bitmap.Config.ARGB_8888, true)
+            val deserializedLayer = CvLayer(title, bitmap)
+            deserializedLayer.setOpacity(opacity)
+            return deserializedLayer
+        }
+    }
 }
+

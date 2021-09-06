@@ -1,23 +1,30 @@
 package com.mipapadakis.canvas.ui.canvas.toolbar.bottom.editors
 
+import android.content.Context
 import android.content.res.Resources
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Color
+import android.os.Build
+import android.os.VibrationEffect
+import android.os.Vibrator
 import android.view.*
 import android.widget.*
 import androidx.cardview.widget.CardView
 import androidx.recyclerview.widget.RecyclerView
 import com.mipapadakis.canvas.CanvasPreferences
-import com.mipapadakis.canvas.CanvasActivityData
+import com.mipapadakis.canvas.CanvasViewModel
 import com.mipapadakis.canvas.R
-import com.mipapadakis.canvas.model.CvImage
 import com.mipapadakis.canvas.model.layer.CvLayer
-import com.mipapadakis.canvas.tools.DoubleTapListener
+import com.mipapadakis.canvas.ui.util.DoubleTapListener
 import com.mipapadakis.canvas.ui.canvas.CanvasImageView
 
 
-class LayerListAdapter(val canvasIV: CanvasImageView, val resources: Resources): RecyclerView.Adapter<LayerListAdapter.ItemViewHolder>() {
+class LayerListAdapter(
+    val canvasIV: CanvasImageView,
+    val canvasViewModel: CanvasViewModel,
+    val resources: Resources
+    ): RecyclerView.Adapter<LayerListAdapter.ItemViewHolder>() {
     private var mRecyclerView: RecyclerView? = null
     private lateinit var toast: Toast
 
@@ -33,7 +40,7 @@ class LayerListAdapter(val canvasIV: CanvasImageView, val resources: Resources):
     }
 
     override fun onBindViewHolder(holder: ItemViewHolder, position: Int) {
-        val layer = CanvasActivityData.cvImage[position]
+        val layer = canvasViewModel.cvImage[position]
         if(position == itemCount - 1) {
             holder.hide()
             return
@@ -49,7 +56,7 @@ class LayerListAdapter(val canvasIV: CanvasImageView, val resources: Resources):
                 if(layer.isSelected()) holder.select() else holder.deselect()
             }
             override fun onDoubleTap() {
-                CanvasActivityData.cvImage.setTopLayer(layer)
+                canvasViewModel.cvImage.setTopLayer(layer)
                 deselectAll()
                 canvasIV.invalidateLayers()
                 canvasIV.addActionToHistory(CanvasImageView.ACTION_LAYER_MOVE)
@@ -64,7 +71,7 @@ class LayerListAdapter(val canvasIV: CanvasImageView, val resources: Resources):
         addPopMenuLayerOptions(layer, holder.layerMenuButton)
     }
 
-    override fun getItemCount() = CanvasActivityData.cvImage.size
+    override fun getItemCount() = canvasViewModel.cvImage.size
 
     private fun addPopMenuLayerOptions(layer: CvLayer, btn: ImageButton){
         btn.setOnClickListener {
@@ -73,7 +80,7 @@ class LayerListAdapter(val canvasIV: CanvasImageView, val resources: Resources):
             paletteMenu.setOnMenuItemClickListener { menuItem ->
                 when (menuItem.itemId) {
                     R.id.layer_option_to_front -> {
-                        CanvasActivityData.cvImage.setTopLayer(layer)
+                        canvasViewModel.cvImage.setTopLayer(layer)
                         canvasIV.invalidateLayers()
                         canvasIV.addActionToHistory(CanvasImageView.ACTION_LAYER_MOVE)
                     }
@@ -84,14 +91,14 @@ class LayerListAdapter(val canvasIV: CanvasImageView, val resources: Resources):
                             val bmp = Bitmap.createBitmap(selectedLayers[0].width, selectedLayers[0].height, Bitmap.Config.ARGB_8888)
                             val canvas = Canvas(bmp)
                             //Find index of first selected layer of the cvImage.
-                            val firstSelectedLayerIndex = CanvasActivityData.cvImage.indexOf(selectedLayers[0])
+                            val firstSelectedLayerIndex = canvasViewModel.cvImage.indexOf(selectedLayers[0])
                             //Remove selected layers from the cvImage
-                            CanvasActivityData.cvImage.removeAll(selectedLayers)
+                            canvasViewModel.cvImage.removeAll(selectedLayers)
                             //Create merged Bitmap:
                             for(i in selectedLayers.size-1 downTo 0)
                                 canvas.drawBitmap(selectedLayers[i].getBitmapWithOpacity(), 0f, 0f, null)
                             //Add a new layer with the merged Bitmap to the position of the first selected layer
-                            CanvasActivityData.cvImage.addLayer(firstSelectedLayerIndex, bmp)
+                            canvasViewModel.cvImage.addLayer(firstSelectedLayerIndex, bmp)
                             canvasIV.addActionToHistory(CanvasImageView.ACTION_LAYER_MERGE)
                         }
                     }
@@ -100,10 +107,10 @@ class LayerListAdapter(val canvasIV: CanvasImageView, val resources: Resources):
                         var currentLayer: CvLayer
                         var i = 0
                         //Create duplicates of ALL selected layers
-                        while(i < CanvasActivityData.cvImage.lastIndex+selectedLayers.lastIndex){
-                            currentLayer = CanvasActivityData.cvImage[i]
+                        while(i < canvasViewModel.cvImage.lastIndex+selectedLayers.lastIndex){
+                            currentLayer = canvasViewModel.cvImage[i]
                             if(selectedLayers.contains(currentLayer)){ //create a duplicate after the original
-                                CanvasActivityData.cvImage.add(i+1, CvLayer(currentLayer.title + " copy", currentLayer))
+                                canvasViewModel.cvImage.add(i+1, CvLayer(currentLayer.title + " copy", currentLayer))
                                 i+=2 //Avoid the duplicate
                             }
                             else i++
@@ -137,8 +144,8 @@ class LayerListAdapter(val canvasIV: CanvasImageView, val resources: Resources):
                         canvasIV.addActionToHistory(CanvasImageView.ACTION_LAYER_CLEAR)
                     }
                     R.id.layer_option_delete -> {
-                        CanvasActivityData.cvImage.removeAll(getSelectedLayers())
-                        if(CanvasActivityData.cvImage.size<2) CanvasActivityData.cvImage.newLayer()
+                        canvasViewModel.cvImage.removeAll(getSelectedLayers())
+                        if(canvasViewModel.cvImage.size<2) canvasViewModel.cvImage.newLayer()
                         canvasIV.addActionToHistory(CanvasImageView.ACTION_LAYER_DELETE)
                     }
                     else -> {}
@@ -175,24 +182,27 @@ class LayerListAdapter(val canvasIV: CanvasImageView, val resources: Resources):
     private fun getSelectedLayers(): ArrayList<CvLayer>{
         val selectedLayers = ArrayList<CvLayer>()
         for(i in 0 until itemCount){
-            if(CanvasActivityData.cvImage[i].isSelected())
-                selectedLayers.add(CanvasActivityData.cvImage[i])
+            if(canvasViewModel.cvImage[i].isSelected())
+                selectedLayers.add(canvasViewModel.cvImage[i])
         }
         return selectedLayers
     }
 
     private fun deselectAll(){
-        for(i in CanvasActivityData.cvImage.indices) {
-            CanvasActivityData.cvImage[i].selected = false
+        for(i in canvasViewModel.cvImage.indices) {
+            canvasViewModel.cvImage[i].selected = false
             getViewHolder(i)?.deselect()
         }
     }
 
-    private fun Bitmap.withPngGrid(): Bitmap{
-        val bmp = CvImage.createBackgroundBitmap(this.width, this.height, resources)
-        val canvas = Canvas(bmp)
-        canvas.drawBitmap(this, 0f, 0f, null)
-        return bmp
+    private fun vibrate(context: Context){
+        val vibrator = context.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
+        if (Build.VERSION.SDK_INT >= 26) {
+            vibrator.vibrate(VibrationEffect.createOneShot(70, VibrationEffect.DEFAULT_AMPLITUDE))
+        } else {
+            @Suppress("DEPRECATION")
+            vibrator.vibrate(70)
+        }
     }
 
     inner class ItemViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView),
@@ -238,7 +248,10 @@ class LayerListAdapter(val canvasIV: CanvasImageView, val resources: Resources):
             layerVisibilityButton.visibility = View.GONE
         }
 
-        override fun onItemSelected() { outerCardView.alpha = CanvasPreferences.MEDIUM_ALPHA }
+        override fun onItemSelected() {
+            outerCardView.alpha = CanvasPreferences.MEDIUM_ALPHA
+            vibrate(itemView.context)
+        }
         override fun onItemDropped() {
             outerCardView.alpha = CanvasPreferences.FULL_ALPHA
             canvasIV.invalidateLayers()
@@ -262,7 +275,7 @@ class LayerListAdapter(val canvasIV: CanvasImageView, val resources: Resources):
     }
 
     private fun swapItems(fromPosition: Int, toPosition: Int){
-        CanvasActivityData.cvImage.swapLayers(fromPosition, toPosition)
+        canvasViewModel.cvImage.swapLayers(fromPosition, toPosition)
     }
 
     private fun getContext() = mRecyclerView?.context

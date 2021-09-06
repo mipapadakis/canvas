@@ -35,7 +35,7 @@ class CreateCanvasFragment : Fragment() {
     private lateinit var permissionRequestLauncher: ActivityResultLauncher<String>
     private lateinit var resultLauncher: ActivityResultLauncher<Intent>
     private lateinit var interfaceOfMainActivity: InterfaceMainActivity
-    private lateinit var createCanvasViewModel: CreateCanvasFragmentData
+    private lateinit var createCanvasViewModel: CreateCanvasViewModel
     private lateinit var scrollToBottomLayout: FrameLayout
     private lateinit var pixelLayout: LinearLayout
     private lateinit var dpiLayout: LinearLayout
@@ -44,31 +44,12 @@ class CreateCanvasFragment : Fragment() {
     private lateinit var inchBtn: Button
     private var importedImagePreview: ImageView? = null
 
-    companion object {
-        const val IMPORT_IMAGE_INTENT_KEY = "image_uri"
-        const val IMPORT_CV_IMAGE_INTENT_KEY = "cv_image"
-        const val DIMENSION_WIDTH_INTENT_KEY = "width_in_pixels"
-        const val DIMENSION_HEIGHT_INTENT_KEY = "eight_in_pixels"
-        const val MAX_WIDTH = 2048
-        const val MAX_HEIGHT = 2048
-        const val WIDTH = 0
-        const val HEIGHT = 1
-        enum class CanvasDefaultSize(val width: Int, val height: Int) {
-            SD_SIZE(540, 984),
-            HD_SIZE(1080, 1968),
-            DEFAULT_1_1(768, 768),
-            DEFAULT_3_4(768, 1024),
-            DEFAULT_9_16(720, 1280),
-            A4(1240, 1754),
-        }
-    }
-
     override fun onCreateView(
             inflater: LayoutInflater,
             container: ViewGroup?,
             savedInstanceState: Bundle?
     ): View? {
-        createCanvasViewModel = ViewModelProvider(this).get(CreateCanvasFragmentData::class.java)
+        createCanvasViewModel = ViewModelProvider(this).get(CreateCanvasViewModel::class.java)
         val root = inflater.inflate(R.layout.fragment_create_canvas, container, false)
         importedImagePreview = root.findViewById(R.id.fragment_create_canvas_card_import_icon)
 
@@ -514,6 +495,27 @@ class CreateCanvasFragment : Fragment() {
 
     private fun showToast(text: String){
         interfaceOfMainActivity.showToast(text)
+    }
+
+    companion object {
+        const val IMPORT_IMAGE_INTENT_KEY = "image_uri"
+        const val IMPORT_CV_IMAGE_INTENT_KEY = "cv_image"
+        const val DIMENSION_WIDTH_INTENT_KEY = "width_in_pixels"
+        const val DIMENSION_HEIGHT_INTENT_KEY = "eight_in_pixels"
+        const val MAX_WIDTH = 2048
+        const val MAX_HEIGHT = 2048
+        const val MIN_WIDTH = 10
+        const val MIN_HEIGHT = 10
+        const val WIDTH = 0
+        const val HEIGHT = 1
+        enum class CanvasDefaultSize(val width: Int, val height: Int) {
+            SD_SIZE(540, 984),
+            HD_SIZE(1080, 1968),
+            DEFAULT_1_1(768, 768),
+            DEFAULT_3_4(768, 1024),
+            DEFAULT_9_16(720, 1280),
+            A4(1240, 1754),
+        }
     }
 
 //    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {

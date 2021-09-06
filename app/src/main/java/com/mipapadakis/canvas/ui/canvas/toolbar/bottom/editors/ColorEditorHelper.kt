@@ -5,23 +5,23 @@ import android.graphics.*
 import android.graphics.drawable.BitmapDrawable
 import android.text.Editable
 import android.widget.*
-import com.mipapadakis.canvas.CanvasActivityData
+import com.mipapadakis.canvas.CanvasViewModel
 import com.mipapadakis.canvas.R
 import androidx.core.widget.addTextChangedListener
 import androidx.lifecycle.LifecycleOwner
-import com.mipapadakis.canvas.tools.ColorValues
+import com.mipapadakis.canvas.ui.util.ColorValues
 
 private enum class UserChanged {NOTHING, RGB_SEEKBAR, BRIGHTNESS_SEEKBAR, OPACITY_SEEKBAR, EDIT_TEXT_A, EDIT_TEXT_RGB}
 private enum class Change{COMMITTED, UNCOMMITTED}
 const val SEEKBAR_RGB_MAX = 1536 //6*256
-const val SEEKBAR_BRIGHTNESS_MAX = 199
-const val SEEKBAR_OPACITY_MAX = 255
-const val SEEKBAR_SIZE_MAX = 100
-private val Red = 0
-private val Green = 1
-private val Blue = 2
+//const val SEEKBAR_BRIGHTNESS_MAX = 199
+//const val SEEKBAR_OPACITY_MAX = 255
+//const val SEEKBAR_SIZE_MAX = 100
+private const val Red = 0
+private const val Green = 1
+private const val Blue = 2
 
-class ColorEditorHelper(owner: LifecycleOwner, toolColorEditor: LinearLayout, val hideAllEditors: () -> Unit){
+class ColorEditorHelper(owner: LifecycleOwner, val canvasViewModel: CanvasViewModel, toolColorEditor: LinearLayout, val hideAllEditors: () -> Unit){
     private var change = Change.COMMITTED
     private var state = UserChanged.NOTHING
     private var editorTemporaryColorImageView = toolColorEditor.findViewById<ImageView>(R.id.color_editor_temporary_color)
@@ -34,31 +34,32 @@ class ColorEditorHelper(owner: LifecycleOwner, toolColorEditor: LinearLayout, va
     private var editorColorOpacitySeekbar = toolColorEditor.findViewById<SeekBar>(R.id.color_editor_opacity_seekbar) //[0,255]
 
     init {
-        CanvasActivityData.newColorHue = ColorValues.colorOnlyHue(CanvasActivityData.paint.color)
-        CanvasActivityData.setTemporaryColor(CanvasActivityData.paint.color)
+        canvasViewModel.newColorHue = ColorValues.colorOnlyHue(canvasViewModel.getColor())
+        canvasViewModel.setTemporaryColor(canvasViewModel.getColor())
+        hideAllEditors()
 
-        CanvasActivityData.colorEditorTempColor.observe(owner, {
+        canvasViewModel.colorEditorTempColor.observe(owner, {
             beginChange() //Avoid unwanted loops
-            editorTemporaryColorImageView.setBackgroundColor(CanvasActivityData.newColor)
+            editorTemporaryColorImageView.setBackgroundColor(canvasViewModel.newColor)
             if(state!= UserChanged.BRIGHTNESS_SEEKBAR && state!= UserChanged.OPACITY_SEEKBAR && state!= UserChanged.EDIT_TEXT_A){ //Hue has changed
                 initializeColorRGBSeekbar(editorColorRGBSeekBar)
-                updateColorBrightnessSeekbar(editorColorBrightnessSeekbar, CanvasActivityData.newColorHue)
-                updateColorOpacitySeekbar(editorColorOpacitySeekbar, CanvasActivityData.newColorHue)
+                updateColorBrightnessSeekbar(editorColorBrightnessSeekbar, canvasViewModel.newColorHue)
+                updateColorOpacitySeekbar(editorColorOpacitySeekbar, canvasViewModel.newColorHue)
             }
             if(state != UserChanged.RGB_SEEKBAR)
-                editorColorRGBSeekBar.progress = getProgressOfRGBSeekbarFromColor(CanvasActivityData.newColorHue)
+                editorColorRGBSeekBar.progress = getProgressOfRGBSeekbarFromColor(canvasViewModel.newColorHue)
             if(state != UserChanged.BRIGHTNESS_SEEKBAR)
-                editorColorBrightnessSeekbar.progress = getProgressOfBrightnessSeekbarFromColor(CanvasActivityData.newColor)
+                editorColorBrightnessSeekbar.progress = getProgressOfBrightnessSeekbarFromColor(canvasViewModel.newColor)
             if(state != UserChanged.OPACITY_SEEKBAR)
-                editorColorOpacitySeekbar.progress = getProgressOfOpacitySeekbarFromColor(CanvasActivityData.newColor)
+                editorColorOpacitySeekbar.progress = getProgressOfOpacitySeekbarFromColor(canvasViewModel.newColor)
             if(state != UserChanged.EDIT_TEXT_A){
-                editorColorAlpha.setText(Color.alpha(CanvasActivityData.newColor).toString())
+                editorColorAlpha.setText(Color.alpha(canvasViewModel.newColor).toString())
                 moveCursorToEndOfEditText(editorColorAlpha)
             }
             if(state != UserChanged.EDIT_TEXT_RGB){
-                editorColorRed.setText(Color.red(CanvasActivityData.newColor).toString())
-                editorColorGreen.setText(Color.green(CanvasActivityData.newColor).toString())
-                editorColorBlue.setText(Color.blue(CanvasActivityData.newColor).toString())
+                editorColorRed.setText(Color.red(canvasViewModel.newColor).toString())
+                editorColorGreen.setText(Color.green(canvasViewModel.newColor).toString())
+                editorColorBlue.setText(Color.blue(canvasViewModel.newColor).toString())
                 moveCursorToEndOfEditText(editorColorRed)
                 moveCursorToEndOfEditText(editorColorGreen)
                 moveCursorToEndOfEditText(editorColorBlue)
@@ -66,14 +67,14 @@ class ColorEditorHelper(owner: LifecycleOwner, toolColorEditor: LinearLayout, va
             state = UserChanged.NOTHING
             commitChange()
         })
-        setupEditors()
+        setupEditors(canvasViewModel)
     }
 
-    private fun setupEditors() {
+    private fun setupEditors(canvasViewModel: CanvasViewModel) {
         //ImageView for previewing the new color
         editorTemporaryColorImageView.setOnClickListener {
-            CanvasActivityData.paint.alpha = Color.alpha(CanvasActivityData.newColor)
-            CanvasActivityData.setPaintColor(CanvasActivityData.newColor)
+            canvasViewModel.paint.alpha = Color.alpha(canvasViewModel.newColor)
+            canvasViewModel.setPaintColor(canvasViewModel.newColor)
             hideAllEditors()
         }
 
@@ -85,8 +86,8 @@ class ColorEditorHelper(owner: LifecycleOwner, toolColorEditor: LinearLayout, va
                 if(!fromUser || isUnderChange()) return
                 state = UserChanged.RGB_SEEKBAR
                 val color = getColorFromRGBSeekbarProgress(progress)
-                CanvasActivityData.newColorHue = ColorValues.colorOnlyHue(color)
-                CanvasActivityData.setTemporaryColor(color)
+                canvasViewModel.newColorHue = ColorValues.colorOnlyHue(color)
+                canvasViewModel.setTemporaryColor(color)
             }
         })
 
@@ -98,7 +99,7 @@ class ColorEditorHelper(owner: LifecycleOwner, toolColorEditor: LinearLayout, va
                 if(!fromUser || isUnderChange()) return
                 state = UserChanged.BRIGHTNESS_SEEKBAR
                 val color = getColorFromBrightnessSeekbarProgress(progress)
-                CanvasActivityData.setTemporaryColor(color)
+                canvasViewModel.setTemporaryColor(color)
             }
         })
 
@@ -110,36 +111,36 @@ class ColorEditorHelper(owner: LifecycleOwner, toolColorEditor: LinearLayout, va
                 if(!fromUser || isUnderChange()) return
                 state = UserChanged.OPACITY_SEEKBAR
                 val color = getColorFromOpacitySeekbarProgress(progress)
-                CanvasActivityData.setTemporaryColor(color)
+                canvasViewModel.setTemporaryColor(color)
             }
         })
 
         editorColorAlpha.addTextChangedListener {
             state = UserChanged.EDIT_TEXT_A
-            if(!isUnderChange()) CanvasActivityData.setTemporaryColor(getFixedNewColorFromEditTexts())
+            if(!isUnderChange()) canvasViewModel.setTemporaryColor(getFixedNewColorFromEditTexts())
         }
         editorColorRed.addTextChangedListener {
             state = UserChanged.EDIT_TEXT_RGB
             if(!isUnderChange()) {
                 val color = getFixedNewColorFromEditTexts()
-                CanvasActivityData.newColorHue = ColorValues.colorOnlyHue(color)
-                CanvasActivityData.setTemporaryColor(color)
+                canvasViewModel.newColorHue = ColorValues.colorOnlyHue(color)
+                canvasViewModel.setTemporaryColor(color)
             }
         }
         editorColorGreen.addTextChangedListener {
             state = UserChanged.EDIT_TEXT_RGB
             if(!isUnderChange()) {
                 val color = getFixedNewColorFromEditTexts()
-                CanvasActivityData.newColorHue = ColorValues.colorOnlyHue(color)
-                CanvasActivityData.setTemporaryColor(color)
+                canvasViewModel.newColorHue = ColorValues.colorOnlyHue(color)
+                canvasViewModel.setTemporaryColor(color)
             }
         }
         editorColorBlue.addTextChangedListener {
             state = UserChanged.EDIT_TEXT_RGB
             if(!isUnderChange()) {
                 val color = getFixedNewColorFromEditTexts()
-                CanvasActivityData.newColorHue = ColorValues.colorOnlyHue(color)
-                CanvasActivityData.setTemporaryColor(color)
+                canvasViewModel.newColorHue = ColorValues.colorOnlyHue(color)
+                canvasViewModel.setTemporaryColor(color)
             }
         }
     }
@@ -174,165 +175,159 @@ class ColorEditorHelper(owner: LifecycleOwner, toolColorEditor: LinearLayout, va
     }
     private fun isUnderChange() = change == Change.UNCOMMITTED
 
-
-    companion object {
-        private var allColors = CanvasActivityData.allColors //Colors of rainbow (in rgb values)
-        private var colorTableBitmap = CanvasActivityData.colorTableBitmap //Rainbow
-        private var brightnessBitmap = CanvasActivityData.brightnessBitmap //white -> transparent -> black
-        private var opacityBitmap = CanvasActivityData.opacityBitmapForColorEditor //png_grid -> transparent
-
-        fun updateColorBrightnessSeekbar(seekbar: SeekBar, color: Int) {
-            if(seekbar.width<=0 || seekbar.height<=0) return
-            if (brightnessBitmap == null || brightnessBitmap?.width != seekbar.width || brightnessBitmap?.height != seekbar.height) {
-                initializeBrightnessBitmap(seekbar.width, seekbar.height)
-            }
-            //Seekbar progressDrawable: @param color, with brightnessBitmap drawn on top of it.
-            val bmp = Bitmap.createBitmap(seekbar.width, seekbar.height, Bitmap.Config.ARGB_8888)
-            val canvas = Canvas(bmp)
-            val colorWithFullAlpha = Color.argb(255, Color.red(color), Color.green(color), Color.blue(color))
-            canvas.drawColor(colorWithFullAlpha)
-            canvas.drawBitmap(brightnessBitmap!!, 0f, 0f, null)
-            seekbar.progressDrawable = BitmapDrawable(seekbar.resources, bmp)
+    private fun updateColorBrightnessSeekbar(seekbar: SeekBar, color: Int) {
+        if(seekbar.width<=0 || seekbar.height<=0) return
+        if (canvasViewModel.brightnessBitmap == null ||
+            canvasViewModel.brightnessBitmap?.width != seekbar.width ||
+            canvasViewModel.brightnessBitmap?.height != seekbar.height) {
+            initializeBrightnessBitmap(seekbar.width, seekbar.height)
         }
+        //Seekbar progressDrawable: @param color, with brightnessBitmap drawn on top of it.
+        val bmp = Bitmap.createBitmap(seekbar.width, seekbar.height, Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(bmp)
+        val colorWithFullAlpha = Color.argb(255, Color.red(color), Color.green(color), Color.blue(color))
+        canvas.drawColor(colorWithFullAlpha)
+        canvas.drawBitmap(canvasViewModel.brightnessBitmap!!, 0f, 0f, null)
+        seekbar.progressDrawable = BitmapDrawable(seekbar.resources, bmp)
+    }
 
-        fun updateColorOpacitySeekbar(seekbar: SeekBar, color: Int) {
-            if(seekbar.width<=0 || seekbar.height<=0) return
-            if (opacityBitmap == null || opacityBitmap?.width != seekbar.width || opacityBitmap?.height != seekbar.height) {
-                initializeOpacityBitmap(seekbar.resources, seekbar.width, seekbar.height)
-            }
-            //Seekbar progressDrawable: @param color, with opacityBitmap drawn on top of it.
-            val bmp = Bitmap.createBitmap(seekbar.width, seekbar.height, Bitmap.Config.ARGB_8888)
-            val canvas = Canvas(bmp)
-            val colorWithFullAlpha = Color.argb(255, Color.red(color), Color.green(color), Color.blue(color))
-            canvas.drawColor(colorWithFullAlpha)
-            canvas.drawBitmap(opacityBitmap!!, 0f, 0f, null)
-            seekbar.progressDrawable = BitmapDrawable(seekbar.resources, bmp)
+    private fun updateColorOpacitySeekbar(seekbar: SeekBar, color: Int) {
+        if(seekbar.width<=0 || seekbar.height<=0) return
+        if (canvasViewModel.opacityBitmapForColorEditor == null ||
+            canvasViewModel.opacityBitmapForColorEditor?.width != seekbar.width ||
+            canvasViewModel.opacityBitmapForColorEditor?.height != seekbar.height) {
+            initializeOpacityBitmap(seekbar.resources, seekbar.width, seekbar.height)
         }
+        //Seekbar progressDrawable: @param color, with opacityBitmap drawn on top of it.
+        val bmp = Bitmap.createBitmap(seekbar.width, seekbar.height, Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(bmp)
+        val colorWithFullAlpha = Color.argb(255, Color.red(color), Color.green(color), Color.blue(color))
+        canvas.drawColor(colorWithFullAlpha)
+        canvas.drawBitmap(canvasViewModel.opacityBitmapForColorEditor!!, 0f, 0f, null)
+        seekbar.progressDrawable = BitmapDrawable(seekbar.resources, bmp)
+    }
 
-        fun getColorFromRGBSeekbarProgress(progress: Int): Int {
-            if (allColors ==null) initializeAllColorsArray()
-            val selectedColorRgb = allColors!![progress]
-            return Color.argb(Color.alpha(CanvasActivityData.newColor), selectedColorRgb[Red], selectedColorRgb[Green], selectedColorRgb[Blue])
-        }
+    fun getColorFromRGBSeekbarProgress(progress: Int): Int {
+        if (canvasViewModel.allColors ==null) initializeAllColorsArray()
+        val selectedColorRgb = canvasViewModel.allColors!![progress]
+        return Color.argb(Color.alpha(canvasViewModel.newColor), selectedColorRgb[Red], selectedColorRgb[Green], selectedColorRgb[Blue])
+    }
 
-        fun getColorFromBrightnessSeekbarProgress(progress: Int): Int {
-            val hsbColor = ColorValues.colorToHsbArray(CanvasActivityData.newColorHue)
-            if(progress>99) hsbColor[2] = (199 - progress.toFloat())/100
-            else hsbColor[1] = progress.toFloat()/100
-            val rgbColor = Color.HSVToColor(hsbColor)
-            return Color.argb(
-                Color.alpha(CanvasActivityData.newColor),
-                Color.red(rgbColor),
-                Color.green(rgbColor),
-                Color.blue(rgbColor))
-        }
+    fun getColorFromBrightnessSeekbarProgress(progress: Int): Int {
+        val hsbColor = ColorValues.colorToHsbArray(canvasViewModel.newColorHue)
+        if(progress>99) hsbColor[2] = (199 - progress.toFloat())/100
+        else hsbColor[1] = progress.toFloat()/100
+        val rgbColor = Color.HSVToColor(hsbColor)
+        return Color.argb(
+            Color.alpha(canvasViewModel.newColor),
+            Color.red(rgbColor),
+            Color.green(rgbColor),
+            Color.blue(rgbColor))
+    }
 
-        fun getColorFromOpacitySeekbarProgress(progress: Int): Int {
-            val rgb = ColorValues.colorToRgbArray(CanvasActivityData.newColor)
-            return Color.argb(progress, rgb[0], rgb[1], rgb[2])
-        }
+    fun getColorFromOpacitySeekbarProgress(progress: Int): Int {
+        val rgb = ColorValues.colorToRgbArray(canvasViewModel.newColor)
+        return Color.argb(progress, rgb[0], rgb[1], rgb[2])
+    }
 
-        fun getProgressOfRGBSeekbarFromColor(hueColor: Int): Int{
-            if (allColors ==null) initializeAllColorsArray()
-            //Get Rgb without the Brightness: {10,14,12} => {0,4,2}
-            for(i in allColors!!.indices)
-                if(allColors!![i].contentEquals(ColorValues.colorToRgbArray(hueColor))) return i
-            return 0 //something went wrong
-        }
+    private fun getProgressOfRGBSeekbarFromColor(hueColor: Int): Int{
+        if (canvasViewModel.allColors ==null) initializeAllColorsArray()
+        for(i in canvasViewModel.allColors!!.indices)
+            if(canvasViewModel.allColors!![i].contentEquals(ColorValues.colorToRgbArray(hueColor))) return i
+        return 0 //something went wrong
+    }
 
-        fun getProgressOfBrightnessSeekbarFromColor(color: Int): Int{
-            //val min = ColorValues.colorToArgbArray(color).minOrNull()?:0
-            //return if(min<=128) SEEKBAR_BRIGHTNESS_MAX/2+((128-min)*SEEKBAR_BRIGHTNESS_MAX/2)/128
-            //else ((min-127)*SEEKBAR_BRIGHTNESS_MAX/2)/127
-            val hsbColor = ColorValues.colorToHsbArray(color)
-            if(hsbColor[1]<hsbColor[2]) return (hsbColor[1]*100).toInt()
-            return 99+((1-hsbColor[2])*100).toInt()
-        }
+    private fun getProgressOfBrightnessSeekbarFromColor(color: Int): Int{
+        val hsbColor = ColorValues.colorToHsbArray(color)
+        if(hsbColor[1]<hsbColor[2]) return (hsbColor[1]*100).toInt()
+        return 99+((1-hsbColor[2])*100).toInt()
+    }
 
-        fun getProgressOfOpacitySeekbarFromColor(color: Int) = Color.alpha(color)
+    private fun getProgressOfOpacitySeekbarFromColor(color: Int) = Color.alpha(color)
 
-        fun initializeColorRGBSeekbar(seekbar: SeekBar){
-            if(seekbar.width<=0 || seekbar.height<=0) return
-            if (allColors == null) initializeAllColorsArray()
-            if (colorTableBitmap == null || colorTableBitmap?.width != seekbar.width || colorTableBitmap?.height != seekbar.height) {
-                val bmp = Bitmap.createBitmap(SEEKBAR_RGB_MAX, 1, Bitmap.Config.ARGB_8888)
-                val pixelArray = IntArray(SEEKBAR_RGB_MAX * 1)
-                bmp.getPixels(pixelArray, 0, SEEKBAR_RGB_MAX, 0, 0, SEEKBAR_RGB_MAX, 1)
-                for (i in 0 until SEEKBAR_RGB_MAX) {
-                    pixelArray[i] = Color.rgb(allColors!![i][Red], allColors!![i][Green], allColors!![i][Blue])
-                }
-                bmp.setPixels(pixelArray, 0, SEEKBAR_RGB_MAX, 0, 0, SEEKBAR_RGB_MAX, 1)
-                colorTableBitmap = Bitmap.createScaledBitmap(bmp, seekbar.width, seekbar.height, false)
-                //Seekbar progressDrawable: has the colorTableBitmap drawn on top of it.
+    private fun initializeColorRGBSeekbar(seekbar: SeekBar){
+        if(seekbar.width<=0 || seekbar.height<=0) return
+        if (canvasViewModel.allColors == null) initializeAllColorsArray()
+        if (canvasViewModel.colorTableBitmap == null ||
+            canvasViewModel.colorTableBitmap?.width != seekbar.width ||
+            canvasViewModel.colorTableBitmap?.height != seekbar.height) {
+            val bmp = Bitmap.createBitmap(SEEKBAR_RGB_MAX, 1, Bitmap.Config.ARGB_8888)
+            val pixelArray = IntArray(SEEKBAR_RGB_MAX * 1)
+            bmp.getPixels(pixelArray, 0, SEEKBAR_RGB_MAX, 0, 0, SEEKBAR_RGB_MAX, 1)
+            for (i in 0 until SEEKBAR_RGB_MAX) {
+                pixelArray[i] = Color.rgb(canvasViewModel.allColors!![i][Red], canvasViewModel.allColors!![i][Green], canvasViewModel.allColors!![i][Blue])
             }
-            seekbar.progressDrawable = BitmapDrawable(seekbar.resources, colorTableBitmap)
+            bmp.setPixels(pixelArray, 0, SEEKBAR_RGB_MAX, 0, 0, SEEKBAR_RGB_MAX, 1)
+            canvasViewModel.colorTableBitmap = Bitmap.createScaledBitmap(bmp, seekbar.width, seekbar.height, false)
+            //Seekbar progressDrawable: has the colorTableBitmap drawn on top of it.
         }
+        seekbar.progressDrawable = BitmapDrawable(seekbar.resources, canvasViewModel.colorTableBitmap)
+    }
 
-        private fun initializeAllColorsArray() {
-            allColors = Array(SEEKBAR_RGB_MAX +1){Array(3){0}}
-            for(i in 0 until 256){
-                allColors!![i][Red] = 255
-                allColors!![i][Green] = i //0 up to 255
-            }
-            var counter = 255
-            for(i in 256 until 2*256){
-                allColors!![i][Red] = counter-- //255 down to 0
-                allColors!![i][Green] = 255
-            }
-            counter=0
-            for(i in 2*256 until 3*256){
-                allColors!![i][Green] = 255
-                allColors!![i][Blue] = counter++ //0 up to 255
-            }
-            counter = 255
-            for(i in 3*256 until 4*256){
-                allColors!![i][Green] = counter--
-                allColors!![i][Blue] = 255
-            }
-            counter = 0
-            for(i in 4*256 until 5*256){
-                allColors!![i][Red] = counter++
-                allColors!![i][Blue] = 255
-            }
-            counter = 256
-            for(i in 5*256 until 6*256+1){
-                allColors!![i][Red] = 255
-                allColors!![i][Blue] = counter--
-            }
+    private fun initializeAllColorsArray() {
+        canvasViewModel.allColors = Array(SEEKBAR_RGB_MAX +1){Array(3){0}}
+        for(i in 0 until 256){
+            canvasViewModel.allColors!![i][Red] = 255
+            canvasViewModel.allColors!![i][Green] = i //0 up to 255
         }
-
-        private fun initializeBrightnessBitmap(width: Int, height: Int) {
-            if(width<=0 || height<=0) return
-            val bmp = Bitmap.createBitmap(width, 1, Bitmap.Config.ARGB_8888)
-            val step1 = 255/(width/2).toDouble()
-            val step2 = 255/(width/2-1).toDouble()
-            var opacity = 255
-            var rgb = 255
-
-            val pixelArray = IntArray(width * 1)
-            bmp.getPixels(pixelArray, 0, width, 0, 0, width, 1)
-            for (i in 0 until width) {
-                pixelArray[i] = Color.argb(opacity, rgb, rgb, rgb)
-                rgb = 255*(width-i)/width
-                opacity = if(i<width/2) (255 - step1*i).toInt()
-                else (step2*(i-width/2)).toInt()
-            }
-            bmp.setPixels(pixelArray, 0, width, 0, 0, width, 1)
-            brightnessBitmap = Bitmap.createScaledBitmap(bmp, width, height, false)
+        var counter = 255
+        for(i in 256 until 2*256){
+            canvasViewModel.allColors!![i][Red] = counter-- //255 down to 0
+            canvasViewModel.allColors!![i][Green] = 255
         }
-
-        private fun initializeOpacityBitmap(resources: Resources, width: Int, height: Int) {
-            if(width<=0 || height<=0) return
-            val bmp = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
-            val pngBackgroundPattern = BitmapFactory.decodeResource(resources, R.drawable.png_background_pattern)
-            val paint = Paint().apply { shader = BitmapShader( pngBackgroundPattern, Shader.TileMode.REPEAT, Shader.TileMode.REPEAT) }
-            val canvas = Canvas(bmp)
-            val step = 255/width.toDouble()
-            for (i in 0 until width) {
-                canvas.drawRect(i.toFloat(), 0f, i+1f, height.toFloat(), paint)
-                paint.alpha = 255 - (i*step).toInt() //255*(width-i)/width
-            }
-            opacityBitmap = Bitmap.createScaledBitmap(bmp, width, height, false)
+        counter=0
+        for(i in 2*256 until 3*256){
+            canvasViewModel.allColors!![i][Green] = 255
+            canvasViewModel.allColors!![i][Blue] = counter++ //0 up to 255
         }
+        counter = 255
+        for(i in 3*256 until 4*256){
+            canvasViewModel.allColors!![i][Green] = counter--
+            canvasViewModel.allColors!![i][Blue] = 255
+        }
+        counter = 0
+        for(i in 4*256 until 5*256){
+            canvasViewModel.allColors!![i][Red] = counter++
+            canvasViewModel.allColors!![i][Blue] = 255
+        }
+        counter = 256
+        for(i in 5*256 until 6*256+1){
+            canvasViewModel.allColors!![i][Red] = 255
+            canvasViewModel.allColors!![i][Blue] = counter--
+        }
+    }
+
+    private fun initializeBrightnessBitmap(width: Int, height: Int) {
+        if(width<=0 || height<=0) return
+        val bmp = Bitmap.createBitmap(width, 1, Bitmap.Config.ARGB_8888)
+        val step1 = 255/(width/2).toDouble()
+        val step2 = 255/(width/2-1).toDouble()
+        var opacity = 255
+        var rgb = 255
+
+        val pixelArray = IntArray(width * 1)
+        bmp.getPixels(pixelArray, 0, width, 0, 0, width, 1)
+        for (i in 0 until width) {
+            pixelArray[i] = Color.argb(opacity, rgb, rgb, rgb)
+            rgb = 255*(width-i)/width
+            opacity = if(i<width/2) (255 - step1*i).toInt()
+            else (step2*(i-width/2)).toInt()
+        }
+        bmp.setPixels(pixelArray, 0, width, 0, 0, width, 1)
+        canvasViewModel.brightnessBitmap = Bitmap.createScaledBitmap(bmp, width, height, false)
+    }
+
+    private fun initializeOpacityBitmap(resources: Resources, width: Int, height: Int) {
+        if(width<=0 || height<=0) return
+        val bmp = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+        val pngBackgroundPattern = BitmapFactory.decodeResource(resources, R.drawable.png_background_pattern)
+        val paint = Paint().apply { shader = BitmapShader( pngBackgroundPattern, Shader.TileMode.REPEAT, Shader.TileMode.REPEAT) }
+        val canvas = Canvas(bmp)
+        val step = 255/width.toDouble()
+        for (i in 0 until width) {
+            canvas.drawRect(i.toFloat(), 0f, i+1f, height.toFloat(), paint)
+            paint.alpha = 255 - (i*step).toInt() //255*(width-i)/width
+        }
+        canvasViewModel.opacityBitmapForColorEditor = Bitmap.createScaledBitmap(bmp, width, height, false)
     }
 }

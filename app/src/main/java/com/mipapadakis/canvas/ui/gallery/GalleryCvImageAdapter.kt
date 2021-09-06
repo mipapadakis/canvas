@@ -14,11 +14,11 @@ import androidx.lifecycle.LiveData
 import androidx.recyclerview.widget.RecyclerView
 import com.mipapadakis.canvas.R
 import com.mipapadakis.canvas.model.CvImage
-import com.mipapadakis.canvas.tools.CvFileHelper
+import com.mipapadakis.canvas.ui.util.CvFileHelper
 import android.content.Intent
 import androidx.core.content.ContextCompat
 import com.mipapadakis.canvas.CanvasActivity
-import com.mipapadakis.canvas.CanvasActivityData
+import com.mipapadakis.canvas.CanvasViewModel
 import com.mipapadakis.canvas.ui.create_canvas.CreateCanvasFragment
 
 import androidx.core.content.FileProvider
@@ -58,7 +58,7 @@ class GalleryCvImageAdapter(liveDataToObserve: LiveData<ArrayList<CvImage>>, lif
         }
         holder.button2.setOnClickListener { //Share cvImage
             when (cvImage.fileType) {
-                CanvasActivityData.FILETYPE_CANVAS -> { // Share as Canvas
+                CanvasViewModel.FILETYPE_CANVAS -> { // Share as Canvas
                     val requestFile = File( CvFileHelper.getFilesDirPath( context, cvImage.getFilenameWithExtension(context)))
                     val uri = FileProvider.getUriForFile( context, "com.mipapadakis.canvas.fileprovider", requestFile)
                     val sharingIntent = Intent(Intent.ACTION_SEND).apply {
@@ -68,7 +68,7 @@ class GalleryCvImageAdapter(liveDataToObserve: LiveData<ArrayList<CvImage>>, lif
                     }
                     context.startActivity(Intent.createChooser(sharingIntent, "Share canvas file using"))
                 }
-                CanvasActivityData.FILETYPE_JPEG -> { // Share as Jpeg
+                CanvasViewModel.FILETYPE_JPEG -> { // Share as Jpeg
                     val requestFile = File( CvFileHelper.getFilesDirPath( context, cvImage.getFilenameWithExtension(context)))
                     val uri = FileProvider.getUriForFile( context, "com.mipapadakis.canvas.fileprovider", requestFile)
                     val sharingIntent = Intent(Intent.ACTION_SEND).apply {
@@ -98,14 +98,14 @@ class GalleryCvImageAdapter(liveDataToObserve: LiveData<ArrayList<CvImage>>, lif
         }
         holder.image.setOnClickListener {
             //TODO fix problem: ripple effect is cancelled (because of this clickListener override)
-            CanvasActivityData.cvImage = CvImage(cvImage)
+            CanvasViewModel.importedCvImage = CvImage(cvImage)
             launchCanvasActivity(context)
         }
     }
 
     private fun launchCanvasActivity(context: Context){
         val intent = Intent(context, CanvasActivity::class.java)
-        intent.putExtra(CreateCanvasFragment.IMPORT_CV_IMAGE_INTENT_KEY, "CanvasViewModel.cvImage contains the required cvImage.")
+        intent.putExtra(CreateCanvasFragment.IMPORT_CV_IMAGE_INTENT_KEY, "CanvasViewModel.importedCvImage contains the required cvImage.")
         context.startActivity(intent)
     }
 

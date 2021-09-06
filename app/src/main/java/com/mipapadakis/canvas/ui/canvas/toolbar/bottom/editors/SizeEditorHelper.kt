@@ -7,7 +7,7 @@ import com.mipapadakis.canvas.R
 import android.graphics.Bitmap
 
 
-class SizeEditorHelper() {
+class SizeEditorHelper {
     companion object {
         private lateinit var increasingWidthBitmap: Bitmap //transparent -> progressbar increasing in height -> black
 

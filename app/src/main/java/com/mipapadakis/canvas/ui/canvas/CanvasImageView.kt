@@ -8,12 +8,11 @@ import android.view.animation.LinearInterpolator
 import android.widget.RelativeLayout
 import androidx.appcompat.widget.AppCompatImageView
 import androidx.core.graphics.drawable.toBitmap
-import com.mipapadakis.canvas.CanvasActivityData
-import com.mipapadakis.canvas.R
+import com.mipapadakis.canvas.CanvasViewModel
 import com.mipapadakis.canvas.model.CvImage
-import com.mipapadakis.canvas.tools.CanvasTouchListener
-import com.mipapadakis.canvas.tools.DeviceDimensions
-import com.mipapadakis.canvas.tools.ShowTipDialog
+import com.mipapadakis.canvas.ui.util.CanvasTouchListener
+import com.mipapadakis.canvas.ui.util.DeviceDimensions
+import com.mipapadakis.canvas.ui.util.ShowTipDialog
 import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.math.abs
@@ -23,16 +22,22 @@ import kotlin.math.sqrt
 
 
 private const val POINTER_DOWN_DELAY = 10L
+private const val HISTORY_SIZE_THRESHOLD_AT_MAX_DIMENSIONS = 10
 
-/** Custom ImageView which represents the canvas. It handles canvas changes and touches in order to draw on the canvas. */
-class CanvasImageView(context: Context?, val shouldInitializeCvImage: Boolean, val notifyDataSetChanged: () -> Unit) : AppCompatImageView(context!!), CanvasTouchListener.MultiTouchListener{
+/** Custom ImageView which represents the canvas. It handles canvas changes and touches in order to draw on it. */
+class CanvasImageView(
+    context: Context?,
+    val canvasViewModel: CanvasViewModel,
+    val shouldInitializeCvImage: Boolean,
+    val notifyDataSetChanged: () -> Unit
+) : AppCompatImageView(context!!), CanvasTouchListener.MultiTouchListener{
     private val touchTolerance = 0.01f//ViewConfiguration.get(context).scaledTouchSlop //If the finger has moved less than the touchTolerance distance, don't draw.
     private lateinit var params: RelativeLayout.LayoutParams
     private lateinit var cvImage: CvImage
-    private val paint = CanvasActivityData.paint
-    private val eraserPaint = CanvasActivityData.eraserPaint
-    private val history = CanvasActivityData.history
-    private var historyIndex = CanvasActivityData.historyIndex
+    private val paint = canvasViewModel.paint
+    private val eraserPaint = canvasViewModel.eraserPaint
+    private val history = canvasViewModel.history
+    private var historyIndex = canvasViewModel.historyIndex
     //private var firstTime = true
     private var startingHeight = 0
     private var startingWidth = 0
@@ -87,19 +92,24 @@ class CanvasImageView(context: Context?, val shouldInitializeCvImage: Boolean, v
     //First called in CanvasActivity.onAttachedToWindow()
     fun onAttachedToWindowInitializer(width: Int, height: Int){
         //Initialize cvImage
-        if(shouldInitializeCvImage) {
-            CanvasActivityData.cvImage = CvImage(width, height)
-            cvImage = CanvasActivityData.cvImage
+        val importedCvImage = CanvasViewModel.importedCvImage
+        if(shouldInitializeCvImage || importedCvImage==null) {
+            canvasViewModel.cvImage = CvImage(width, height)
+            cvImage = canvasViewModel.cvImage
             cvImage.addPngGridLayer(resources)
             //Add a layer containing the starting canvas (either imported image or solid-color canvas)
             val startingBitmap = Bitmap.createBitmap(width,height,Bitmap.Config.ARGB_8888)
             val startingCanvas = Canvas(startingBitmap)
             startingCanvas.drawBitmap(drawable.toBitmap())
             cvImage.addLayer(0, startingBitmap)
-        } else cvImage = CanvasActivityData.cvImage
-
+        }
+        else {
+            canvasViewModel.cvImage = CvImage(importedCvImage)
+            cvImage = canvasViewModel.cvImage
+        }
         startingWidth = width
         startingHeight = height
+        Log.d("CanvasDebug", "startingWidth = $startingWidth, startingHeight = $startingHeight")
         setPositionToCenter()
         visibleBitmap = cvImage.getTotalImage(true)
         visibleCanvas = Canvas(visibleBitmap)
@@ -156,7 +166,7 @@ class CanvasImageView(context: Context?, val shouldInitializeCvImage: Boolean, v
     override fun on2PointerLongPress(event: MotionEvent) { Log.i("CanvasTouchListener", "on2PointerLongPress") }
     override fun on3PointerLongPress(event: MotionEvent) { Log.i("CanvasTouchListener", "on3PointerLongPress") }
     override fun on1PointerDown(event: MotionEvent) {
-        if(firstPoint.isEmpty() || CanvasActivityData.shapeType != CanvasActivityData.SHAPE_TYPE_POLYGON)
+        if(firstPoint.isEmpty() || canvasViewModel.shapeType != CanvasViewModel.SHAPE_TYPE_POLYGON)
             firstPoint = PointF(event)
         firstBitmap = Bitmap.createBitmap(foregroundBitmap)
         prevPoint = PointF(event)
@@ -164,7 +174,7 @@ class CanvasImageView(context: Context?, val shouldInitializeCvImage: Boolean, v
         pathPoints.add(PointF(event))
         currentPath.reset()
         currentPath.moveTo(event.x, event.y)
-        if(CanvasActivityData.tool == CanvasActivityData.TOOL_EYEDROPPER) draw(event, false)
+        if(canvasViewModel.tool == CanvasViewModel.TOOL_EYEDROPPER) draw(event, false)
         setModeDraw()
     }
 
@@ -182,9 +192,9 @@ class CanvasImageView(context: Context?, val shouldInitializeCvImage: Boolean, v
         if(mode== MODE_DRAW){
             draw(event, true)
             //Save Action to history:
-            when(CanvasActivityData.tool){
-                CanvasActivityData.TOOL_ERASER -> addActionToHistory(ACTION_ERASE)
-                CanvasActivityData.TOOL_EYEDROPPER -> {} //Don't include eyedropper actions to history
+            when(canvasViewModel.tool){
+                CanvasViewModel.TOOL_ERASER -> addActionToHistory(ACTION_ERASE)
+                CanvasViewModel.TOOL_EYEDROPPER -> {} //Don't include eyedropper actions to history
                 else -> addActionToHistory(ACTION_DRAW)
             }
         }
@@ -239,23 +249,26 @@ class CanvasImageView(context: Context?, val shouldInitializeCvImage: Boolean, v
         foregroundBitmap = cvImage[0].getBitmap()
         foregroundCanvas = Canvas(foregroundBitmap)
         pathPoints.add(PointF(event))
-        when (CanvasActivityData.tool) {
-            CanvasActivityData.TOOL_BRUSH -> {
+        when (canvasViewModel.tool) {
+            CanvasViewModel.TOOL_BRUSH -> {
                 clearForeground()
+                firstPoint.clear()
                 foregroundCanvas.drawBitmap(firstBitmap)
                 //drawOverlappingAreas(paint)
 //                //https://developer.android.com/codelabs/advanced-android-kotlin-training-canvas#5
                 currentPath.quadTo(prevPoint.x, prevPoint.y, (prevPoint.x + event.x) / 2, (prevPoint.y + event.y) / 2)
                 foregroundCanvas.drawPath(currentPath, paint)
             }
-            CanvasActivityData.TOOL_ERASER -> {
+            CanvasViewModel.TOOL_ERASER -> {
                 clearForeground()
+                firstPoint.clear()
                 foregroundCanvas.drawBitmap(firstBitmap)
                 //drawOverlappingAreas(eraserPaint)
                 currentPath.quadTo(prevPoint.x, prevPoint.y, (prevPoint.x + event.x) / 2, (prevPoint.y + event.y) / 2)
-                foregroundCanvas.drawPath(currentPath, CanvasActivityData.eraserPaint)
+                foregroundCanvas.drawPath(currentPath, canvasViewModel.eraserPaint)
             }
-            CanvasActivityData.TOOL_BUCKET -> {
+            CanvasViewModel.TOOL_BUCKET -> {
+                firstPoint.clear()
                 val x = event.x.toInt()
                 val y = event.y.toInt()
                 val oldColor = foregroundBitmap.getPixel(x,y)
@@ -263,58 +276,60 @@ class CanvasImageView(context: Context?, val shouldInitializeCvImage: Boolean, v
                  * many cases. To avoid this, use the floodFill_array() method which has no
                  * recursion, and uses an array instead of accessing the pixels one by one.*/
                 //TODO: It is still pretty slow in cases of large areas to flood-fill.
-                bucketFloodFill(foregroundBitmap, x, y, oldColor, CanvasActivityData.bucketPaint.color)
+                bucketFloodFill(foregroundBitmap, x, y, oldColor, canvasViewModel.bucketPaint.color)
                 foregroundCanvas.drawBitmap(foregroundBitmap)
             }
-            CanvasActivityData.TOOL_EYEDROPPER -> {
+            CanvasViewModel.TOOL_EYEDROPPER -> {
+                firstPoint.clear()
                 val xInBounds = if(event.x.toInt()<0) 0
                 else if(event.x.toInt()>=foregroundBitmap.width) foregroundBitmap.width-1
                 else event.x.toInt()
                 val yInBounds = if(event.y.toInt()<0) 0
                 else if(event.y.toInt()>=foregroundBitmap.height) foregroundBitmap.height-1
                 else event.y.toInt()
-                CanvasActivityData.setPaintColor(cvImage.getTotalImage(true).getPixel(xInBounds, yInBounds))
+                canvasViewModel.setPaintColor(cvImage.getTotalImage(true).getPixel(xInBounds, yInBounds))
             }
-            CanvasActivityData.TOOL_SHAPE -> {
+            CanvasViewModel.TOOL_SHAPE -> {
                 //TODO: make them resizable
                 clearForeground()
                 foregroundCanvas.drawBitmap(firstBitmap)
-                when(CanvasActivityData.shapeType){
-                    CanvasActivityData.SHAPE_TYPE_LINE -> {
-                        foregroundCanvas.drawLine(firstPoint.x, firstPoint.y, event.x, event.y, CanvasActivityData.shapePaint)
+                when(canvasViewModel.shapeType){
+                    CanvasViewModel.SHAPE_TYPE_LINE -> {
+                        foregroundCanvas.drawLine(firstPoint.x, firstPoint.y, event.x, event.y, canvasViewModel.shapePaint)
                     }
-                    CanvasActivityData.SHAPE_TYPE_RECTANGLE -> {
-                        foregroundCanvas.drawRect(firstPoint.x, firstPoint.y, event.x, event.y, CanvasActivityData.shapePaint)
+                    CanvasViewModel.SHAPE_TYPE_RECTANGLE -> {
+                        foregroundCanvas.drawRect(firstPoint.x, firstPoint.y, event.x, event.y, canvasViewModel.shapePaint)
                     }
-                    CanvasActivityData.SHAPE_TYPE_SQUARE -> {
-                        foregroundCanvas.drawRect(getSquareCoords(firstPoint, PointF(event)), CanvasActivityData.shapePaint)
+                    CanvasViewModel.SHAPE_TYPE_SQUARE -> {
+                        foregroundCanvas.drawRect(getSquareCoords(firstPoint, PointF(event)), canvasViewModel.shapePaint)
                     }
-                    CanvasActivityData.SHAPE_TYPE_OVAL -> {
-                        foregroundCanvas.drawOval(RectF(firstPoint.x, firstPoint.y, event.x, event.y), CanvasActivityData.shapePaint)
+                    CanvasViewModel.SHAPE_TYPE_OVAL -> {
+                        foregroundCanvas.drawOval(RectF(firstPoint.x, firstPoint.y, event.x, event.y), canvasViewModel.shapePaint)
                     }
-                    CanvasActivityData.SHAPE_TYPE_CIRCLE -> {
-                        foregroundCanvas.drawOval(getSquareCoords(firstPoint, PointF(event)), CanvasActivityData.shapePaint)
+                    CanvasViewModel.SHAPE_TYPE_CIRCLE -> {
+                        foregroundCanvas.drawOval(getSquareCoords(firstPoint, PointF(event)), canvasViewModel.shapePaint)
                     }
-                    CanvasActivityData.SHAPE_TYPE_POLYGON -> {
-                        foregroundCanvas.drawLine(firstPoint.x, firstPoint.y, event.x, event.y, CanvasActivityData.shapePaint)
+                    CanvasViewModel.SHAPE_TYPE_POLYGON -> {
+                        foregroundCanvas.drawLine(firstPoint.x, firstPoint.y, event.x, event.y, canvasViewModel.shapePaint)
                         if(pointerUp) firstPoint = PointF(event)
                     }
-                    CanvasActivityData.SHAPE_TYPE_TRIANGLE -> {} //TODO
-                    CanvasActivityData.SHAPE_TYPE_ARROW -> {} //TODO
-                    CanvasActivityData.SHAPE_TYPE_CALLOUT -> {} //TODO
+                    CanvasViewModel.SHAPE_TYPE_TRIANGLE -> {} //TODO
+                    CanvasViewModel.SHAPE_TYPE_ARROW -> {} //TODO
+                    CanvasViewModel.SHAPE_TYPE_CALLOUT -> {} //TODO
                 }
                 if (pointerUp) firstBitmap.recycle()
             }
-            CanvasActivityData.TOOL_SELECT -> {}
-            CanvasActivityData.TOOL_TEXT -> {
+            CanvasViewModel.TOOL_SELECT -> {}
+            CanvasViewModel.TOOL_TEXT -> {
                 clearForeground()
+                firstPoint.clear()
                 foregroundCanvas.drawBitmap(firstBitmap)
                 foregroundCanvas.drawText(
-                    if(CanvasActivityData.textToolText.isEmpty()) "example"
-                    else CanvasActivityData.textToolText,
+                    if(canvasViewModel.textToolText.isEmpty()) "example"
+                    else canvasViewModel.textToolText,
                     event.x,
                     event.y,
-                    CanvasActivityData.textPaint)
+                    canvasViewModel.textPaint)
             }
         }
         invalidate()
@@ -383,7 +398,7 @@ class CanvasImageView(context: Context?, val shouldInitializeCvImage: Boolean, v
         mode = MODE_NONE
         pathPoints.clear()
         prevPoint.clear()
-        if(CanvasActivityData.shapeType != CanvasActivityData.SHAPE_TYPE_POLYGON) firstPoint.clear()
+        if(canvasViewModel.shapeType != CanvasViewModel.SHAPE_TYPE_POLYGON) firstPoint.clear()
     }
 
     fun setModeDraw(){
@@ -471,7 +486,7 @@ class CanvasImageView(context: Context?, val shouldInitializeCvImage: Boolean, v
         addActionToHistory(ACTION_FLIP_HORIZONTALLY)
     }
     fun writeText(text: String, x: Float, y: Float){
-        foregroundCanvas.drawText(text, x, y, CanvasActivityData.textPaint)
+        foregroundCanvas.drawText(text, x, y, canvasViewModel.textPaint)
         invalidate()
         addActionToHistory(ACTION_DRAW)
     }
@@ -491,7 +506,12 @@ class CanvasImageView(context: Context?, val shouldInitializeCvImage: Boolean, v
     }
 
     fun addActionToHistory(actionType: Int){
-        val currentAction = Action(actionType, CvImage(cvImage))
+        val currentAction =
+            if(canvasViewModel.tool == CanvasViewModel.TOOL_SHAPE &&
+            canvasViewModel.shapeType == CanvasViewModel.SHAPE_TYPE_POLYGON)
+                Action(actionType, CvImage(cvImage), firstPoint)
+            else Action(actionType, CvImage(cvImage))
+
         if(historyIndex<history.lastIndex) {
             history[++historyIndex] = currentAction
             while(historyIndex != history.lastIndex) history.removeLast()
@@ -499,6 +519,19 @@ class CanvasImageView(context: Context?, val shouldInitializeCvImage: Boolean, v
         else{
             history.add(currentAction)
             historyIndex = history.lastIndex
+
+//            /**History list is too big (depending on canvas size) => delete some of the first actions*/ TODO optimize history memory consumption
+//            val maxArea = CreateCanvasFragment.MAX_WIDTH*CreateCanvasFragment.MAX_HEIGHT
+//            val sizePercentage = 100*width*height/maxArea //How big is this canvas in comparison with the max possible canvas?
+//            //variable threshold represents the max size of history list
+//            //when sizePercentage==100, set threshold = HISTORY_SIZE_THRESHOLD_AT_MAX_DIMENSIONS
+//            //when sizePercentage==1, threshold HISTORY_SIZE_THRESHOLD_AT_MAX_DIMENSIONS*100
+//            val threshold= HISTORY_SIZE_THRESHOLD_AT_MAX_DIMENSIONS*(101-sizePercentage)
+//            Log.d("CanvasHistoryThreshold=", threshold.toString())
+//            while(history.size>threshold){
+//                history.removeAt(0)
+//                historyIndex--
+//            }
         }
         //showUndoHistory("ACTION ADDED")
     }
@@ -527,9 +560,10 @@ class CanvasImageView(context: Context?, val shouldInitializeCvImage: Boolean, v
 //        Log.d("CanvasUndoHistory", str.toString())
 //    }
 
-    inner class Action( val actionType: Int, val actionCvImage: CvImage){
+    inner class Action( val actionType: Int, val actionCvImage: CvImage, val polygonPoint: PointF? = null){
         fun makeAction(){
             cvImage.setCvImage(actionCvImage)
+            if(polygonPoint!=null) firstPoint = polygonPoint
             invalidateLayers()
         }
     }

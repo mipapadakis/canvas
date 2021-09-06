@@ -18,9 +18,9 @@ import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
 import com.google.android.material.navigation.NavigationView
 import com.mipapadakis.canvas.model.CvImage
-import com.mipapadakis.canvas.tools.CvFileHelper
-import com.mipapadakis.canvas.tools.ShowTipDialog
+import com.mipapadakis.canvas.ui.util.ShowTipDialog
 import com.mipapadakis.canvas.ui.create_canvas.CreateCanvasFragment
+import com.mipapadakis.canvas.ui.util.CvFileHelper
 
 
 private const val ON_BACK_WAIT_TIME_SHORT = 2000L // FYI: Toast.LENGTH_SHORT = 2000ms
@@ -94,7 +94,7 @@ class MainActivity : AppCompatActivity(), InterfaceMainActivity{
             val cvImage = CvFileHelper(this).loadExternalCvImage(cvImageUri)
             if(cvImage==null) exitApp()
             else{
-                CanvasActivityData.cvImage = CvImage(cvImage)
+                CanvasViewModel.importedCvImage = CvImage(cvImage)
                 launchCanvasActivity()
             }
         }
@@ -102,7 +102,7 @@ class MainActivity : AppCompatActivity(), InterfaceMainActivity{
 
     private fun launchCanvasActivity(){
         val intent = Intent(this, CanvasActivity::class.java)
-        intent.putExtra(CreateCanvasFragment.IMPORT_CV_IMAGE_INTENT_KEY, "CanvasViewModel.cvImage contains the required cvImage.")
+        intent.putExtra(CreateCanvasFragment.IMPORT_CV_IMAGE_INTENT_KEY, "CanvasViewModel.importedCvImage contains the required cvImage.")
         startActivity(intent)
     }
 
@@ -120,11 +120,8 @@ class MainActivity : AppCompatActivity(), InterfaceMainActivity{
     }
 
     override fun onBackPressed() {
-        if (drawerLayout.isDrawerOpen(GravityCompat.START)){
+        if (drawerLayout.isDrawerOpen(GravityCompat.START))
             drawerLayout.closeDrawer(GravityCompat.START)
-            if(drawerLayout[0].isSelected) showToast("Gallery is selected")
-            else if(drawerLayout[1].isSelected) showToast("CreateCanvas is selected")
-        }
         else{
             //If createCanvasFragment or AboutFragment are open, pressing back button opens Gallery:
             if(!navView.menu[0].isChecked) {
@@ -158,18 +155,24 @@ class MainActivity : AppCompatActivity(), InterfaceMainActivity{
         toast = Toast.makeText(this, text, toast.duration)
         toast.show()
     }
+
 }
 
 interface InterfaceMainActivity{
     fun showToast(text: String)
 }
 
-//todo about
-//todo tool menu icons
-//todo set function of move-toolbar button to the whole toolbar?
-//todo option to hide bottom toolbar? -> when app opens, it's closed
-//todo on detach, save canvas as tmp file
-//todo update brush patterns
+
+//todo
+// add observers!
+// Fix error with cv files at gallery
+// tool menu icons
+// set function of move-toolbar button to the whole toolbar?
+// on detach, save canvas as tmp file
+// update brush patterns
+// mode_pinch even if touch is outside of canvas
+// undo while in polygon! save last point in history
+
 
 /*
 
