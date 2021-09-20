@@ -9,7 +9,7 @@ import com.mipapadakis.canvas.model.layer.CvLayer
 import java.io.Serializable
 import java.util.*
 
-/**This represents the canvas' list of layers that the user has created.*/
+/**This represents the canvas' list of layers, and also holds some data that describe it.*/
 
 class CvImage(var title: String, var width: Int, var height: Int): ArrayList<CvLayer>() {
     var fileType = CanvasViewModel.FILETYPE_CANVAS
@@ -21,6 +21,7 @@ class CvImage(var title: String, var width: Int, var height: Int): ArrayList<CvL
         addLayer(0, bmp)
     }
     constructor(cvImage: CvImage): this(cvImage.title, cvImage.width, cvImage.height){
+        layerNameIndex = cvImage.layerNameIndex
         for(layer in cvImage) add(CvLayer(layer.title, layer))
     }
 
@@ -118,6 +119,7 @@ class CvImage(var title: String, var width: Int, var height: Int): ArrayList<CvL
 
     class SerializableCvImage(cvImage: CvImage): Serializable {
         private val layerList: List<CvLayer.SerializableCvLayer>
+        private val layerNameIndex = 0
         val title = cvImage.title
         val width = cvImage.width
         val height = cvImage.height
@@ -133,6 +135,7 @@ class CvImage(var title: String, var width: Int, var height: Int): ArrayList<CvL
         fun deserialize(): CvImage{
             val deserializedCvImage = CvImage(title, width, height)
             for(dl in layerList) deserializedCvImage.add(dl.deserialize())
+            deserializedCvImage.layerNameIndex = layerList.size+1
             return deserializedCvImage
         }
 

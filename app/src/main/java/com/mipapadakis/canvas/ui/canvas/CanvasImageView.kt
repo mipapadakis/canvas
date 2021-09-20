@@ -579,4 +579,3 @@ class CanvasImageView(
         this.y = -1f
     }
 }
-

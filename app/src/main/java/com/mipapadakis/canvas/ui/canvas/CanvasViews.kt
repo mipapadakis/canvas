@@ -349,7 +349,7 @@ class CanvasViews(
         if(hasVisibleProperties()) showBottomToolbar() else hideBottomToolbar()
     }
     private fun hideToolbars() {
-        toolbarMoveImageView.setImageResource(R.drawable.visibility_outlined)
+        toolbarMoveImageView.setImageResource(R.drawable.visibility_on_outlined)
         toolbarButtonLayout.visibility = View.GONE
         toolbarPngBackgroundImageView.visibility = View.GONE
         toolbarColorIndicator.visibility = View.GONE

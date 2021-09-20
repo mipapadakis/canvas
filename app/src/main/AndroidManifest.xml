@@ -38,8 +38,7 @@
             </intent-filter>
         </activity>
 
-        <!--FileProvider - used to securely share canvas images
-        https://developer.android.com/guide/topics/manifest/provider-element -->
+        <!--FileProvider - used to securely share canvas images-->
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="com.mipapadakis.canvas.fileprovider"

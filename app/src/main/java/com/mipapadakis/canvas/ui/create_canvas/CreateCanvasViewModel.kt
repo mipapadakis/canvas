@@ -26,23 +26,3 @@ class CreateCanvasViewModel : ViewModel() {
     val customUnit: LiveData<Int> = _customUnit
     fun setCustomUnit(unit: Int){  _customUnit.value = unit }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

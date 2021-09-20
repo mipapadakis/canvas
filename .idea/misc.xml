@@ -8,9 +8,10 @@
         <entry key="..\:/Users/minas/AndroidStudioProjects/canvas/app/src/main/res/layout/activity_main.xml" value="0.33" />
         <entry key="..\:/Users/minas/AndroidStudioProjects/canvas/app/src/main/res/layout/app_bar_main.xml" value="0.22239583333333332" />
         <entry key="..\:/Users/minas/AndroidStudioProjects/canvas/app/src/main/res/layout/card_gallery.xml" value="0.25" />
+        <entry key="..\:/Users/minas/AndroidStudioProjects/canvas/app/src/main/res/layout/card_layer.xml" value="0.36666666666666664" />
         <entry key="..\:/Users/minas/AndroidStudioProjects/canvas/app/src/main/res/layout/color_picker.xml" value="0.36666666666666664" />
         <entry key="..\:/Users/minas/AndroidStudioProjects/canvas/app/src/main/res/layout/content_main.xml" value="0.1539855072463768" />
-        <entry key="..\:/Users/minas/AndroidStudioProjects/canvas/app/src/main/res/layout/dialog_save.xml" value="0.14427083333333332" />
+        <entry key="..\:/Users/minas/AndroidStudioProjects/canvas/app/src/main/res/layout/dialog_save.xml" value="0.33" />
         <entry key="..\:/Users/minas/AndroidStudioProjects/canvas/app/src/main/res/layout/dialog_tip.xml" value="0.33" />
         <entry key="..\:/Users/minas/AndroidStudioProjects/canvas/app/src/main/res/layout/edit_brush_type.xml" value="0.36367753623188404" />
         <entry key="..\:/Users/minas/AndroidStudioProjects/canvas/app/src/main/res/layout/edit_color.xml" value="0.33" />
@@ -35,6 +36,7 @@
         <entry key="..\:/Users/minas/AndroidStudioProjects/canvas/app/src/main/res/layout/tutorial_dialog.xml" value="0.36666666666666664" />
         <entry key="..\:/Users/minas/AndroidStudioProjects/canvas/app/src/main/res/menu/activity_main_drawer.xml" value="0.67" />
         <entry key="..\:/Users/minas/AndroidStudioProjects/canvas/app/src/main/res/menu/canvas.xml" value="0.2635416666666667" />
+        <entry key="..\:/Users/minas/AndroidStudioProjects/canvas/app/src/main/res/menu/canvas_options.xml" value="0.24479166666666666" />
         <entry key="..\:/Users/minas/AndroidStudioProjects/canvas/app/src/main/res/menu/colors.xml" value="0.36666666666666664" />
         <entry key="..\:/Users/minas/AndroidStudioProjects/canvas/app/src/main/res/menu/layer_options.xml" value="0.2635416666666667" />
         <entry key="..\:/Users/minas/AndroidStudioProjects/canvas/app/src/main/res/menu/main.xml" value="0.36666666666666664" />

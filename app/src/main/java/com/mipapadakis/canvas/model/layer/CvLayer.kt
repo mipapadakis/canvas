@@ -16,7 +16,8 @@ class CvLayer(var title: String, private var bitmap: Bitmap){
     var selected = false
     var visible = true
 
-    constructor(title: String, cvLayer: CvLayer): this(title, Bitmap.createBitmap(cvLayer.bitmap)){        opacity = cvLayer.opacity
+    constructor(title: String, cvLayer: CvLayer): this(title, Bitmap.createBitmap(cvLayer.bitmap)){
+        opacity = cvLayer.opacity
         selected = cvLayer.selected
         visible = cvLayer.isVisible()
     }
