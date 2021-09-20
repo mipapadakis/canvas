@@ -119,7 +119,7 @@ class CvImage(var title: String, var width: Int, var height: Int): ArrayList<CvL
 
     class SerializableCvImage(cvImage: CvImage): Serializable {
         private val layerList: List<CvLayer.SerializableCvLayer>
-        private val layerNameIndex = 0
+        private val layerNameIndex = cvImage.layerNameIndex
         val title = cvImage.title
         val width = cvImage.width
         val height = cvImage.height
@@ -135,7 +135,7 @@ class CvImage(var title: String, var width: Int, var height: Int): ArrayList<CvL
         fun deserialize(): CvImage{
             val deserializedCvImage = CvImage(title, width, height)
             for(dl in layerList) deserializedCvImage.add(dl.deserialize())
-            deserializedCvImage.layerNameIndex = layerList.size+1
+            deserializedCvImage.layerNameIndex = layerNameIndex
             return deserializedCvImage
         }
 
