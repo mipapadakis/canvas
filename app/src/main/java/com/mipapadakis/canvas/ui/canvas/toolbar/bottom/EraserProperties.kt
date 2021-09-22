@@ -25,7 +25,7 @@ class EraserProperties(canvasViews: CanvasViews){
     init {
         val currentSize = canvasViews.canvasViewModel.eraserPaint.strokeWidth.toInt().toString() + "px"
         toolEraserSizeBtn.text = currentSize
-        toolEraserOpacityValue.text = (255-canvasViews.canvasViewModel.eraserPaint.alpha).toString()
+        toolEraserOpacityValue.text = canvasViews.canvasViewModel.eraserPaint.alpha.toString()
 
         toolEraserSizeBtn.setOnClickListener {
             toolEraserOpacityEditor.visibility = View.GONE
@@ -59,7 +59,7 @@ class EraserProperties(canvasViews: CanvasViews){
             override fun onProgressChanged(seekbar: SeekBar?, progress: Int, fromUser: Boolean) {
                 if(!fromUser) return
                 toolEraserOpacityValue.text = progress.toString()
-                canvasViews.canvasViewModel.eraserPaint.alpha = 255-progress
+                canvasViews.canvasViewModel.eraserPaint.alpha = progress
             }
         })
         ShowTipDialog(toolEraserSizeBtn, R.drawable.eraser_outlined)
@@ -69,7 +69,7 @@ class EraserProperties(canvasViews: CanvasViews){
     private fun onOpacityButtonClick(canvasViews: CanvasViews){
         toolEraserOpacityEditor.visibility = View.VISIBLE
         toolEraserSizeEditor.visibility = View.GONE
-        editorOpacitySeekbar.progress = 255 - canvasViews.canvasViewModel.eraserPaint.alpha
+        editorOpacitySeekbar.progress = canvasViews.canvasViewModel.eraserPaint.alpha
         doWhenTheViewIsVisible(toolEraserOpacityBtn){
             EraserOpacityEditorHelper.updateSeekbar(canvasViews.canvasViewModel, editorOpacitySeekbar)
         }

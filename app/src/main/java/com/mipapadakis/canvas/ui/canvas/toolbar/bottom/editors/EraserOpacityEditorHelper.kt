@@ -38,7 +38,7 @@ class EraserOpacityEditorHelper {
             val step = 255/width.toDouble()
             for (i in 0 until width) {
                 canvas.drawRect(i.toFloat(), 0f, i+1f, height.toFloat(), paint)
-                paint.alpha = ((width-i)*step).toInt()
+                paint.alpha = ((width-1-i)*step).toInt()
             }
             canvasViewModel.opacityBitmapForOpacityEditor = Bitmap.createScaledBitmap(bmp, width, height, false)
         }

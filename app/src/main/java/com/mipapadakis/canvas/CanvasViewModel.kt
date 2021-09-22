@@ -58,7 +58,7 @@ class CanvasViewModel: ViewModel() {
     val eraserPaint = Paint().apply {
         isAntiAlias = false
         color = Color.TRANSPARENT
-        alpha = 255
+        alpha = 0
         strokeJoin = Paint.Join.ROUND
         strokeCap = Paint.Cap.ROUND //BUTT
         strokeWidth = 20F
