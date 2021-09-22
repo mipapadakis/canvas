@@ -13,7 +13,9 @@ class ToolbarTools(canvasViews: CanvasViews) {
         canvasViews.toolbarToolBtn.setImageResource(canvasViews.canvasViewModel.tool)
         canvasViews.toolbarToolBtn.setOnClickListener {
             //If Bottom Toolbar is not visible, show it. Else, show the menu.
-            if(!canvasViews.bottomToolbarIsVisible() || wrongPropertiesShown(canvasViews)){
+            if( (!canvasViews.bottomToolbarIsVisible() &&
+                        canvasViews.canvasViewModel.tool!=CanvasViewModel.TOOL_EYEDROPPER)
+                || wrongPropertiesShown(canvasViews)){
                 showCurrentToolProperties(canvasViews)
                 return@setOnClickListener
             }
@@ -54,7 +56,7 @@ class ToolbarTools(canvasViews: CanvasViews) {
             CanvasViewModel.TOOL_BRUSH -> canvasViews.toolBrushLayout.visibility != View.VISIBLE
             CanvasViewModel.TOOL_ERASER -> canvasViews.toolEraserLayout.visibility != View.VISIBLE
             CanvasViewModel.TOOL_BUCKET -> canvasViews.toolBucketLayout.visibility != View.VISIBLE
-            CanvasViewModel.TOOL_EYEDROPPER -> !canvasViews.bottomToolbarIsVisible()
+            CanvasViewModel.TOOL_EYEDROPPER -> canvasViews.bottomToolbarIsVisible()
             CanvasViewModel.TOOL_SELECT -> canvasViews.toolSelectLayout.visibility != View.VISIBLE
             CanvasViewModel.TOOL_SHAPE -> canvasViews.toolShapeLayout.visibility != View.VISIBLE
             CanvasViewModel.TOOL_TEXT -> canvasViews.toolTextLayout.visibility != View.VISIBLE

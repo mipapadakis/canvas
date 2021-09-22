@@ -30,6 +30,7 @@ class CvImage(var title: String, var width: Int, var height: Int): ArrayList<CvL
         width = cvImage.width
         height = cvImage.height
         fileType = cvImage.fileType
+        layerNameIndex = cvImage.layerNameIndex
         clear()
         for(layer in cvImage) add(CvLayer(layer.title, layer))
     }
